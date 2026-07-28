@@ -10,9 +10,10 @@
     "node": ">=22.12.0 <23"
   },
   "scripts": {
-    "build": "npm run build -w @black-swan/db && npm run build -w @black-swan/worker && npm run build -w @black-swan/api",
+    "build": "npm run build -w @black-swan/db && npm run build -w @black-swan/worker && npm run build -w @black-swan/api && npm run build -w @black-swan/web",
     "dev:api": "npm run dev -w @black-swan/api",
     "dev:worker": "npm run dev -w @black-swan/worker",
+    "dev:web": "npm run dev -w @black-swan/web",
     "start:api": "npm run start -w @black-swan/api",
     "start:worker": "npm run start -w @black-swan/worker",
     "db:generate": "npm run generate -w @black-swan/db",
