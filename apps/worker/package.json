@@ -8,10 +8,10 @@
     "worker": "node dist/server.js",
     "dev": "pnpm run build && pnpm run worker",
     "start": "node ../../scripts/wait-for-db.js && pnpm --filter @black-swan/db migrate:deploy && pnpm run worker",
-    "collect:balletmania": "node scripts/collect-balletmania-employ-list.js",
-    "classify:balletmania": "node scripts/classify-balletmania-employ-details.js",
-    "collect:esangdance": "node scripts/collect-esangdance-employ-list.js",
-    "classify:esangdance": "node scripts/classify-esangdance-employ-details.js"
+    "collect:balletmania": "node scripts/collect-balletmania-employ-list.cjs",
+    "classify:balletmania": "node scripts/classify-balletmania-employ-details.cjs",
+    "collect:esangdance": "node scripts/collect-esangdance-employ-list.cjs",
+    "classify:esangdance": "node scripts/classify-esangdance-employ-details.cjs"
   },
   "dependencies": {
     "@black-swan/db": "workspace:*",
