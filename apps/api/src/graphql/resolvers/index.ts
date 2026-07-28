@@ -1,6 +1,7 @@
 import { DateTimeResolver, JSONResolver } from "graphql-scalars";
+import type { JobPostDetail } from "@black-swan/domain";
+import { jobPostFilterSchema, paginationSchema, parseOrThrow } from "@black-swan/validation";
 import type { GraphQLContext } from "../../context/types.js";
-import type { JobPostDetail } from "../../types/domain/job-post.js";
 
 export const resolvers = {
   DateTime: DateTimeResolver,
@@ -17,13 +18,14 @@ export const resolvers = {
 
     jobPosts: (
       _: unknown,
-      args: {
-        filter?: Parameters<GraphQLContext["services"]["jobPost"]["findMany"]>[0];
-        pagination?: Parameters<GraphQLContext["services"]["jobPost"]["findMany"]>[1];
-      },
+      args: { filter?: unknown; pagination?: unknown },
       { services }: GraphQLContext,
     ) => {
-      return services.jobPost.findMany(args.filter, args.pagination);
+      const filter = args.filter ? parseOrThrow(jobPostFilterSchema, args.filter, "Invalid job post filter") : null;
+      const pagination = args.pagination
+        ? parseOrThrow(paginationSchema, args.pagination, "Invalid pagination")
+        : null;
+      return services.jobPost.findMany(filter, pagination);
     },
 
     jobRegions: (_: unknown, __: unknown, { services }: GraphQLContext) => {

@@ -1,0 +1,90 @@
+query Health {
+  health {
+    ok
+    service
+    jobCount
+  }
+}
+
+query JobPosts($pagination: PaginationInput) {
+  jobPosts(pagination: $pagination) {
+    items {
+      id
+      title
+      sourcePrimary
+      jobType
+      postedAt
+      locationText
+      sido
+      sigungu
+      dongOrStation
+      audienceTypes
+      subjectTypes
+      days
+      timeSlots
+      times
+      payText
+      payMinManwon
+      payMaxManwon
+      payNegotiable
+      createdAt
+      updatedAt
+    }
+    pageInfo {
+      page
+      limit
+      total
+      totalPages
+    }
+  }
+}
+
+query JobPost($id: ID!) {
+  jobPost(id: $id) {
+    id
+    title
+    description
+    sourcePrimary
+    status
+    jobType
+    postedAt
+    isBallet
+    balletConfidence
+    locationText
+    sido
+    sigungu
+    dongOrStation
+    audienceTypes
+    subjectTypes
+    days
+    timeSlots
+    times
+    classCount
+    durationMinutes
+    payType
+    payText
+    payMinManwon
+    payMaxManwon
+    payNegotiable
+    contactMethods
+    contactEmails
+    contactPhones
+    requirements
+    confidence
+    sources {
+      id
+      source
+      sourceUrl
+      confidence
+      sourcePost {
+        id
+        sourcePostId
+        title
+        sourceUrl
+        postedAt
+      }
+    }
+    createdAt
+    updatedAt
+  }
+}

@@ -2,22 +2,27 @@
   "name": "black-swan",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "packageManager": "pnpm@10.12.1",
   "engines": {
     "node": ">=22.12.0 <23"
   },
   "scripts": {
-    "build": "npm run build -w @black-swan/db && npm run build -w @black-swan/worker && npm run build -w @black-swan/api && npm run build -w @black-swan/web",
-    "dev:api": "npm run dev -w @black-swan/api",
-    "dev:worker": "npm run dev -w @black-swan/worker",
-    "dev:web": "npm run dev -w @black-swan/web",
-    "start:api": "npm run start -w @black-swan/api",
-    "start:worker": "npm run start -w @black-swan/worker",
-    "db:generate": "npm run generate -w @black-swan/db",
-    "db:migrate": "npm run migrate -w @black-swan/db",
-    "db:migrate:deploy": "npm run migrate:deploy -w @black-swan/db"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "build": "pnpm --filter @black-swan/domain build && pnpm --filter @black-swan/validation build && pnpm --filter @black-swan/db build && pnpm codegen && pnpm --filter @black-swan/worker build && pnpm --filter @black-swan/api build && pnpm --filter @black-swan/web build",
+    "dev": "pnpm --parallel --filter @black-swan/api --filter @black-swan/web dev",
+    "dev:api": "pnpm --filter @black-swan/api dev",
+    "dev:worker": "pnpm --filter @black-swan/worker dev",
+    "dev:web": "pnpm --filter @black-swan/web dev",
+    "start:api": "pnpm --filter @black-swan/api start",
+    "start:worker": "pnpm --filter @black-swan/worker start",
+    "db:generate": "pnpm --filter @black-swan/db generate",
+    "db:migrate": "pnpm --filter @black-swan/db migrate",
+    "db:migrate:deploy": "pnpm --filter @black-swan/db migrate:deploy"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.7",
+    "@graphql-codegen/client-preset": "^4.8.3",
+    "@graphql-codegen/typescript": "^4.1.6",
+    "@graphql-codegen/typescript-resolvers": "^4.5.1"
   }
 }

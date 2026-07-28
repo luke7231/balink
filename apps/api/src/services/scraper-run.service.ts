@@ -1,21 +1,14 @@
-import { prisma } from "@black-swan/db";
-import { toScraperRunSummary, type ScraperRunSummary } from "../types/domain/scraper-run.js";
+import type { ScraperRunSummary } from "@black-swan/domain";
+import { ScraperRunRepository } from "@black-swan/db";
 
 export class ScraperRunService {
-  async listRecent(limit = 20): Promise<ScraperRunSummary[]> {
-    const runs = await prisma.scraperRun.findMany({
-      orderBy: { startedAt: "desc" },
-      take: limit,
-    });
+  constructor(private readonly scraperRunRepository: ScraperRunRepository) {}
 
-    return runs.map(toScraperRunSummary);
+  async listRecent(limit = 20): Promise<ScraperRunSummary[]> {
+    return this.scraperRunRepository.listRecent(limit);
   }
 
   async findLatest(): Promise<ScraperRunSummary | null> {
-    const run = await prisma.scraperRun.findFirst({
-      orderBy: { startedAt: "desc" },
-    });
-
-    return run ? toScraperRunSummary(run) : null;
+    return this.scraperRunRepository.findLatest();
   }
 }

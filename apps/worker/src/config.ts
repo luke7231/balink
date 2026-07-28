@@ -1,7 +1,7 @@
 import "dotenv/config";
+import type { LlmMode, SourceName } from "@black-swan/domain";
 
-export type SourceName = "balletmania" | "esangdance";
-export type LlmMode = "off" | "fallback" | "all";
+export type { LlmMode, SourceName };
 
 export const config = {
   port: Number(process.env.WORKER_PORT || 4300),

@@ -1,29 +1,19 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
-import { prisma, type Prisma, type SourceName as PrismaSourceName } from "@black-swan/db";
-import type { SourceName } from "./config.js";
+import type { Prisma, PrismaSourceName } from "@black-swan/db";
+import { SourcePostRepository } from "@black-swan/db";
+import type { SourceName } from "@black-swan/domain";
+import { classifiedPayloadSchema, parseOrThrow } from "@black-swan/validation";
 
-interface ClassifiedPayload {
-  source: SourceName;
-  total: number;
-  listings: ClassifiedItem[];
-}
-
-interface ClassifiedItem {
-  source: SourceName;
-  sourcePostId: string;
-  url: string;
-  collectedAt: string;
-  raw: Record<string, unknown>;
-  classification: Record<string, unknown>;
-}
+const sourcePostRepository = new SourcePostRepository();
 
 interface ImportResult {
   imported: number;
 }
 
 export async function importClassifiedFile(filePath: string): Promise<ImportResult> {
-  const payload = JSON.parse(await fs.readFile(filePath, "utf8")) as ClassifiedPayload;
+  const rawPayload = JSON.parse(await fs.readFile(filePath, "utf8"));
+  const payload = parseOrThrow(classifiedPayloadSchema, rawPayload, "Invalid classified payload");
   let imported = 0;
 
   for (const item of payload.listings) {
@@ -34,77 +24,37 @@ export async function importClassifiedFile(filePath: string): Promise<ImportResu
   return { imported };
 }
 
-async function importClassifiedItem(source: SourceName, item: ClassifiedItem): Promise<void> {
+async function importClassifiedItem(
+  source: SourceName,
+  item: {
+    sourcePostId: string;
+    url: string;
+    collectedAt: string;
+    raw: Record<string, unknown>;
+    classification: Record<string, unknown>;
+  },
+): Promise<void> {
   const normalized = normalizeItem(source, item);
-  const sourcePost = await prisma.sourcePost.upsert({
-    where: {
-      source_sourcePostId: {
-        source: source as PrismaSourceName,
-        sourcePostId: item.sourcePostId,
-      },
-    },
-    update: {
-      sourceUrl: item.url,
-      title: normalized.title,
-      postedAt: normalized.postedAt,
-      rawJson: item.raw as Prisma.InputJsonValue,
-      classificationJson: item.classification as Prisma.InputJsonValue,
-      contentHash: normalized.contentHash,
-      fetchedAt: new Date(item.collectedAt),
-    },
-    create: {
-      source: source as PrismaSourceName,
-      sourcePostId: item.sourcePostId,
-      sourceUrl: item.url,
-      title: normalized.title,
-      postedAt: normalized.postedAt,
-      rawJson: item.raw as Prisma.InputJsonValue,
-      classificationJson: item.classification as Prisma.InputJsonValue,
-      contentHash: normalized.contentHash,
-      fetchedAt: new Date(item.collectedAt),
-    },
-  });
-
-  const existingLink = await prisma.jobPostSource.findFirst({
-    where: {
-      sourcePostId: sourcePost.id,
-    },
-    select: {
-      jobPostId: true,
-    },
-  });
-
-  const jobPost = existingLink
-    ? await prisma.jobPost.update({
-        where: { id: existingLink.jobPostId },
-        data: normalized.jobPostData,
-      })
-    : await prisma.jobPost.create({
-        data: normalized.jobPostData,
-      });
-
-  await prisma.jobPostSource.upsert({
-    where: {
-      jobPostId_sourcePostId: {
-        jobPostId: jobPost.id,
-        sourcePostId: sourcePost.id,
-      },
-    },
-    update: {
-      sourceUrl: item.url,
-      confidence: normalized.sourceConfidence,
-    },
-    create: {
-      jobPostId: jobPost.id,
-      sourcePostId: sourcePost.id,
-      source: source as PrismaSourceName,
-      sourceUrl: item.url,
-      confidence: normalized.sourceConfidence,
-    },
+  await sourcePostRepository.importClassifiedItem({
+    source,
+    sourcePostId: item.sourcePostId,
+    url: item.url,
+    collectedAt: item.collectedAt,
+    raw: item.raw,
+    classification: item.classification,
+    normalized,
   });
 }
 
-function normalizeItem(source: SourceName, item: ClassifiedItem) {
+function normalizeItem(
+  source: SourceName,
+  item: {
+    sourcePostId: string;
+    url: string;
+    raw: Record<string, unknown>;
+    classification: Record<string, unknown>;
+  },
+) {
   const raw = item.raw;
   const classification = item.classification;
   const location = firstObject(classification.locations);

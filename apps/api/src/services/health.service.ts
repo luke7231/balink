@@ -1,15 +1,19 @@
-import { prisma } from "@black-swan/db";
-import type { HealthStatus } from "../types/domain/scraper-run.js";
+import type { HealthStatus } from "@black-swan/domain";
+import { DatabaseHealthRepository, JobPostRepository } from "@black-swan/db";
 import type { ScraperRunService } from "./scraper-run.service.js";
 
 export class HealthService {
-  constructor(private readonly scraperRunService: ScraperRunService) {}
+  constructor(
+    private readonly databaseHealthRepository: DatabaseHealthRepository,
+    private readonly jobPostRepository: JobPostRepository,
+    private readonly scraperRunService: ScraperRunService,
+  ) {}
 
   async getStatus(serviceName: string): Promise<HealthStatus> {
-    await prisma.$queryRaw`SELECT 1`;
+    await this.databaseHealthRepository.ping();
 
     const [jobCount, latestScraperRun] = await Promise.all([
-      prisma.jobPost.count({ where: { isBallet: true } }),
+      this.jobPostRepository.countBalletPosts(),
       this.scraperRunService.findLatest(),
     ]);
 

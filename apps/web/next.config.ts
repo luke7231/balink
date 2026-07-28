@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ["@black-swan/ui", "@black-swan/domain"],
 };
 
 export default nextConfig;

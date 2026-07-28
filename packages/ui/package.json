@@ -1,0 +1,25 @@
+{
+  "name": "@black-swan/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./job-card": "./src/job-card.tsx",
+    "./job-list": "./src/job-list.tsx",
+    "./badge": "./src/badge.tsx",
+    "./empty-state": "./src/empty-state.tsx"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@black-swan/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchJobPost } from "@/lib/graphql/queries";
 import {
   formatJobType,
   formatLocation,
@@ -8,7 +7,9 @@ import {
   formatPostedAt,
   formatSource,
   formatTimeSlot,
-} from "@/lib/format";
+} from "@black-swan/domain";
+import { Badge } from "@black-swan/ui/badge";
+import { fetchJobPost } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -35,13 +36,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
       <main className="mx-auto max-w-3xl px-4 py-8">
         <article className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex flex-wrap gap-2">
-            <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700">
-              {formatJobType(job.jobType)}
-            </span>
+            <Badge variant="rose">{formatJobType(job.jobType ?? null)}</Badge>
             {job.timeSlots.map((slot) => (
-              <span key={slot} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600">
-                {formatTimeSlot(slot)}
-              </span>
+              <Badge key={slot}>{formatTimeSlot(slot)}</Badge>
             ))}
           </div>
 
@@ -51,12 +48,12 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             <div>
               <dt className="text-zinc-500">지역</dt>
               <dd className="mt-1 font-medium text-zinc-900">
-                {formatLocation(job.sido, job.sigungu, job.locationText)}
+                {formatLocation(job.sido ?? null, job.sigungu ?? null, job.locationText ?? null)}
               </dd>
             </div>
             <div>
               <dt className="text-zinc-500">게시일</dt>
-              <dd className="mt-1 font-medium text-zinc-900">{formatPostedAt(job.postedAt)}</dd>
+              <dd className="mt-1 font-medium text-zinc-900">{formatPostedAt(job.postedAt ?? null)}</dd>
             </div>
             <div>
               <dt className="text-zinc-500">요일</dt>
@@ -65,7 +62,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             <div>
               <dt className="text-zinc-500">급여</dt>
               <dd className="mt-1 font-medium text-zinc-900">
-                {formatPay(job.payText, job.payMinManwon, job.payMaxManwon)}
+                {formatPay(job.payText ?? null, job.payMinManwon ?? null, job.payMaxManwon ?? null)}
               </dd>
             </div>
           </dl>

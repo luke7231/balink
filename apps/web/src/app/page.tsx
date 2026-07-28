@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { JobList } from "@/components/job-list";
+import { JobList } from "@black-swan/ui/job-list";
 import { fetchHealth, fetchJobPosts } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +40,11 @@ export default async function HomePage() {
           <p className="text-sm text-zinc-500">총 {jobs.pageInfo.total}건</p>
         </div>
 
-        <JobList jobs={jobs.items} />
+        <JobList
+          jobs={jobs.items}
+          getHref={(job) => `/jobs/${job.id}`}
+          linkComponent={Link}
+        />
       </main>
     </div>
   );

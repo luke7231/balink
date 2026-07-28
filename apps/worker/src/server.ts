@@ -1,9 +1,13 @@
 import http from "node:http";
 import { URL } from "node:url";
-import { config, type LlmMode, type SourceName } from "./config.js";
-import { prisma } from "@black-swan/db";
+import { DatabaseHealthRepository, ScraperRunRepository, prisma } from "@black-swan/db";
+import { parseLlmMode, parseOrThrow, parseSourceName, workerRunRequestSchema } from "@black-swan/validation";
+import { config } from "./config.js";
 import { startScheduler } from "./scheduler.js";
 import { runScraper } from "./scraper.js";
+
+const databaseHealthRepository = new DatabaseHealthRepository();
+const scraperRunRepository = new ScraperRunRepository();
 
 const server = http.createServer(async (req, res) => {
   try {
@@ -29,7 +33,7 @@ async function route(req: http.IncomingMessage, res: http.ServerResponse): Promi
   const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
 
   if (method === "GET" && url.pathname === "/health") {
-    await prisma.$queryRaw`SELECT 1`;
+    await databaseHealthRepository.ping();
     sendJson(res, 200, {
       ok: true,
       scheduleEnabled: config.scheduleEnabled,
@@ -42,19 +46,17 @@ async function route(req: http.IncomingMessage, res: http.ServerResponse): Promi
   }
 
   if (method === "GET" && url.pathname === "/runs") {
-    const runs = await prisma.scraperRun.findMany({
-      orderBy: { startedAt: "desc" },
-      take: Number(url.searchParams.get("limit") || 20),
-    });
+    const runs = await scraperRunRepository.listRecent(Number(url.searchParams.get("limit") || 20));
     sendJson(res, 200, { runs });
     return;
   }
 
   if (method === "POST" && url.pathname === "/runs") {
     const body = await readJson(req);
-    const date = stringValue(body.date) || todayKst();
-    const source = parseSource(body.source);
-    const llmMode = parseLlmMode(body.llmMode) || config.defaultLlmMode;
+    const parsed = parseOrThrow(workerRunRequestSchema, body, "Invalid worker run request");
+    const date = parsed.date || todayKst();
+    const source = parsed.source ?? parseSourceName(body.source);
+    const llmMode = parsed.llmMode ?? parseLlmMode(body.llmMode) ?? config.defaultLlmMode;
     const result = await runScraper({ date, source, llmMode });
     sendJson(res, 201, result);
     return;
@@ -75,18 +77,6 @@ async function readJson(req: http.IncomingMessage): Promise<Record<string, unkno
   for await (const chunk of req) chunks.push(Buffer.from(chunk));
   if (!chunks.length) return {};
   return JSON.parse(Buffer.concat(chunks).toString("utf8")) as Record<string, unknown>;
-}
-
-function parseSource(value: unknown): SourceName | undefined {
-  return value === "balletmania" || value === "esangdance" ? value : undefined;
-}
-
-function parseLlmMode(value: unknown): LlmMode | undefined {
-  return value === "off" || value === "fallback" || value === "all" ? value : undefined;
-}
-
-function stringValue(value: unknown): string | null {
-  return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
 function todayKst(): string {

@@ -1,3 +1,8 @@
+import {
+  DatabaseHealthRepository,
+  JobPostRepository,
+  ScraperRunRepository,
+} from "@black-swan/db";
 import { config } from "../config.js";
 import { HealthService } from "./health.service.js";
 import { JobPostService } from "./job-post.service.js";
@@ -10,9 +15,12 @@ export interface AppServices {
 }
 
 export function createServices(): AppServices {
-  const scraperRun = new ScraperRunService();
-  const health = new HealthService(scraperRun);
-  const jobPost = new JobPostService({
+  const jobPostRepository = new JobPostRepository();
+  const scraperRunRepository = new ScraperRunRepository();
+  const databaseHealthRepository = new DatabaseHealthRepository();
+  const scraperRun = new ScraperRunService(scraperRunRepository);
+  const health = new HealthService(databaseHealthRepository, jobPostRepository, scraperRun);
+  const jobPost = new JobPostService(jobPostRepository, {
     defaultPageSize: config.defaultPageSize,
     maxPageSize: config.maxPageSize,
   });

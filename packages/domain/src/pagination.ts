@@ -1,4 +1,19 @@
-import type { PageInfo, PaginationInput } from "../types/pagination.js";
+export interface PaginationInput {
+  page?: number | null;
+  limit?: number | null;
+}
+
+export interface PageInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaginatedResult<T> {
+  items: T[];
+  pageInfo: PageInfo;
+}
 
 export function normalizePagination(
   input: PaginationInput | null | undefined,

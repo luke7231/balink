@@ -1,20 +1,20 @@
-import { prisma } from "@black-swan/db";
-import { buildPageInfo, normalizePagination } from "../lib/pagination.js";
-import type { JobPostFilterInput } from "../types/inputs/job-post-filter.input.js";
 import {
+  buildPageInfo,
   groupJobRegions,
-  toJobPostDetail,
-  toJobPostSourceLink,
-  toJobPostSummary,
+  normalizePagination,
   type JobPostDetail,
+  type JobPostFilterInput,
   type JobPostSourceLink,
   type JobPostSummary,
   type JobRegionGroup,
-} from "../types/domain/job-post.js";
-import type { PaginatedResult, PaginationInput } from "../types/pagination.js";
+  type PaginatedResult,
+  type PaginationInput,
+} from "@black-swan/domain";
+import { JobPostRepository } from "@black-swan/db";
 
 export class JobPostService {
   constructor(
+    private readonly jobPostRepository: JobPostRepository,
     private readonly options: {
       defaultPageSize: number;
       maxPageSize: number;
@@ -30,86 +30,28 @@ export class JobPostService {
       maxLimit: this.options.maxPageSize,
     });
 
-    const where = this.buildWhere(filter);
-
+    const where = this.jobPostRepository.buildWhere(filter ?? null);
     const [items, total] = await Promise.all([
-      prisma.jobPost.findMany({
-        where,
-        orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
-        skip,
-        take: limit,
-      }),
-      prisma.jobPost.count({ where }),
+      this.jobPostRepository.findMany(where, skip, limit),
+      this.jobPostRepository.count(where),
     ]);
 
     return {
-      items: items.map(toJobPostSummary),
+      items,
       pageInfo: buildPageInfo(page, limit, total),
     };
   }
 
   async findById(id: string): Promise<JobPostDetail | null> {
-    const job = await prisma.jobPost.findUnique({
-      where: { id },
-      include: {
-        jobPostSources: {
-          include: {
-            sourcePost: {
-              select: {
-                id: true,
-                sourcePostId: true,
-                sourceUrl: true,
-                title: true,
-                postedAt: true,
-              },
-            },
-          },
-          orderBy: { createdAt: "asc" },
-        },
-      },
-    });
-
-    return job ? toJobPostDetail(job) : null;
+    return this.jobPostRepository.findById(id);
   }
 
   async findSources(jobPostId: string): Promise<JobPostSourceLink[]> {
-    const links = await prisma.jobPostSource.findMany({
-      where: { jobPostId },
-      include: {
-        sourcePost: {
-          select: {
-            id: true,
-            sourcePostId: true,
-            sourceUrl: true,
-            title: true,
-            postedAt: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "asc" },
-    });
-
-    return links.map(toJobPostSourceLink);
+    return this.jobPostRepository.findSources(jobPostId);
   }
 
   async listRegions(): Promise<JobRegionGroup[]> {
-    const rows = await prisma.jobPost.groupBy({
-      by: ["sido", "sigungu"],
-      where: { isBallet: true, sido: { not: null }, sigungu: { not: null } },
-      _count: { _all: true },
-      orderBy: [{ sido: "asc" }, { sigungu: "asc" }],
-    });
-
+    const rows = await this.jobPostRepository.groupRegions();
     return groupJobRegions(rows);
-  }
-
-  private buildWhere(filter: JobPostFilterInput | null | undefined) {
-    return {
-      isBallet: true,
-      ...(filter?.sido ? { sido: filter.sido } : {}),
-      ...(filter?.sigungu ? { sigungu: filter.sigungu } : {}),
-      ...(filter?.jobType ? { jobType: filter.jobType } : {}),
-      ...(filter?.source ? { sourcePrimary: filter.source } : {}),
-    };
   }
 }

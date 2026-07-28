@@ -1,3 +1,5 @@
+import { print, type DocumentNode } from "graphql";
+
 const DEFAULT_API_URL = "http://localhost:3000/graphql";
 
 interface GraphQLResponse<T> {
@@ -5,16 +7,19 @@ interface GraphQLResponse<T> {
   errors?: Array<{ message: string }>;
 }
 
-export async function graphqlRequest<T>(
-  query: string,
+export async function graphqlRequest<TData>(
+  document: DocumentNode,
   variables?: Record<string, unknown>,
   options?: { revalidate?: number },
-): Promise<T> {
+): Promise<TData> {
   const endpoint = process.env.API_URL || DEFAULT_API_URL;
   const response = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, variables }),
+    body: JSON.stringify({
+      query: print(document),
+      variables,
+    }),
     next: { revalidate: options?.revalidate ?? 60 },
   });
 
@@ -22,7 +27,7 @@ export async function graphqlRequest<T>(
     throw new Error(`GraphQL request failed: ${response.status}`);
   }
 
-  const payload = (await response.json()) as GraphQLResponse<T>;
+  const payload = (await response.json()) as GraphQLResponse<TData>;
 
   if (payload.errors?.length) {
     throw new Error(payload.errors.map((error) => error.message).join(", "));

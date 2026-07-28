@@ -1,22 +1,7 @@
-const SOURCE_LABELS: Record<string, string> = {
-  balletmania: "발레매니아",
-  esangdance: "이상댄스",
-};
-
-const JOB_TYPE_LABELS: Record<string, string> = {
-  regular: "정규",
-  substitute: "대타",
-};
-
-const TIME_SLOT_LABELS: Record<string, string> = {
-  morning: "오전",
-  afternoon: "오후",
-  evening: "저녁",
-  unknown: "협의",
-};
+import { JOB_TYPE_LABELS, SOURCE_LABELS, TIME_SLOT_LABELS } from "./enums.js";
 
 export function formatSource(source: string): string {
-  return SOURCE_LABELS[source] ?? source;
+  return SOURCE_LABELS[source as keyof typeof SOURCE_LABELS] ?? source;
 }
 
 export function formatJobType(jobType: string | null): string {
@@ -28,14 +13,14 @@ export function formatTimeSlot(slot: string): string {
   return TIME_SLOT_LABELS[slot] ?? slot;
 }
 
-export function formatPostedAt(value: string | null): string {
+export function formatPostedAt(value: Date | string | null): string {
   if (!value) return "날짜 미상";
   return new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
     year: "numeric",
     month: "long",
     day: "numeric",
-  }).format(new Date(value));
+  }).format(typeof value === "string" ? new Date(value) : value);
 }
 
 export function formatLocation(sido: string | null, sigungu: string | null, locationText: string | null): string {
@@ -50,4 +35,13 @@ export function formatPay(payText: string | null, payMin: number | null, payMax:
   if (payMin != null) return `${payMin}만원`;
   if (payMax != null) return `${payMax}만원`;
   return "협의";
+}
+
+export function jsonArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string");
+}
+
+export function jsonValue(value: unknown): unknown {
+  return value ?? null;
 }

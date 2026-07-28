@@ -6,15 +6,17 @@
   "scripts": {
     "build": "tsc",
     "worker": "node dist/server.js",
-    "dev": "npm run build && npm run worker",
-    "start": "node ../../scripts/wait-for-db.js && npm run migrate:deploy -w @black-swan/db && npm run worker",
+    "dev": "pnpm run build && pnpm run worker",
+    "start": "node ../../scripts/wait-for-db.js && pnpm --filter @black-swan/db migrate:deploy && pnpm run worker",
     "collect:balletmania": "node scripts/collect-balletmania-employ-list.js",
     "classify:balletmania": "node scripts/classify-balletmania-employ-details.js",
     "collect:esangdance": "node scripts/collect-esangdance-employ-list.js",
     "classify:esangdance": "node scripts/classify-esangdance-employ-details.js"
   },
   "dependencies": {
-    "@black-swan/db": "*",
+    "@black-swan/db": "workspace:*",
+    "@black-swan/domain": "workspace:*",
+    "@black-swan/validation": "workspace:*",
     "cheerio": "^1.0.0",
     "dotenv": "^16.4.7",
     "iconv-lite": "^0.6.3",

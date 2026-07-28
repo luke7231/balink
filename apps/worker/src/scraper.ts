@@ -1,9 +1,13 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import { prisma, type Prisma, type SourceName as PrismaSourceName } from "@black-swan/db";
+import type { Prisma } from "@black-swan/db";
+import { ScraperRunRepository } from "@black-swan/db";
+import type { LlmMode, SourceName } from "@black-swan/domain";
 import { runCommand, type CommandResult } from "./command.js";
-import { config, type LlmMode, type SourceName } from "./config.js";
+import { config } from "./config.js";
 import { importClassifiedFile } from "./import-classified.js";
+
+const scraperRunRepository = new ScraperRunRepository();
 
 export interface RunScraperOptions {
   source?: SourceName;
@@ -25,13 +29,10 @@ export async function runScraper(options: RunScraperOptions): Promise<RunScraper
 
   const sources = options.source ? [options.source] : config.scheduleSources;
   const llmMode = options.llmMode || config.defaultLlmMode;
-  const run = await prisma.scraperRun.create({
-    data: {
-      source: options.source ? (options.source as PrismaSourceName) : null,
-      targetDate: options.date,
-      llmMode,
-      status: "running",
-    },
+  const run = await scraperRunRepository.createRunning({
+    source: options.source,
+    targetDate: options.date,
+    llmMode,
   });
 
   const logs: CommandResult[] = [];
@@ -48,31 +49,21 @@ export async function runScraper(options: RunScraperOptions): Promise<RunScraper
       imported += result.imported;
     }
 
-    await prisma.scraperRun.update({
-      where: { id: run.id },
-      data: {
-        status: "success",
-        finishedAt: new Date(),
-        collected,
-        classified,
-        imported,
-        logs: logs as unknown as Prisma.InputJsonValue,
-      },
+    await scraperRunRepository.markSuccess(run.id, {
+      collected,
+      classified,
+      imported,
+      logs: logs as unknown as Prisma.InputJsonValue,
     });
 
     return { runId: run.id, status: "success", collected, classified, imported, logs };
   } catch (error) {
-    await prisma.scraperRun.update({
-      where: { id: run.id },
-      data: {
-        status: "failed",
-        finishedAt: new Date(),
-        collected,
-        classified,
-        imported,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        logs: logs as unknown as Prisma.InputJsonValue,
-      },
+    await scraperRunRepository.markFailed(run.id, {
+      collected,
+      classified,
+      imported,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      logs: logs as unknown as Prisma.InputJsonValue,
     });
     throw error;
   }
@@ -86,7 +77,7 @@ async function runSourcePipeline(source: SourceName, date: string, llmMode: LlmM
   const logs: CommandResult[] = [];
 
   logs.push(
-    await runCommand("npm", [
+    await runCommand("pnpm", [
       "run",
       `collect:${source}`,
       "--",
@@ -97,7 +88,7 @@ async function runSourcePipeline(source: SourceName, date: string, llmMode: LlmM
     ]),
   );
   logs.push(
-    await runCommand("npm", [
+    await runCommand("pnpm", [
       "run",
       `classify:${source}`,
       "--",

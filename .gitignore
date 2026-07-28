@@ -3,5 +3,7 @@ node_modules/
 dist/
 apps/*/dist/
 packages/*/dist/
+apps/web/.next/
+pnpm-debug.log
 npm-debug.log
 .DS_Store

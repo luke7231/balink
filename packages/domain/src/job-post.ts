@@ -1,6 +1,11 @@
-import type { JobPost, JobPostSource, SourcePost } from "@prisma/client";
-import { jsonArray, jsonValue } from "../../lib/json.js";
 import type { SourceName } from "./enums.js";
+
+export interface JobPostFilterInput {
+  sido?: string | null;
+  sigungu?: string | null;
+  jobType?: string | null;
+  source?: SourceName | null;
+}
 
 export interface SourcePostSummary {
   id: string;
@@ -54,65 +59,6 @@ export interface JobPostDetail extends JobPostSummary {
   contactPhones: string[];
   requirements: unknown;
   confidence: unknown;
-}
-
-type JobPostWithSources = JobPost & {
-  jobPostSources: (JobPostSource & {
-    sourcePost: Pick<SourcePost, "id" | "sourcePostId" | "sourceUrl" | "title" | "postedAt">;
-  })[];
-};
-
-export function toJobPostSummary(job: JobPost): JobPostSummary {
-  return {
-    id: job.id,
-    title: job.title,
-    sourcePrimary: job.sourcePrimary as SourceName,
-    jobType: job.jobType,
-    postedAt: job.postedAt,
-    locationText: job.locationText,
-    sido: job.sido,
-    sigungu: job.sigungu,
-    dongOrStation: job.dongOrStation,
-    audienceTypes: jsonArray(job.audienceTypes),
-    subjectTypes: jsonArray(job.subjectTypes),
-    days: jsonArray(job.days),
-    timeSlots: jsonArray(job.timeSlots),
-    times: jsonArray(job.times),
-    payText: job.payText,
-    payMinManwon: job.payMinManwon,
-    payMaxManwon: job.payMaxManwon,
-    payNegotiable: job.payNegotiable,
-    createdAt: job.createdAt,
-    updatedAt: job.updatedAt,
-  };
-}
-
-export function toJobPostDetail(job: JobPostWithSources): JobPostDetail {
-  return {
-    ...toJobPostSummary(job),
-    description: job.description,
-    status: job.status,
-    isBallet: job.isBallet,
-    balletConfidence: job.balletConfidence,
-    classCount: job.classCount,
-    durationMinutes: job.durationMinutes,
-    payType: job.payType,
-    contactMethods: jsonArray(job.contactMethods),
-    contactEmails: jsonArray(job.contactEmails),
-    contactPhones: jsonArray(job.contactPhones),
-    requirements: jsonValue(job.requirementsJson),
-    confidence: jsonValue(job.confidenceJson),
-  };
-}
-
-export function toJobPostSourceLink(link: JobPostSource & { sourcePost: SourcePostSummary }): JobPostSourceLink {
-  return {
-    id: link.id,
-    source: link.source as SourceName,
-    sourceUrl: link.sourceUrl,
-    confidence: link.confidence,
-    sourcePost: link.sourcePost,
-  };
 }
 
 export interface JobRegionCount {

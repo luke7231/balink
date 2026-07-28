@@ -1,19 +1,10 @@
-import { existsSync } from "node:fs";
-import { resolve } from "node:path";
-import { config } from "dotenv";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-
-for (const envPath of [resolve(process.cwd(), ".env"), resolve(process.cwd(), "../../.env")]) {
-  if (existsSync(envPath)) {
-    config({ path: envPath });
-    break;
-  }
-}
-
-const connectionString = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/black_swan";
-const adapter = new PrismaPg({ connectionString });
-
-export const prisma = new PrismaClient({ adapter });
-
-export type { Prisma, SourceName, ScraperRunStatus } from "@prisma/client";
+export { prisma } from "./client.js";
+export type { Prisma, SourceName as PrismaSourceName, ScraperRunStatus as PrismaScraperRunStatus } from "@prisma/client";
+export {
+  JobPostRepository,
+  SourcePostRepository,
+  ScraperRunRepository,
+  DatabaseHealthRepository,
+  type ImportClassifiedItemInput,
+} from "./repositories/index.js";
+export { toJobPostSummary, toJobPostDetail, toJobPostSourceLink, toScraperRunSummary } from "./mappers/index.js";
