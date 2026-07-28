@@ -1,4 +1,4 @@
-FROM node:22.12.0-bookworm-slim AS base
+FROM node:22.14.0-bookworm-slim AS base
 
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates \
@@ -6,7 +6,10 @@ RUN apt-get update -y \
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN npm install -g corepack@latest \
+  && corepack enable \
+  && corepack prepare pnpm@10.12.1 --activate
 
 FROM base AS deps
 
