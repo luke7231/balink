@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { Client } = require("pg");
+const net = require("node:net");
 
 const timeoutMs = Number(process.env.DB_WAIT_TIMEOUT_MS || 60_000);
 const intervalMs = Number(process.env.DB_WAIT_INTERVAL_MS || 2_000);
@@ -17,6 +17,7 @@ main().catch((error) => {
 });
 
 async function main() {
+  const { host, port } = parsePostgresUrl(databaseUrl);
   const startedAt = Date.now();
   let attempt = 0;
   let lastError = null;
@@ -25,10 +26,7 @@ async function main() {
     attempt += 1;
 
     try {
-      const client = new Client({ connectionString: databaseUrl });
-      await client.connect();
-      await client.query("SELECT 1");
-      await client.end();
+      await tryConnect(host, port);
       console.log(`[db] connected after ${attempt} attempt(s)`);
       return;
     } catch (error) {
@@ -38,7 +36,33 @@ async function main() {
     }
   }
 
-  throw new Error(`Database was not reachable within ${timeoutMs}ms: ${lastError ? lastError.message : "unknown error"}`);
+  throw new Error(
+    `Database was not reachable within ${timeoutMs}ms: ${lastError ? lastError.message : "unknown error"}`,
+  );
+}
+
+function parsePostgresUrl(connectionString) {
+  const url = new URL(connectionString.replace(/^postgres(ql)?:/, "http:"));
+  return {
+    host: url.hostname,
+    port: Number(url.port || 5432),
+  };
+}
+
+function tryConnect(host, port) {
+  return new Promise((resolve, reject) => {
+    const socket = net.createConnection({ host, port }, () => {
+      socket.end();
+      resolve();
+    });
+
+    socket.setTimeout(5_000);
+    socket.on("error", reject);
+    socket.on("timeout", () => {
+      socket.destroy();
+      reject(new Error("connection timeout"));
+    });
+  });
 }
 
 function sleep(ms) {

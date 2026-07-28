@@ -47,6 +47,9 @@ COPY packages/db/package.json packages/db/
 COPY packages/domain/package.json packages/domain/
 COPY packages/validation/package.json packages/validation/
 COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/apps/worker/node_modules ./apps/worker/node_modules
+COPY --from=build /app/packages/db/node_modules ./packages/db/node_modules
+COPY --from=build /app/packages/validation/node_modules ./packages/validation/node_modules
 COPY --from=build /app/apps/worker/dist ./apps/worker/dist
 COPY --from=build /app/apps/worker/scripts ./apps/worker/scripts
 COPY --from=build /app/apps/worker/data ./apps/worker/data
