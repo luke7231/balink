@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
-import type { Prisma, SourceName as PrismaSourceName } from "@prisma/client";
-import { prisma } from "./db.js";
+import { prisma, type Prisma, type SourceName as PrismaSourceName } from "@black-swan/db";
 import type { SourceName } from "./config.js";
 
 interface ClassifiedPayload {

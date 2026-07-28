@@ -1,7 +1,7 @@
 import http from "node:http";
 import { URL } from "node:url";
 import { config, type LlmMode, type SourceName } from "./config.js";
-import { prisma } from "./db.js";
+import { prisma } from "@black-swan/db";
 import { startScheduler } from "./scheduler.js";
 import { runScraper } from "./scraper.js";
 

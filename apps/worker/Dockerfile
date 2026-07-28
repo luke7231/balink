@@ -18,7 +18,7 @@ FROM base AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build -w @black-swan/db && npm run build -w @black-swan/api
+RUN npm run build -w @black-swan/db && npm run build -w @black-swan/worker
 
 FROM base AS runner
 
@@ -26,14 +26,16 @@ ENV NODE_ENV=production
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY apps/api/package.json apps/api/
+COPY apps/worker/package.json apps/worker/
 COPY packages/db/package.json packages/db/
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/apps/api/dist ./apps/api/dist
+COPY --from=build /app/apps/worker/dist ./apps/worker/dist
+COPY --from=build /app/apps/worker/scripts ./apps/worker/scripts
+COPY --from=build /app/apps/worker/data ./apps/worker/data
 COPY --from=build /app/packages/db/dist ./packages/db/dist
 COPY --from=build /app/packages/db/prisma ./packages/db/prisma
 COPY --from=build /app/packages/db/prisma.config.ts ./packages/db/prisma.config.ts
 COPY scripts ./scripts
 
-EXPOSE 3000
-CMD ["npm", "run", "start:prod", "-w", "@black-swan/api"]
+EXPOSE 4300
+CMD ["npm", "run", "start", "-w", "@black-swan/worker"]

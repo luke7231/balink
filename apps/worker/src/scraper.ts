@@ -1,9 +1,8 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import type { Prisma, SourceName as PrismaSourceName } from "@prisma/client";
+import { prisma, type Prisma, type SourceName as PrismaSourceName } from "@black-swan/db";
 import { runCommand, type CommandResult } from "./command.js";
 import { config, type LlmMode, type SourceName } from "./config.js";
-import { prisma } from "./db.js";
 import { importClassifiedFile } from "./import-classified.js";
 
 export interface RunScraperOptions {

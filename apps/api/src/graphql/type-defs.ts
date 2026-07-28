@@ -1,0 +1,153 @@
+export const typeDefs = /* GraphQL */ `
+  scalar DateTime
+  scalar JSON
+
+  enum SourceName {
+    balletmania
+    esangdance
+  }
+
+  enum ScraperRunStatus {
+    running
+    success
+    failed
+  }
+
+  type Query {
+    health: Health!
+    jobPost(id: ID!): JobPost
+    jobPosts(filter: JobPostFilterInput, pagination: PaginationInput): JobPostConnection!
+    jobRegions: [JobRegionGroup!]!
+    scraperRuns(limit: Int = 20): [ScraperRun!]!
+  }
+
+  type Health {
+    ok: Boolean!
+    service: String!
+    jobCount: Int!
+    latestScraperRun: ScraperRun
+  }
+
+  type JobPostSummary {
+    id: ID!
+    title: String!
+    sourcePrimary: SourceName!
+    jobType: String
+    postedAt: DateTime
+    locationText: String
+    sido: String
+    sigungu: String
+    dongOrStation: String
+    audienceTypes: [String!]!
+    subjectTypes: [String!]!
+    days: [String!]!
+    timeSlots: [String!]!
+    times: [String!]!
+    payText: String
+    payMinManwon: Float
+    payMaxManwon: Float
+    payNegotiable: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  type JobPost {
+    id: ID!
+    title: String!
+    description: String
+    sourcePrimary: SourceName!
+    status: String
+    jobType: String
+    postedAt: DateTime
+    isBallet: Boolean!
+    balletConfidence: String
+    locationText: String
+    sido: String
+    sigungu: String
+    dongOrStation: String
+    audienceTypes: [String!]!
+    subjectTypes: [String!]!
+    days: [String!]!
+    timeSlots: [String!]!
+    times: [String!]!
+    classCount: Int
+    durationMinutes: Int
+    payType: String
+    payText: String
+    payMinManwon: Float
+    payMaxManwon: Float
+    payNegotiable: Boolean!
+    contactMethods: [String!]!
+    contactEmails: [String!]!
+    contactPhones: [String!]!
+    requirements: JSON
+    confidence: JSON
+    sources: [JobPostSourceLink!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  type JobPostSourceLink {
+    id: ID!
+    source: SourceName!
+    sourceUrl: String!
+    confidence: String
+    sourcePost: SourcePostSummary!
+  }
+
+  type SourcePostSummary {
+    id: ID!
+    sourcePostId: String!
+    title: String!
+    sourceUrl: String!
+    postedAt: DateTime
+  }
+
+  type JobPostConnection {
+    items: [JobPostSummary!]!
+    pageInfo: PageInfo!
+  }
+
+  type PageInfo {
+    page: Int!
+    limit: Int!
+    total: Int!
+    totalPages: Int!
+  }
+
+  type JobRegionGroup {
+    sido: String!
+    districts: [JobRegionCount!]!
+  }
+
+  type JobRegionCount {
+    sigungu: String!
+    count: Int!
+  }
+
+  type ScraperRun {
+    id: ID!
+    source: SourceName
+    targetDate: String!
+    llmMode: String!
+    status: ScraperRunStatus!
+    startedAt: DateTime!
+    finishedAt: DateTime
+    collected: Int!
+    classified: Int!
+    imported: Int!
+    errorMessage: String
+  }
+
+  input JobPostFilterInput {
+    sido: String
+    sigungu: String
+    jobType: String
+    source: SourceName
+  }
+
+  input PaginationInput {
+    page: Int
+    limit: Int
+  }
+`;
