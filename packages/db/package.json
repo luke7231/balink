@@ -10,7 +10,7 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
-    "build": "tsc && prisma generate"
+    "build": "prisma generate && tsc"
   },
   "dependencies": {
     "@black-swan/domain": "workspace:*",
