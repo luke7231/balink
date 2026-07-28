@@ -3,7 +3,7 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { URL } = require("node:url");
-const { Agent } = require("undici");
+const { Agent, fetch } = require("undici");
 const cheerio = require("cheerio");
 const dotenv = require("dotenv");
 

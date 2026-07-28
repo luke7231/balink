@@ -2,6 +2,7 @@
 
 const path = require("node:path");
 const { createRequire } = require("node:module");
+const { Agent, fetch } = require("undici");
 
 const scriptDir = __dirname;
 const workerRoot = path.join(scriptDir, "..");
@@ -36,7 +37,19 @@ async function verifyWorkspaceDeps() {
   }
 }
 
-verifyWorkspaceDeps()
+async function verifyUndiciDispatcher() {
+  const dispatcher = new Agent({ connect: { timeout: 1_000 } });
+
+  try {
+    const response = await fetch("data:text/plain,ok", { dispatcher });
+    if ((await response.text()) !== "ok") throw new Error("unexpected response");
+    console.log("[deps] ok undici fetch dispatcher");
+  } finally {
+    await dispatcher.close();
+  }
+}
+
+Promise.all([verifyWorkspaceDeps(), verifyUndiciDispatcher()])
   .then(() => {
     if (failed) process.exit(1);
   })
