@@ -34,7 +34,8 @@ COPY . .
 RUN pnpm --filter @black-swan/domain build \
   && pnpm --filter @black-swan/validation build \
   && pnpm --filter @black-swan/db build \
-  && pnpm --filter @black-swan/worker build
+  && pnpm --filter @black-swan/worker build \
+  && pnpm --filter @black-swan/worker verify:deps
 
 FROM base AS runner
 

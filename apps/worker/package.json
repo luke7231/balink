@@ -11,7 +11,8 @@
     "collect:balletmania": "node scripts/collect-balletmania-employ-list.cjs",
     "classify:balletmania": "node scripts/classify-balletmania-employ-details.cjs",
     "collect:esangdance": "node scripts/collect-esangdance-employ-list.cjs",
-    "classify:esangdance": "node scripts/classify-esangdance-employ-details.cjs"
+    "classify:esangdance": "node scripts/classify-esangdance-employ-details.cjs",
+    "verify:deps": "node scripts/verify-runtime-deps.cjs"
   },
   "dependencies": {
     "@black-swan/db": "workspace:*",
@@ -20,7 +21,8 @@
     "cheerio": "^1.0.0",
     "dotenv": "^16.4.7",
     "iconv-lite": "^0.6.3",
-    "openai": "^6.42.0"
+    "openai": "^6.42.0",
+    "undici": "^8.9.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
