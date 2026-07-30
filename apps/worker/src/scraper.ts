@@ -5,7 +5,9 @@ import { ScraperRunRepository } from "@black-swan/db";
 import type { LlmMode, SourceName } from "@black-swan/domain";
 import { runCommand, type CommandResult } from "./command.js";
 import { config } from "./config.js";
+import { filterNewListings } from "./incremental-listings.js";
 import { importClassifiedFile } from "./import-classified.js";
+import { postProcessClassifiedFile } from "./post-process-classified.js";
 
 const scraperRunRepository = new ScraperRunRepository();
 
@@ -73,6 +75,7 @@ async function runSourcePipeline(source: SourceName, date: string, llmMode: LlmM
   await fs.mkdir(config.scraperWorkDir, { recursive: true });
 
   const listPath = path.join(config.scraperWorkDir, `${source}-employ-${date}.json`);
+  const newListPath = path.join(config.scraperWorkDir, `${source}-employ-${date}-new.json`);
   const classifiedPath = path.join(config.scraperWorkDir, `${source}-employ-${date}-classified.json`);
   const logs: CommandResult[] = [];
 
@@ -87,13 +90,34 @@ async function runSourcePipeline(source: SourceName, date: string, llmMode: LlmM
       listPath,
     ]),
   );
+
+  const listPayload = JSON.parse(await fs.readFile(listPath, "utf8")) as {
+    listings: Array<Record<string, unknown>>;
+  };
+  const { newListings, existingCount } = await filterNewListings(source, listPayload.listings);
+
+  if (newListings.length === 0) {
+    return {
+      logs,
+      collected: listPayload.listings.length,
+      classified: 0,
+      imported: 0,
+    };
+  }
+
+  await fs.writeFile(
+    newListPath,
+    `${JSON.stringify({ ...listPayload, listings: newListings }, null, 2)}\n`,
+    "utf8",
+  );
+
   logs.push(
     await runCommand("pnpm", [
       "run",
       `classify:${source}`,
       "--",
       "--input",
-      listPath,
+      newListPath,
       "--output",
       classifiedPath,
       "--llm",
@@ -101,13 +125,20 @@ async function runSourcePipeline(source: SourceName, date: string, llmMode: LlmM
     ]),
   );
 
+  const processed = await postProcessClassifiedFile(classifiedPath);
+  logs.push({
+    command: `post-process-classified ${classifiedPath}`,
+    stdout: `Processed ${processed} new listings (${existingCount} existing skipped)`,
+    stderr: "",
+  });
+
   const classifiedPayload = JSON.parse(await fs.readFile(classifiedPath, "utf8")) as { total?: number };
   const importResult = await importClassifiedFile(classifiedPath);
 
   return {
     logs,
-    collected: classifiedPayload.total || 0,
-    classified: classifiedPayload.total || 0,
+    collected: listPayload.listings.length,
+    classified: classifiedPayload.total || newListings.length,
     imported: importResult.imported,
   };
 }

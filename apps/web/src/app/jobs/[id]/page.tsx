@@ -9,6 +9,7 @@ import {
   formatTimeSlot,
 } from "@black-swan/domain";
 import { Badge } from "@black-swan/ui/badge";
+import { OriginalDescription } from "@/components/original-description";
 import { fetchJobPost } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,13 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const job = await fetchJobPost(id);
 
   if (!job) notFound();
+
+  const payLabel = formatPay(
+    job.payText ?? null,
+    job.payMinManwon ?? null,
+    job.payMaxManwon ?? null,
+    job.representativePayText ?? job.representativePay?.displayText ?? null,
+  );
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -48,7 +56,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             <div>
               <dt className="text-zinc-500">지역</dt>
               <dd className="mt-1 font-medium text-zinc-900">
-                {formatLocation(job.sido ?? null, job.sigungu ?? null, job.locationText ?? null)}
+                {formatLocation(job.sido ?? null, job.sigungu ?? null, job.dongOrStation ?? null)}
               </dd>
             </div>
             <div>
@@ -61,18 +69,26 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             </div>
             <div>
               <dt className="text-zinc-500">급여</dt>
-              <dd className="mt-1 font-medium text-zinc-900">
-                {formatPay(job.payText ?? null, job.payMinManwon ?? null, job.payMaxManwon ?? null)}
-              </dd>
+              <dd className="mt-1 font-medium text-zinc-900">{payLabel}</dd>
+              {job.representativePay?.evidence ? (
+                <dd className="mt-1 text-xs text-zinc-500">근거: {job.representativePay.evidence}</dd>
+              ) : null}
             </div>
           </dl>
 
-          {job.description ? (
-            <section className="mt-8">
-              <h2 className="text-sm font-semibold text-zinc-900">공고 내용</h2>
-              <p className="mt-3 whitespace-pre-wrap leading-7 text-zinc-700">{job.description}</p>
+          {job.displaySections.length > 0 ? (
+            <section className="mt-8 space-y-4">
+              <h2 className="text-sm font-semibold text-zinc-900">정돈된 공고</h2>
+              {job.displaySections.map((section) => (
+                <div key={section.title} className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
+                  <h3 className="text-sm font-semibold text-zinc-900">{section.title}</h3>
+                  <p className="mt-2 whitespace-break-spaces text-sm leading-7 text-zinc-700">{section.content}</p>
+                </div>
+              ))}
             </section>
           ) : null}
+
+          {job.description ? <OriginalDescription description={job.description} /> : null}
 
           <section className="mt-8">
             <h2 className="text-sm font-semibold text-zinc-900">원본 링크</h2>

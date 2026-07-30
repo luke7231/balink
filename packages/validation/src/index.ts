@@ -30,6 +30,7 @@ export const classifiedItemSchema = z.object({
   collectedAt: z.string().min(1),
   raw: z.record(z.unknown()),
   classification: z.record(z.unknown()),
+  enrichment: z.record(z.unknown()).optional(),
 });
 
 export const classifiedPayloadSchema = z.object({

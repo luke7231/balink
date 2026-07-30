@@ -197,7 +197,7 @@ async function fetchDetail(url, cookie) {
     title: cleanText($(".detail_title").first().text()),
     summary,
     closingDateText: parseContactTable($)["접수기간"] || null,
-    detailText: cleanDetailText($("#employ_detail_textarea").val() || ""),
+    detailText: restoreLabelLineBreaks(cleanDetailText($("#employ_detail_textarea").val() || "")),
   };
 }
 
@@ -836,14 +836,27 @@ function normalizePhone(phone) {
 
 function cleanDetailText(value) {
   return String(value)
-    .replace(/<br\s*\/?\s*>/gi, "\n")
-    .replace(/&nbsp;/g, " ")
+    .replace(/<(?:br\s*\/?\s*|\/?(?:p|div|li|tr|h[1-6]|blockquote|pre|section|article|table|ul|ol)\b[^>]*)>/gi, "\n")
+    .replace(/&nbsp;/gi, "\u00a0")
     .replace(/<[^>]+>/g, " ")
     .replace(/\r/g, "")
     .replace(/[ \t]+/g, " ")
-    .replace(/\n\s+/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n[ \t]+/g, "\n")
     .trim();
+}
+
+function restoreLabelLineBreaks(text) {
+  const labels = ["학원명(지역)", "수업내용 및 시간", "연락처", "수업료 등 추가내용"];
+  const labelPattern = labels.map(escapeRegExp).join("|");
+
+  return text.replace(new RegExp(`\\s*(${labelPattern})\\s*▶`, "g"), (_, label, offset) => {
+    return `${offset === 0 ? "" : "\n"}${label} ▶`;
+  });
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function cleanText(value) {

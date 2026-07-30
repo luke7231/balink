@@ -63,6 +63,13 @@ model JobPost {
   payMaxManwon      Float?
   payText           String?
   payNegotiable     Boolean         @default(false)
+  displaySectionsJson Json?
+  representativePayUnit String?
+  representativePayText String?
+  representativePayMinManwon Float?
+  representativePayMaxManwon Float?
+  representativePayJson Json?
+  locationSource    String?
   contactMethods    Json
   contactEmails     Json
   contactPhones     Json

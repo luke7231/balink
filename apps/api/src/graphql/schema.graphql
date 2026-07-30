@@ -46,8 +46,25 @@ type JobPostSummary {
   payMinManwon: Float
   payMaxManwon: Float
   payNegotiable: Boolean!
+  representativePayText: String
   createdAt: DateTime!
   updatedAt: DateTime!
+}
+
+type DisplaySection {
+  title: String!
+  content: String!
+}
+
+type RepresentativePay {
+  unit: String!
+  displayText: String!
+  minManwon: Float
+  maxManwon: Float
+  evidence: String
+  confidence: String!
+  hasConflict: Boolean!
+  alternateEvidence: String
 }
 
 type JobPost {
@@ -76,6 +93,10 @@ type JobPost {
   payMinManwon: Float
   payMaxManwon: Float
   payNegotiable: Boolean!
+  representativePayText: String
+  displaySections: [DisplaySection!]!
+  representativePay: RepresentativePay
+  locationSource: String
   contactMethods: [String!]!
   contactEmails: [String!]!
   contactPhones: [String!]!

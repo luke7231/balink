@@ -1,4 +1,5 @@
 import type { SourceName } from "./enums.js";
+import type { DisplaySection, LocationSource, RepresentativePay } from "./formatted-post.js";
 
 export interface JobPostFilterInput {
   sido?: string | null;
@@ -42,6 +43,7 @@ export interface JobPostSummary {
   payMinManwon: number | null;
   payMaxManwon: number | null;
   payNegotiable: boolean;
+  representativePayText: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +61,9 @@ export interface JobPostDetail extends JobPostSummary {
   contactPhones: string[];
   requirements: unknown;
   confidence: unknown;
+  displaySections: DisplaySection[];
+  representativePay: RepresentativePay | null;
+  locationSource: LocationSource | null;
 }
 
 export interface JobRegionCount {

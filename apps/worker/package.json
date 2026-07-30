@@ -12,7 +12,10 @@
     "classify:balletmania": "node scripts/classify-balletmania-employ-details.cjs",
     "collect:esangdance": "node scripts/collect-esangdance-employ-list.cjs",
     "classify:esangdance": "node scripts/classify-esangdance-employ-details.cjs",
-    "verify:deps": "node scripts/verify-runtime-deps.cjs"
+    "backfill:existing-descriptions": "node scripts/backfill-existing-descriptions.cjs",
+    "backfill:formatted": "pnpm run build && node dist/backfill-formatted.js",
+    "verify:deps": "node scripts/verify-runtime-deps.cjs",
+    "test": "pnpm run build && node --test dist/**/*.test.js"
   },
   "dependencies": {
     "@black-swan/db": "workspace:*",

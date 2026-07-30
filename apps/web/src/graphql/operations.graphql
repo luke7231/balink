@@ -27,6 +27,7 @@ query JobPosts($pagination: PaginationInput) {
       payMinManwon
       payMaxManwon
       payNegotiable
+      representativePayText
       createdAt
       updatedAt
     }
@@ -66,6 +67,22 @@ query JobPost($id: ID!) {
     payMinManwon
     payMaxManwon
     payNegotiable
+    representativePayText
+    displaySections {
+      title
+      content
+    }
+    representativePay {
+      unit
+      displayText
+      minManwon
+      maxManwon
+      evidence
+      confidence
+      hasConflict
+      alternateEvidence
+    }
+    locationSource
     contactMethods
     contactEmails
     contactPhones

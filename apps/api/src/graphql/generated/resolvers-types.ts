@@ -19,6 +19,12 @@ export type Scalars = {
   JSON: { input: unknown; output: unknown; }
 };
 
+export type DisplaySection = {
+  __typename?: 'DisplaySection';
+  content: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+};
+
 export type Health = {
   __typename?: 'Health';
   jobCount: Scalars['Int']['output'];
@@ -39,11 +45,13 @@ export type JobPost = {
   createdAt: Scalars['DateTime']['output'];
   days: Array<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
+  displaySections: Array<DisplaySection>;
   dongOrStation?: Maybe<Scalars['String']['output']>;
   durationMinutes?: Maybe<Scalars['Int']['output']>;
   id: Scalars['ID']['output'];
   isBallet: Scalars['Boolean']['output'];
   jobType?: Maybe<Scalars['String']['output']>;
+  locationSource?: Maybe<Scalars['String']['output']>;
   locationText?: Maybe<Scalars['String']['output']>;
   payMaxManwon?: Maybe<Scalars['Float']['output']>;
   payMinManwon?: Maybe<Scalars['Float']['output']>;
@@ -51,6 +59,8 @@ export type JobPost = {
   payText?: Maybe<Scalars['String']['output']>;
   payType?: Maybe<Scalars['String']['output']>;
   postedAt?: Maybe<Scalars['DateTime']['output']>;
+  representativePay?: Maybe<RepresentativePay>;
+  representativePayText?: Maybe<Scalars['String']['output']>;
   requirements?: Maybe<Scalars['JSON']['output']>;
   sido?: Maybe<Scalars['String']['output']>;
   sigungu?: Maybe<Scalars['String']['output']>;
@@ -100,6 +110,7 @@ export type JobPostSummary = {
   payNegotiable: Scalars['Boolean']['output'];
   payText?: Maybe<Scalars['String']['output']>;
   postedAt?: Maybe<Scalars['DateTime']['output']>;
+  representativePayText?: Maybe<Scalars['String']['output']>;
   sido?: Maybe<Scalars['String']['output']>;
   sigungu?: Maybe<Scalars['String']['output']>;
   sourcePrimary: SourceName;
@@ -158,6 +169,18 @@ export type QueryJobPostsArgs = {
 
 export type QueryScraperRunsArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type RepresentativePay = {
+  __typename?: 'RepresentativePay';
+  alternateEvidence?: Maybe<Scalars['String']['output']>;
+  confidence: Scalars['String']['output'];
+  displayText: Scalars['String']['output'];
+  evidence?: Maybe<Scalars['String']['output']>;
+  hasConflict: Scalars['Boolean']['output'];
+  maxManwon?: Maybe<Scalars['Float']['output']>;
+  minManwon?: Maybe<Scalars['Float']['output']>;
+  unit: Scalars['String']['output'];
 };
 
 export type ScraperRun = {
@@ -268,6 +291,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
+  DisplaySection: ResolverTypeWrapper<DisplaySection>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Health: ResolverTypeWrapper<Health>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -283,6 +307,7 @@ export type ResolversTypes = {
   PageInfo: ResolverTypeWrapper<PageInfo>;
   PaginationInput: PaginationInput;
   Query: ResolverTypeWrapper<{}>;
+  RepresentativePay: ResolverTypeWrapper<RepresentativePay>;
   ScraperRun: ResolverTypeWrapper<ScraperRun>;
   ScraperRunStatus: ScraperRunStatus;
   SourceName: SourceName;
@@ -294,6 +319,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Boolean: Scalars['Boolean']['output'];
   DateTime: Scalars['DateTime']['output'];
+  DisplaySection: DisplaySection;
   Float: Scalars['Float']['output'];
   Health: Health;
   ID: Scalars['ID']['output'];
@@ -309,6 +335,7 @@ export type ResolversParentTypes = {
   PageInfo: PageInfo;
   PaginationInput: PaginationInput;
   Query: {};
+  RepresentativePay: RepresentativePay;
   ScraperRun: ScraperRun;
   SourcePostSummary: SourcePostSummary;
   String: Scalars['String']['output'];
@@ -317,6 +344,12 @@ export type ResolversParentTypes = {
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
   name: 'DateTime';
 }
+
+export type DisplaySectionResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['DisplaySection'] = ResolversParentTypes['DisplaySection']> = {
+  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type HealthResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Health'] = ResolversParentTypes['Health']> = {
   jobCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -341,11 +374,13 @@ export type JobPostResolvers<ContextType = GraphQLContext, ParentType extends Re
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   days?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  displaySections?: Resolver<Array<ResolversTypes['DisplaySection']>, ParentType, ContextType>;
   dongOrStation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   durationMinutes?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isBallet?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  locationSource?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   locationText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payMaxManwon?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   payMinManwon?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -353,6 +388,8 @@ export type JobPostResolvers<ContextType = GraphQLContext, ParentType extends Re
   payText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   postedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representativePay?: Resolver<Maybe<ResolversTypes['RepresentativePay']>, ParentType, ContextType>;
+  representativePayText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   requirements?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   sido?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sigungu?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -395,6 +432,7 @@ export type JobPostSummaryResolvers<ContextType = GraphQLContext, ParentType ext
   payNegotiable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   payText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   postedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  representativePayText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sido?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sigungu?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sourcePrimary?: Resolver<ResolversTypes['SourceName'], ParentType, ContextType>;
@@ -434,6 +472,18 @@ export type QueryResolvers<ContextType = GraphQLContext, ParentType extends Reso
   scraperRuns?: Resolver<Array<ResolversTypes['ScraperRun']>, ParentType, ContextType, RequireFields<QueryScraperRunsArgs, 'limit'>>;
 };
 
+export type RepresentativePayResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['RepresentativePay'] = ResolversParentTypes['RepresentativePay']> = {
+  alternateEvidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  confidence?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  displayText?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  evidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hasConflict?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  maxManwon?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  minManwon?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  unit?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ScraperRunResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['ScraperRun'] = ResolversParentTypes['ScraperRun']> = {
   classified?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   collected?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -460,6 +510,7 @@ export type SourcePostSummaryResolvers<ContextType = GraphQLContext, ParentType 
 
 export type Resolvers<ContextType = GraphQLContext> = {
   DateTime?: GraphQLScalarType;
+  DisplaySection?: DisplaySectionResolvers<ContextType>;
   Health?: HealthResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   JobPost?: JobPostResolvers<ContextType>;
@@ -470,6 +521,7 @@ export type Resolvers<ContextType = GraphQLContext> = {
   JobRegionGroup?: JobRegionGroupResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  RepresentativePay?: RepresentativePayResolvers<ContextType>;
   ScraperRun?: ScraperRunResolvers<ContextType>;
   SourcePostSummary?: SourcePostSummaryResolvers<ContextType>;
 };

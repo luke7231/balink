@@ -2,9 +2,12 @@ import type { JobPost, JobPostSource, SourcePost } from "@prisma/client";
 import {
   jsonArray,
   jsonValue,
+  type DisplaySection,
   type JobPostDetail,
   type JobPostSourceLink,
   type JobPostSummary,
+  type LocationSource,
+  type RepresentativePay,
   type SourceName,
   type SourcePostSummary,
 } from "@black-swan/domain";
@@ -35,6 +38,7 @@ export function toJobPostSummary(job: JobPost): JobPostSummary {
     payMinManwon: job.payMinManwon,
     payMaxManwon: job.payMaxManwon,
     payNegotiable: job.payNegotiable,
+    representativePayText: job.representativePayText,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
   };
@@ -55,6 +59,9 @@ export function toJobPostDetail(job: JobPostWithSources): JobPostDetail {
     contactPhones: jsonArray(job.contactPhones),
     requirements: jsonValue(job.requirementsJson),
     confidence: jsonValue(job.confidenceJson),
+    displaySections: parseDisplaySections(job.displaySectionsJson),
+    representativePay: parseRepresentativePay(job.representativePayJson),
+    locationSource: (job.locationSource as LocationSource | null) ?? null,
   };
 }
 
@@ -82,4 +89,22 @@ export function toScraperRunSummary(run: import("@prisma/client").ScraperRun) {
     imported: run.imported,
     errorMessage: run.errorMessage,
   };
+}
+
+function parseDisplaySections(value: unknown): DisplaySection[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (item): item is DisplaySection =>
+      Boolean(item) &&
+      typeof item === "object" &&
+      typeof (item as DisplaySection).title === "string" &&
+      typeof (item as DisplaySection).content === "string",
+  );
+}
+
+function parseRepresentativePay(value: unknown): RepresentativePay | null {
+  if (!value || typeof value !== "object") return null;
+  const pay = value as RepresentativePay;
+  if (typeof pay.unit !== "string" || typeof pay.displayText !== "string") return null;
+  return pay;
 }

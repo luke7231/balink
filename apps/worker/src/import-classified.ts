@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import type { Prisma, PrismaSourceName } from "@black-swan/db";
 import { SourcePostRepository } from "@black-swan/db";
-import type { SourceName } from "@black-swan/domain";
+import type { ListingEnrichment, LocationSource, SourceName } from "@black-swan/domain";
+import { sanitizeLocationTextForStorage } from "@black-swan/domain";
 import { classifiedPayloadSchema, parseOrThrow } from "@black-swan/validation";
 
 const sourcePostRepository = new SourcePostRepository();
@@ -11,29 +12,29 @@ interface ImportResult {
   imported: number;
 }
 
+interface ClassifiedListingInput {
+  sourcePostId: string;
+  url: string;
+  collectedAt: string;
+  raw: Record<string, unknown>;
+  classification: Record<string, unknown>;
+  enrichment?: ListingEnrichment;
+}
+
 export async function importClassifiedFile(filePath: string): Promise<ImportResult> {
   const rawPayload = JSON.parse(await fs.readFile(filePath, "utf8"));
   const payload = parseOrThrow(classifiedPayloadSchema, rawPayload, "Invalid classified payload");
   let imported = 0;
 
   for (const item of payload.listings) {
-    await importClassifiedItem(payload.source, item);
+    await importClassifiedItem(payload.source, item as ClassifiedListingInput);
     imported += 1;
   }
 
   return { imported };
 }
 
-async function importClassifiedItem(
-  source: SourceName,
-  item: {
-    sourcePostId: string;
-    url: string;
-    collectedAt: string;
-    raw: Record<string, unknown>;
-    classification: Record<string, unknown>;
-  },
-): Promise<void> {
+async function importClassifiedItem(source: SourceName, item: ClassifiedListingInput): Promise<void> {
   const normalized = normalizeItem(source, item);
   await sourcePostRepository.importClassifiedItem({
     source,
@@ -46,26 +47,28 @@ async function importClassifiedItem(
   });
 }
 
-function normalizeItem(
-  source: SourceName,
-  item: {
-    sourcePostId: string;
-    url: string;
-    raw: Record<string, unknown>;
-    classification: Record<string, unknown>;
-  },
-) {
+function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
   const raw = item.raw;
   const classification = item.classification;
-  const location = firstObject(classification.locations);
+  const enrichment = item.enrichment;
+  const location = enrichment?.location ?? firstObject(classification.locations);
   const schedule = asRecord(classification.schedule);
   const pay = asRecord(classification.pay);
   const contact = asRecord(classification.contact);
   const requirements = asRecord(classification.requirements);
   const llm = asRecord(classification.llm);
+  const representativePay = enrichment?.representativePay ?? null;
   const title = stringValue(raw.title) || "Untitled job post";
   const description = stringValue(raw.detailText);
   const contentHash = hashContent([source, title, description, stringValue(raw.postedDate)].join("\n"));
+
+  const confidenceJson = {
+    ...llm,
+    formatting: enrichment?.meta ?? null,
+    locationSource: enrichment?.location.source ?? null,
+    locationConfidence: enrichment?.location.confidence ?? null,
+    representativePayConfidence: representativePay?.confidence ?? null,
+  };
 
   const normalizedJson = {
     source,
@@ -75,7 +78,12 @@ function normalizeItem(
     description,
     raw,
     classification,
+    enrichment,
   };
+
+  const normalizedSido = stringValue(location.sido);
+  const normalizedSigungu = stringValue(location.sigungu);
+  const normalizedDong = stringValue(location.dongOrStation);
 
   return {
     title,
@@ -93,10 +101,17 @@ function normalizeItem(
       balletConfidence: stringValue(classification.balletConfidence),
       audienceTypes: jsonArray(classification.audiences),
       subjectTypes: jsonArray(classification.subjects),
-      locationText: stringValue(location.raw) || stringValue(raw.summaryRegionText),
-      sido: stringValue(location.sido),
-      sigungu: stringValue(location.sigungu),
-      dongOrStation: stringValue(location.dongOrStation),
+      locationText: sanitizeLocationTextForStorage(
+        stringValue((location as Record<string, unknown>).locationText) ||
+          stringValue((location as Record<string, unknown>).raw) ||
+          stringValue(raw.summaryRegionText),
+        normalizedSido,
+        normalizedSigungu,
+        normalizedDong,
+      ),
+      sido: normalizedSido,
+      sigungu: normalizedSigungu,
+      dongOrStation: normalizedDong,
       days: jsonArray(schedule.days),
       timeSlots: jsonArray(schedule.timeSlots),
       times: jsonArray(schedule.times),
@@ -107,11 +122,18 @@ function normalizeItem(
       payMaxManwon: numberValue(pay.maxManwon),
       payText: stringValue(pay.amountText),
       payNegotiable: Boolean(pay.isNegotiable),
+      displaySectionsJson: jsonValue(enrichment?.displaySections ?? []),
+      representativePayUnit: representativePay?.unit ?? null,
+      representativePayText: representativePay?.displayText ?? null,
+      representativePayMinManwon: representativePay?.minManwon ?? null,
+      representativePayMaxManwon: representativePay?.maxManwon ?? null,
+      representativePayJson: jsonValue(representativePay),
+      locationSource: (enrichment?.location.source as LocationSource | undefined) ?? null,
       contactMethods: jsonArray(contact.applyMethods),
       contactEmails: jsonArray(contact.emails),
       contactPhones: jsonArray(contact.phones),
       requirementsJson: requirements as Prisma.InputJsonValue,
-      confidenceJson: llm as Prisma.InputJsonValue,
+      confidenceJson: confidenceJson as Prisma.InputJsonValue,
       normalizedJson: normalizedJson as Prisma.InputJsonValue,
       contentHash,
     },
@@ -129,7 +151,7 @@ function hashContent(value: string): string {
 }
 
 function firstObject(value: unknown): Record<string, unknown> {
-  if (!Array.isArray(value)) return {};
+  if (!Array.isArray(value)) return asRecord(value);
   return asRecord(value[0]);
 }
 
@@ -147,4 +169,8 @@ function numberValue(value: unknown): number | null {
 
 function jsonArray(value: unknown): Prisma.InputJsonValue {
   return Array.isArray(value) ? (value as Prisma.InputJsonValue) : [];
+}
+
+function jsonValue(value: unknown): Prisma.InputJsonValue {
+  return (value ?? null) as Prisma.InputJsonValue;
 }

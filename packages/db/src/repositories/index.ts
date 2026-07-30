@@ -89,6 +89,20 @@ export interface ImportClassifiedItemInput {
 }
 
 export class SourcePostRepository {
+  async findExistingSourcePostIds(source: SourceName, sourcePostIds: string[]): Promise<Set<string>> {
+    if (sourcePostIds.length === 0) return new Set();
+
+    const rows = await prisma.sourcePost.findMany({
+      where: {
+        source,
+        sourcePostId: { in: sourcePostIds },
+      },
+      select: { sourcePostId: true },
+    });
+
+    return new Set(rows.map((row) => row.sourcePostId));
+  }
+
   async importClassifiedItem(input: ImportClassifiedItemInput) {
     return prisma.$transaction(async (tx) => {
       const sourcePost = await tx.sourcePost.upsert({

@@ -1,4 +1,5 @@
 import { JOB_TYPE_LABELS, SOURCE_LABELS, TIME_SLOT_LABELS } from "./enums.js";
+import { formatAdminLocationDisplay } from "./location/display.js";
 
 export function formatSource(source: string): string {
   return SOURCE_LABELS[source as keyof typeof SOURCE_LABELS] ?? source;
@@ -23,13 +24,21 @@ export function formatPostedAt(value: Date | string | null): string {
   }).format(typeof value === "string" ? new Date(value) : value);
 }
 
-export function formatLocation(sido: string | null, sigungu: string | null, locationText: string | null): string {
-  if (locationText) return locationText;
-  if (sido && sigungu) return `${sido} ${sigungu}`;
-  return sido || sigungu || "지역 미상";
+export function formatLocation(
+  sido: string | null,
+  sigungu: string | null,
+  dongOrStation?: string | null,
+): string {
+  return formatAdminLocationDisplay(sido, sigungu, dongOrStation) ?? "지역 미상";
 }
 
-export function formatPay(payText: string | null, payMin: number | null, payMax: number | null): string {
+export function formatPay(
+  payText: string | null,
+  payMin: number | null,
+  payMax: number | null,
+  representativePayText?: string | null,
+): string {
+  if (representativePayText) return representativePayText;
   if (payText) return payText;
   if (payMin != null && payMax != null) return `${payMin}~${payMax}만원`;
   if (payMin != null) return `${payMin}만원`;

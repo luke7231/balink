@@ -16,11 +16,13 @@ export interface JobCardData {
   locationText?: string | null;
   sido?: string | null;
   sigungu?: string | null;
+  dongOrStation?: string | null;
   days: string[];
   timeSlots: string[];
   payText?: string | null;
   payMinManwon?: number | null;
   payMaxManwon?: number | null;
+  representativePayText?: string | null;
 }
 
 interface JobCardProps {
@@ -45,7 +47,7 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink }: JobCar
       <h2 className="text-lg font-semibold leading-snug text-zinc-900 group-hover:text-rose-700">{job.title}</h2>
 
       <p className="mt-2 text-sm text-zinc-600">
-        {formatLocation(job.sido ?? null, job.sigungu ?? null, job.locationText ?? null)}
+        {formatLocation(job.sido ?? null, job.sigungu ?? null, job.dongOrStation ?? null)}
       </p>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
@@ -53,7 +55,12 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink }: JobCar
           {job.days.length ? job.days.join(" · ") : "요일 미상"} · {formatPostedAt(job.postedAt ?? null)}
         </span>
         <span className="font-medium text-zinc-900">
-          {formatPay(job.payText ?? null, job.payMinManwon ?? null, job.payMaxManwon ?? null)}
+          {formatPay(
+            job.payText ?? null,
+            job.payMinManwon ?? null,
+            job.payMaxManwon ?? null,
+            job.representativePayText ?? null,
+          )}
         </span>
       </div>
     </Link>

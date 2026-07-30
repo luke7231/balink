@@ -925,14 +925,22 @@ function normalizePhone(phone) {
 }
 
 function cleanDetailText(value) {
+  const brToken = "\uE000";
+  const blockToken = "\uE001";
+
   return String(value)
-    .replace(/<br\s*\/?\s*>/gi, "\n")
-    .replace(/&nbsp;/g, " ")
+    .replace(/\r?\n/g, " ")
+    .replace(/<br\s*\/?\s*>/gi, brToken)
+    .replace(/<\/?(?:p|div|li|tr|h[1-6]|blockquote|pre|section|article|table|ul|ol)\b[^>]*>/gi, blockToken)
+    .replace(/&nbsp;/gi, "\u00a0")
     .replace(/<[^>]+>/g, " ")
-    .replace(/\r/g, "")
     .replace(/[ \t]+/g, " ")
-    .replace(/\n\s+/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(new RegExp(`${blockToken}(?:[ \\t]*${blockToken})+`, "g"), blockToken)
+    .replace(new RegExp(`[ \\t]*${blockToken}[ \\t]*`, "g"), "\n")
+    .replace(new RegExp(`[ \\t]*${brToken}[ \\t]*`, "g"), brToken)
+    .replaceAll(brToken, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n[ \t]+/g, "\n")
     .trim();
 }
 
