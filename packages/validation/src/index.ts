@@ -5,6 +5,15 @@ export const sourceNameSchema = z.enum(["balletmania", "esangdance"]);
 export const scraperRunStatusSchema = z.enum(["running", "success", "failed"]);
 export const llmModeSchema = z.enum(["off", "fallback", "all"]);
 
+export const substitutePostStatusSchema = z.enum(["OPEN", "EXPIRED", "DELETED"]);
+
+export const substitutePostFilterSchema = z.object({
+  status: substitutePostStatusSchema.optional().nullable(),
+  sido: z.string().trim().min(1).optional().nullable(),
+  sigungu: z.string().trim().min(1).optional().nullable(),
+  source: sourceNameSchema.optional().nullable(),
+});
+
 export const jobPostFilterSchema = z.object({
   sido: z.string().trim().min(1).optional().nullable(),
   sigungu: z.string().trim().min(1).optional().nullable(),
@@ -40,6 +49,7 @@ export const classifiedPayloadSchema = z.object({
 });
 
 export type JobPostFilterInput = z.infer<typeof jobPostFilterSchema>;
+export type SubstitutePostFilterInput = z.infer<typeof substitutePostFilterSchema>;
 export type PaginationInput = z.infer<typeof paginationSchema>;
 export type WorkerRunRequestInput = z.infer<typeof workerRunRequestSchema>;
 export type ClassifiedPayloadInput = z.infer<typeof classifiedPayloadSchema>;

@@ -12,11 +12,19 @@ enum ScraperRunStatus {
   failed
 }
 
+enum SubstitutePostStatus {
+  OPEN
+  EXPIRED
+  DELETED
+}
+
 type Query {
   health: Health!
   jobPost(id: ID!): JobPost
   jobPosts(filter: JobPostFilterInput, pagination: PaginationInput): JobPostConnection!
   jobRegions: [JobRegionGroup!]!
+  substitutePost(id: ID!): SubstitutePost
+  substitutePosts(filter: SubstitutePostFilterInput, pagination: PaginationInput): SubstitutePostConnection!
   scraperRuns(limit: Int = 20): [ScraperRun!]!
 }
 
@@ -24,6 +32,7 @@ type Health {
   ok: Boolean!
   service: String!
   jobCount: Int!
+  substituteCount: Int!
   latestScraperRun: ScraperRun
 }
 
@@ -152,6 +161,79 @@ type JobRegionGroup {
 type JobRegionCount {
   sigungu: String!
   count: Int!
+}
+
+type SubstituteTimeSlot {
+  start: String
+  end: String
+  raw: String
+}
+
+type SubstitutePostSummary {
+  id: ID!
+  source: SourceName!
+  sourceUrl: String!
+  title: String!
+  author: String
+  postedAt: DateTime
+  lessonDates: [String!]!
+  timeSlots: [SubstituteTimeSlot!]!
+  audienceTypes: [String!]!
+  subjectTypes: [String!]!
+  locationText: String
+  sido: String
+  sigungu: String
+  dongOrStation: String
+  payText: String
+  urgency: String
+  status: SubstitutePostStatus!
+  expiresAt: DateTime
+  recommendCount: Int!
+  viewCount: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SubstitutePost {
+  id: ID!
+  source: SourceName!
+  sourceUrl: String!
+  title: String!
+  author: String
+  postedAt: DateTime
+  body: String
+  lessonDates: [String!]!
+  timeSlots: [SubstituteTimeSlot!]!
+  audienceTypes: [String!]!
+  subjectTypes: [String!]!
+  locationText: String
+  sido: String
+  sigungu: String
+  dongOrStation: String
+  payText: String
+  urgency: String
+  status: SubstitutePostStatus!
+  expiresAt: DateTime
+  recommendCount: Int!
+  viewCount: Int!
+  contactMethods: [String!]!
+  contactEmails: [String!]!
+  contactPhones: [String!]!
+  classification: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SubstitutePostConnection {
+  items: [SubstitutePostSummary!]!
+  pageInfo: PageInfo!
+}
+
+input SubstitutePostFilterInput {
+  status: SubstitutePostStatus
+  sido: String
+  sigungu: String
+  source: SourceName
 }
 
 type ScraperRun {

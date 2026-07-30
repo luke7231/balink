@@ -1,19 +1,21 @@
 import type { HealthStatus } from "@black-swan/domain";
-import { DatabaseHealthRepository, JobPostRepository } from "@black-swan/db";
+import { DatabaseHealthRepository, JobPostRepository, SubstitutePostRepository } from "@black-swan/db";
 import type { ScraperRunService } from "./scraper-run.service.js";
 
 export class HealthService {
   constructor(
     private readonly databaseHealthRepository: DatabaseHealthRepository,
     private readonly jobPostRepository: JobPostRepository,
+    private readonly substitutePostRepository: SubstitutePostRepository,
     private readonly scraperRunService: ScraperRunService,
   ) {}
 
   async getStatus(serviceName: string): Promise<HealthStatus> {
     await this.databaseHealthRepository.ping();
 
-    const [jobCount, latestScraperRun] = await Promise.all([
+    const [jobCount, substituteCount, latestScraperRun] = await Promise.all([
       this.jobPostRepository.countBalletPosts(),
+      this.substitutePostRepository.countOpenPosts(),
       this.scraperRunService.findLatest(),
     ]);
 
@@ -21,6 +23,7 @@ export class HealthService {
       ok: true,
       service: serviceName,
       jobCount,
+      substituteCount,
       latestScraperRun,
     };
   }

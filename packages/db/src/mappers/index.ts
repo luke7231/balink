@@ -1,4 +1,4 @@
-import type { JobPost, JobPostSource, SourcePost } from "@prisma/client";
+import type { JobPost, JobPostSource, SourcePost, SubstitutePost } from "@prisma/client";
 import {
   jsonArray,
   jsonValue,
@@ -11,6 +11,11 @@ import {
   type RepresentativePay,
   type SourceName,
   type SourcePostSummary,
+  type SubstitutePostDetail,
+  type SubstitutePostStatus,
+  type SubstitutePostSummary,
+  type SubstituteTimeSlot,
+  type SubstituteUrgency,
 } from "@black-swan/domain";
 
 type JobPostWithSources = JobPost & {
@@ -121,5 +126,53 @@ function parseAcademyGallery(value: unknown): AcademyGalleryImage[] {
       typeof (item as AcademyGalleryImage).type === "string" &&
       typeof (item as AcademyGalleryImage).order === "number" &&
       typeof (item as AcademyGalleryImage).url === "string",
+  );
+}
+
+export function toSubstitutePostSummary(post: SubstitutePost): SubstitutePostSummary {
+  return {
+    id: post.id,
+    source: post.source as SourceName,
+    sourceUrl: post.sourceUrl,
+    title: post.title,
+    author: post.author,
+    postedAt: post.postedAt,
+    lessonDates: jsonArray(post.lessonDatesJson),
+    timeSlots: parseTimeSlots(post.timeSlotsJson),
+    audienceTypes: jsonArray(post.audienceTypes),
+    subjectTypes: jsonArray(post.subjectTypes),
+    locationText: post.locationText,
+    sido: post.sido,
+    sigungu: post.sigungu,
+    dongOrStation: post.dongOrStation,
+    payText: post.payText,
+    urgency: (post.urgency as SubstituteUrgency | null) ?? null,
+    status: post.status as SubstitutePostStatus,
+    expiresAt: post.expiresAt,
+    recommendCount: post.recommendCount,
+    viewCount: post.viewCount,
+    createdAt: post.createdAt,
+    updatedAt: post.updatedAt,
+  };
+}
+
+export function toSubstitutePostDetail(post: SubstitutePost): SubstitutePostDetail {
+  return {
+    ...toSubstitutePostSummary(post),
+    body: post.body,
+    contactMethods: jsonArray(post.contactMethodsJson),
+    contactEmails: jsonArray(post.contactEmailsJson),
+    contactPhones: jsonArray(post.contactPhonesJson),
+    classification: jsonValue(post.classificationJson),
+  };
+}
+
+function parseTimeSlots(value: unknown): SubstituteTimeSlot[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (item): item is SubstituteTimeSlot =>
+      Boolean(item) &&
+      typeof item === "object" &&
+      ("start" in (item as SubstituteTimeSlot) || "end" in (item as SubstituteTimeSlot) || "raw" in (item as SubstituteTimeSlot)),
   );
 }

@@ -1,6 +1,6 @@
 import { DateTimeResolver, JSONResolver } from "graphql-scalars";
 import type { JobPostDetail } from "@black-swan/domain";
-import { jobPostFilterSchema, paginationSchema, parseOrThrow } from "@black-swan/validation";
+import { jobPostFilterSchema, paginationSchema, parseOrThrow, substitutePostFilterSchema } from "@black-swan/validation";
 import type { GraphQLContext } from "../../context/types.js";
 
 export const resolvers = {
@@ -34,6 +34,24 @@ export const resolvers = {
 
     scraperRuns: (_: unknown, args: { limit?: number | null }, { services }: GraphQLContext) => {
       return services.scraperRun.listRecent(args.limit ?? 20);
+    },
+
+    substitutePost: (_: unknown, args: { id: string }, { services }: GraphQLContext) => {
+      return services.substitutePost.findById(args.id);
+    },
+
+    substitutePosts: (
+      _: unknown,
+      args: { filter?: unknown; pagination?: unknown },
+      { services }: GraphQLContext,
+    ) => {
+      const filter = args.filter
+        ? parseOrThrow(substitutePostFilterSchema, args.filter, "Invalid substitute post filter")
+        : null;
+      const pagination = args.pagination
+        ? parseOrThrow(paginationSchema, args.pagination, "Invalid pagination")
+        : null;
+      return services.substitutePost.findMany(filter, pagination);
     },
   },
 

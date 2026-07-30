@@ -12,6 +12,18 @@ export const JOB_TYPE_LABELS: Record<string, string> = {
   substitute: "대타",
 };
 
+export const SUBSTITUTE_STATUS_LABELS: Record<string, string> = {
+  OPEN: "모집 중",
+  EXPIRED: "마감",
+  DELETED: "삭제됨",
+};
+
+export const SUBSTITUTE_URGENCY_LABELS: Record<string, string> = {
+  same_day: "오늘",
+  next_day: "내일",
+  normal: "일반",
+};
+
 export const TIME_SLOT_LABELS: Record<string, string> = {
   morning: "오전",
   afternoon: "오후",

@@ -1,5 +1,6 @@
 import { config } from "./config.js";
 import { runScraper } from "./scraper.js";
+import { runSubstituteScraper } from "./substitute-scraper.js";
 
 let running = false;
 
@@ -30,6 +31,11 @@ async function tickScheduler(): Promise<void> {
     const result = await runScraper({ date });
     console.info(
       `[scheduler] completed ${date}: runId=${result.runId} collected=${result.collected} classified=${result.classified} imported=${result.imported}`,
+    );
+
+    const substituteResult = await runSubstituteScraper();
+    console.info(
+      `[scheduler] substitute completed ${date}: runId=${substituteResult.runId} collected=${substituteResult.collected} imported=${substituteResult.imported} skipped=${substituteResult.skipped}`,
     );
   } catch (error) {
     console.error(`[scheduler] failed ${date}`, error);

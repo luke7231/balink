@@ -4,7 +4,9 @@ export {
   JobPostRepository,
   SourcePostRepository,
   ScraperRunRepository,
+  SubstitutePostRepository,
   DatabaseHealthRepository,
   type ImportClassifiedItemInput,
+  type UpsertSubstitutePostInput,
 } from "./repositories/index.js";
-export { toJobPostSummary, toJobPostDetail, toJobPostSourceLink, toScraperRunSummary } from "./mappers/index.js";
+export { toJobPostSummary, toJobPostDetail, toJobPostSourceLink, toScraperRunSummary, toSubstitutePostDetail, toSubstitutePostSummary } from "./mappers/index.js";

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildAcademyImageObjectKey } from "./s3-storage.js";
+import {
+  buildAcademyImageObjectKey,
+  buildAcademyImageSourcePrefix,
+} from "./s3-storage.js";
 import { parseBalletmaniaAcademyImages } from "./balletmania-academy-images.js";
 
 test("parseBalletmaniaAcademyImages extracts logo and gallery", () => {
@@ -23,13 +26,17 @@ test("parseBalletmaniaAcademyImages extracts logo and gallery", () => {
   assert.equal(parsed?.gallery[0]?.order, 1);
 });
 
-test("buildAcademyImageObjectKey uses stable hashed path", () => {
+test("buildAcademyImageObjectKey groups by opaque source prefix without source name", () => {
+  const sourcePrefix = buildAcademyImageSourcePrefix("balletmania");
   const key = buildAcademyImageObjectKey(
-    "balletmania",
+    sourcePrefix,
     "87440",
     "gallery",
     1,
     "https://www.balletmania.com/PEG/a.png",
   );
-  assert.match(key, /^academy-images\/balletmania\/87440\/gallery-1-[a-f0-9]{12}\.png$/);
+  assert.match(key, /^academy-images\/[a-f0-9]{8}\/87440\/gallery-1-[a-f0-9]{12}\.png$/);
+  assert.doesNotMatch(key, /balletmania/);
+  assert.equal(buildAcademyImageSourcePrefix("balletmania"), sourcePrefix);
+  assert.notEqual(buildAcademyImageSourcePrefix("balletmania"), buildAcademyImageSourcePrefix("esangdance"));
 });

@@ -1,0 +1,65 @@
+query SubstitutePosts($filter: SubstitutePostFilterInput, $pagination: PaginationInput) {
+  substitutePosts(filter: $filter, pagination: $pagination) {
+    items {
+      id
+      title
+      author
+      postedAt
+      lessonDates
+      timeSlots {
+        start
+        end
+        raw
+      }
+      locationText
+      sido
+      sigungu
+      dongOrStation
+      payText
+      urgency
+      status
+      sourceUrl
+      createdAt
+      updatedAt
+    }
+    pageInfo {
+      page
+      limit
+      total
+      totalPages
+    }
+  }
+}
+
+query SubstitutePost($id: ID!) {
+  substitutePost(id: $id) {
+    id
+    title
+    author
+    postedAt
+    body
+    lessonDates
+    timeSlots {
+      start
+      end
+      raw
+    }
+    locationText
+    sido
+    sigungu
+    dongOrStation
+    payText
+    urgency
+    status
+    expiresAt
+    recommendCount
+    viewCount
+    contactMethods
+    contactEmails
+    contactPhones
+    sourceUrl
+    classification
+    createdAt
+    updatedAt
+  }
+}

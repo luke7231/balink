@@ -3,6 +3,7 @@ query Health {
     ok
     service
     jobCount
+    substituteCount
   }
 }
 

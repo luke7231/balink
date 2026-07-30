@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { JobList } from "@black-swan/ui/job-list";
+import { SiteHeader } from "@/components/site-header";
 import { fetchHealth, fetchJobPosts } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -9,17 +10,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#ffffff_240px)]">
-      <header className="border-b border-rose-100/80 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
-          <div>
-            <p className="text-sm font-medium text-rose-600">Black Swan</p>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">발레 강사 구인 알림</h1>
-          </div>
-          <div className="rounded-full bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700">
-            공고 {health.jobCount}건
-          </div>
-        </div>
-      </header>
+      <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-5xl px-4 py-8">
         <section className="mb-8 rounded-3xl bg-zinc-900 px-6 py-8 text-white">

@@ -14,7 +14,9 @@
     "classify:esangdance": "node scripts/classify-esangdance-employ-details.cjs",
     "backfill:existing-descriptions": "node scripts/backfill-existing-descriptions.cjs",
     "backfill:formatted": "pnpm run build && node dist/backfill-formatted.js",
-    "backfill:academy-images": "pnpm run build && node dist/backfill-academy-images.js",
+    "collect:balletmania-working": "node scripts/collect-balletmania-working-list.cjs",
+    "classify:balletmania-working": "node scripts/classify-balletmania-working-details.cjs",
+    "backfill:substitutes": "pnpm run build && node dist/backfill-substitutes.js",
     "verify:deps": "node scripts/verify-runtime-deps.cjs",
     "test": "pnpm run build && node --test dist/**/*.test.js"
   },

@@ -2,6 +2,7 @@ import type { RawAcademyImages, SourceName, StoredAcademyImages } from "@black-s
 import { fetch } from "undici";
 import {
   buildAcademyImageObjectKey,
+  buildAcademyImageSourcePrefix,
   detectImageContentType,
   getS3StorageConfig,
   uploadBufferToS3,
@@ -45,15 +46,23 @@ export async function mirrorAcademyImagesToS3(
     };
   }
 
+  const sourcePrefix = buildAcademyImageSourcePrefix(source);
   const gallery: StoredAcademyImages["gallery"] = [];
   let logoUrl: string | null = null;
 
   if (rawImages.logoUrl) {
-    logoUrl = await uploadRemoteImage(config, source, sourcePostId, "logo", 0, rawImages.logoUrl);
+    logoUrl = await uploadRemoteImage(config, sourcePrefix, sourcePostId, "logo", 0, rawImages.logoUrl);
   }
 
   for (const item of rawImages.gallery) {
-    const uploadedUrl = await uploadRemoteImage(config, source, sourcePostId, "gallery", item.order, item.url);
+    const uploadedUrl = await uploadRemoteImage(
+      config,
+      sourcePrefix,
+      sourcePostId,
+      "gallery",
+      item.order,
+      item.url,
+    );
     gallery.push({
       type: item.type,
       order: item.order,
@@ -69,7 +78,7 @@ export async function mirrorAcademyImagesToS3(
 
 async function uploadRemoteImage(
   config: NonNullable<ReturnType<typeof getS3StorageConfig>>,
-  source: SourceName,
+  sourcePrefix: string,
   sourcePostId: string,
   kind: "logo" | "gallery",
   order: number,
@@ -85,7 +94,7 @@ async function uploadRemoteImage(
 
   const body = Buffer.from(await response.arrayBuffer());
   const contentType = response.headers.get("content-type") || detectImageContentType(sourceUrl);
-  const key = buildAcademyImageObjectKey(source, sourcePostId, kind, order, sourceUrl);
+  const key = buildAcademyImageObjectKey(sourcePrefix, sourcePostId, kind, order, sourceUrl);
   return uploadBufferToS3(config, key, body, contentType);
 }
 

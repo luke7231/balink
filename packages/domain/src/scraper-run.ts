@@ -18,5 +18,6 @@ export interface HealthStatus {
   ok: boolean;
   service: string;
   jobCount: number;
+  substituteCount: number;
   latestScraperRun: ScraperRunSummary | null;
 }

@@ -1,7 +1,7 @@
 import type { JobPostFilterInput, SourceName } from "@black-swan/domain";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../client.js";
-import { toJobPostDetail, toJobPostSourceLink, toJobPostSummary, toScraperRunSummary } from "../mappers/index.js";
+import { toJobPostDetail, toJobPostSourceLink, toJobPostSummary, toScraperRunSummary, toSubstitutePostDetail, toSubstitutePostSummary } from "../mappers/index.js";
 
 const sourcePostSelect = {
   id: true,
@@ -245,5 +245,166 @@ export class ScraperRunRepository {
 export class DatabaseHealthRepository {
   async ping() {
     await prisma.$queryRaw`SELECT 1`;
+  }
+}
+
+export interface UpsertSubstitutePostInput {
+  source: SourceName;
+  sourcePostId: string;
+  sourceUrl: string;
+  title: string;
+  body: string | null;
+  author: string | null;
+  authorMemberNo: string | null;
+  postedAt: Date | null;
+  lessonDates: string[];
+  timeSlots: Array<{ start: string | null; end: string | null; raw: string | null }>;
+  audienceTypes: string[];
+  subjectTypes: string[];
+  locationText: string | null;
+  sido: string | null;
+  sigungu: string | null;
+  dongOrStation: string | null;
+  payText: string | null;
+  contactMethods: string[];
+  contactEmails: string[];
+  contactPhones: string[];
+  urgency: string | null;
+  status: "OPEN" | "EXPIRED" | "DELETED";
+  expiresAt: Date | null;
+  recommendCount: number;
+  viewCount: number;
+  raw: Record<string, unknown>;
+  classification: Record<string, unknown>;
+  contentHash: string;
+  lastSeenAt: Date;
+}
+
+export class SubstitutePostRepository {
+  buildWhere(filter: import("@black-swan/domain").SubstitutePostFilterInput | null | undefined): Prisma.SubstitutePostWhereInput {
+    return {
+      ...(filter?.status ? { status: filter.status } : { status: "OPEN" }),
+      ...(filter?.sido ? { sido: filter.sido } : {}),
+      ...(filter?.sigungu ? { sigungu: filter.sigungu } : {}),
+      ...(filter?.source ? { source: filter.source } : {}),
+    };
+  }
+
+  async findMany(where: Prisma.SubstitutePostWhereInput, skip: number, take: number) {
+    const items = await prisma.substitutePost.findMany({
+      where,
+      orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
+      skip,
+      take,
+    });
+    return items.map((item) => toSubstitutePostSummary(item));
+  }
+
+  async count(where: Prisma.SubstitutePostWhereInput) {
+    return prisma.substitutePost.count({ where });
+  }
+
+  async findById(id: string) {
+    const post = await prisma.substitutePost.findUnique({ where: { id } });
+    return post ? toSubstitutePostDetail(post) : null;
+  }
+
+  async findBySourcePostIds(source: SourceName, sourcePostIds: string[]) {
+    if (sourcePostIds.length === 0) return [];
+
+    return prisma.substitutePost.findMany({
+      where: { source, sourcePostId: { in: sourcePostIds } },
+      select: { sourcePostId: true, contentHash: true, status: true },
+    });
+  }
+
+  async findOpenPostsNeedingLifecycleCheck(limit = 50) {
+    return prisma.substitutePost.findMany({
+      where: { status: "OPEN" },
+      orderBy: [{ expiresAt: "asc" }, { postedAt: "desc" }],
+      take: limit,
+      select: {
+        id: true,
+        source: true,
+        sourcePostId: true,
+        sourceUrl: true,
+        lessonDatesJson: true,
+        expiresAt: true,
+      },
+    });
+  }
+
+  async upsert(input: UpsertSubstitutePostInput) {
+    const data = {
+      sourceUrl: input.sourceUrl,
+      title: input.title,
+      body: input.body,
+      author: input.author,
+      authorMemberNo: input.authorMemberNo,
+      postedAt: input.postedAt,
+      lessonDatesJson: input.lessonDates as unknown as Prisma.InputJsonValue,
+      timeSlotsJson: input.timeSlots as unknown as Prisma.InputJsonValue,
+      audienceTypes: input.audienceTypes as unknown as Prisma.InputJsonValue,
+      subjectTypes: input.subjectTypes as unknown as Prisma.InputJsonValue,
+      locationText: input.locationText,
+      sido: input.sido,
+      sigungu: input.sigungu,
+      dongOrStation: input.dongOrStation,
+      payText: input.payText,
+      contactMethodsJson: input.contactMethods as unknown as Prisma.InputJsonValue,
+      contactEmailsJson: input.contactEmails as unknown as Prisma.InputJsonValue,
+      contactPhonesJson: input.contactPhones as unknown as Prisma.InputJsonValue,
+      urgency: input.urgency,
+      status: input.status,
+      expiresAt: input.expiresAt,
+      recommendCount: input.recommendCount,
+      viewCount: input.viewCount,
+      rawJson: input.raw as unknown as Prisma.InputJsonValue,
+      classificationJson: input.classification as unknown as Prisma.InputJsonValue,
+      contentHash: input.contentHash,
+      lastSeenAt: input.lastSeenAt,
+    };
+
+    return prisma.substitutePost.upsert({
+      where: {
+        source_sourcePostId: {
+          source: input.source,
+          sourcePostId: input.sourcePostId,
+        },
+      },
+      update: data,
+      create: {
+        source: input.source,
+        sourcePostId: input.sourcePostId,
+        ...data,
+      },
+    });
+  }
+
+  async updateStatus(id: string, status: "OPEN" | "EXPIRED" | "DELETED") {
+    return prisma.substitutePost.update({
+      where: { id },
+      data: { status },
+    });
+  }
+
+  async updateStatusBySourcePost(
+    source: SourceName,
+    sourcePostId: string,
+    status: "OPEN" | "EXPIRED" | "DELETED",
+  ) {
+    return prisma.substitutePost.update({
+      where: {
+        source_sourcePostId: {
+          source,
+          sourcePostId,
+        },
+      },
+      data: { status },
+    });
+  }
+
+  async countOpenPosts() {
+    return prisma.substitutePost.count({ where: { status: "OPEN" } });
   }
 }

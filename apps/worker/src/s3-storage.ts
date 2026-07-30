@@ -41,8 +41,13 @@ export function getS3Client(config: S3StorageConfig): S3Client {
   return cachedClient;
 }
 
+/** Opaque per-source folder. Same source always maps to the same prefix without exposing its name. */
+export function buildAcademyImageSourcePrefix(source: string): string {
+  return createHash("sha256").update(source).digest("hex").slice(0, 8);
+}
+
 export function buildAcademyImageObjectKey(
-  source: string,
+  sourcePrefix: string,
   sourcePostId: string,
   kind: "logo" | "gallery",
   order: number,
@@ -51,9 +56,9 @@ export function buildAcademyImageObjectKey(
   const hash = createHash("sha256").update(sourceUrl).digest("hex").slice(0, 12);
   const ext = normalizeImageExtension(sourceUrl);
   if (kind === "logo") {
-    return `academy-images/${source}/${sourcePostId}/logo-${hash}${ext}`;
+    return `academy-images/${sourcePrefix}/${sourcePostId}/logo-${hash}${ext}`;
   }
-  return `academy-images/${source}/${sourcePostId}/gallery-${order}-${hash}${ext}`;
+  return `academy-images/${sourcePrefix}/${sourcePostId}/gallery-${order}-${hash}${ext}`;
 }
 
 export function buildPublicObjectUrl(config: S3StorageConfig, key: string): string {

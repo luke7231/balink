@@ -1,4 +1,10 @@
-import { JOB_TYPE_LABELS, SOURCE_LABELS, TIME_SLOT_LABELS } from "./enums.js";
+import {
+  JOB_TYPE_LABELS,
+  SOURCE_LABELS,
+  SUBSTITUTE_STATUS_LABELS,
+  SUBSTITUTE_URGENCY_LABELS,
+  TIME_SLOT_LABELS,
+} from "./enums.js";
 import { formatAdminLocationDisplay } from "./location/display.js";
 
 export function formatSource(source: string): string {
@@ -30,6 +36,21 @@ export function formatLocation(
   dongOrStation?: string | null,
 ): string {
   return formatAdminLocationDisplay(sido, sigungu, dongOrStation) ?? "지역 미상";
+}
+
+export function formatSubstituteStatus(status: string | null): string {
+  if (!status) return "미상";
+  return SUBSTITUTE_STATUS_LABELS[status] ?? status;
+}
+
+export function formatSubstituteUrgency(urgency: string | null): string | null {
+  if (!urgency) return null;
+  return SUBSTITUTE_URGENCY_LABELS[urgency] ?? urgency;
+}
+
+export function formatLessonDates(dates: string[]): string {
+  if (dates.length === 0) return "일정 미상";
+  return dates.join(", ");
 }
 
 export function formatPay(

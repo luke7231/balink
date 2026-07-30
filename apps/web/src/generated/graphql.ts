@@ -37,6 +37,7 @@ export type Health = {
   latestScraperRun?: Maybe<ScraperRun>;
   ok: Scalars['Boolean']['output'];
   service: Scalars['String']['output'];
+  substituteCount: Scalars['Int']['output'];
 };
 
 export type JobPost = {
@@ -161,6 +162,8 @@ export type Query = {
   jobPosts: JobPostConnection;
   jobRegions: Array<JobRegionGroup>;
   scraperRuns: Array<ScraperRun>;
+  substitutePost?: Maybe<SubstitutePost>;
+  substitutePosts: SubstitutePostConnection;
 };
 
 
@@ -177,6 +180,17 @@ export type QueryJobPostsArgs = {
 
 export type QueryScraperRunsArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QuerySubstitutePostArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QuerySubstitutePostsArgs = {
+  filter?: InputMaybe<SubstitutePostFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 export type RepresentativePay = {
@@ -226,10 +240,93 @@ export type SourcePostSummary = {
   title: Scalars['String']['output'];
 };
 
+export type SubstitutePost = {
+  __typename?: 'SubstitutePost';
+  audienceTypes: Array<Scalars['String']['output']>;
+  author?: Maybe<Scalars['String']['output']>;
+  body?: Maybe<Scalars['String']['output']>;
+  classification?: Maybe<Scalars['JSON']['output']>;
+  contactEmails: Array<Scalars['String']['output']>;
+  contactMethods: Array<Scalars['String']['output']>;
+  contactPhones: Array<Scalars['String']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  dongOrStation?: Maybe<Scalars['String']['output']>;
+  expiresAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  lessonDates: Array<Scalars['String']['output']>;
+  locationText?: Maybe<Scalars['String']['output']>;
+  payText?: Maybe<Scalars['String']['output']>;
+  postedAt?: Maybe<Scalars['DateTime']['output']>;
+  recommendCount: Scalars['Int']['output'];
+  sido?: Maybe<Scalars['String']['output']>;
+  sigungu?: Maybe<Scalars['String']['output']>;
+  source: SourceName;
+  sourceUrl: Scalars['String']['output'];
+  status: SubstitutePostStatus;
+  subjectTypes: Array<Scalars['String']['output']>;
+  timeSlots: Array<SubstituteTimeSlot>;
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  urgency?: Maybe<Scalars['String']['output']>;
+  viewCount: Scalars['Int']['output'];
+};
+
+export type SubstitutePostConnection = {
+  __typename?: 'SubstitutePostConnection';
+  items: Array<SubstitutePostSummary>;
+  pageInfo: PageInfo;
+};
+
+export type SubstitutePostFilterInput = {
+  sido?: InputMaybe<Scalars['String']['input']>;
+  sigungu?: InputMaybe<Scalars['String']['input']>;
+  source?: InputMaybe<SourceName>;
+  status?: InputMaybe<SubstitutePostStatus>;
+};
+
+export enum SubstitutePostStatus {
+  Deleted = 'DELETED',
+  Expired = 'EXPIRED',
+  Open = 'OPEN'
+}
+
+export type SubstitutePostSummary = {
+  __typename?: 'SubstitutePostSummary';
+  audienceTypes: Array<Scalars['String']['output']>;
+  author?: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  dongOrStation?: Maybe<Scalars['String']['output']>;
+  expiresAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  lessonDates: Array<Scalars['String']['output']>;
+  locationText?: Maybe<Scalars['String']['output']>;
+  payText?: Maybe<Scalars['String']['output']>;
+  postedAt?: Maybe<Scalars['DateTime']['output']>;
+  recommendCount: Scalars['Int']['output'];
+  sido?: Maybe<Scalars['String']['output']>;
+  sigungu?: Maybe<Scalars['String']['output']>;
+  source: SourceName;
+  sourceUrl: Scalars['String']['output'];
+  status: SubstitutePostStatus;
+  subjectTypes: Array<Scalars['String']['output']>;
+  timeSlots: Array<SubstituteTimeSlot>;
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  urgency?: Maybe<Scalars['String']['output']>;
+  viewCount: Scalars['Int']['output'];
+};
+
+export type SubstituteTimeSlot = {
+  __typename?: 'SubstituteTimeSlot';
+  end?: Maybe<Scalars['String']['output']>;
+  raw?: Maybe<Scalars['String']['output']>;
+  start?: Maybe<Scalars['String']['output']>;
+};
+
 export type HealthQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type HealthQuery = { __typename?: 'Query', health: { __typename?: 'Health', ok: boolean, service: string, jobCount: number } };
+export type HealthQuery = { __typename?: 'Query', health: { __typename?: 'Health', ok: boolean, service: string, jobCount: number, substituteCount: number } };
 
 export type JobPostsQueryVariables = Exact<{
   pagination?: InputMaybe<PaginationInput>;
@@ -245,7 +342,24 @@ export type JobPostQueryVariables = Exact<{
 
 export type JobPostQuery = { __typename?: 'Query', jobPost?: { __typename?: 'JobPost', id: string, title: string, description?: string | null, sourcePrimary: SourceName, status?: string | null, jobType?: string | null, postedAt?: string | null, isBallet: boolean, balletConfidence?: string | null, locationText?: string | null, sido?: string | null, sigungu?: string | null, dongOrStation?: string | null, audienceTypes: Array<string>, subjectTypes: Array<string>, days: Array<string>, timeSlots: Array<string>, times: Array<string>, classCount?: number | null, durationMinutes?: number | null, payType?: string | null, payText?: string | null, payMinManwon?: number | null, payMaxManwon?: number | null, payNegotiable: boolean, representativePayText?: string | null, locationSource?: string | null, academyLogoUrl?: string | null, contactMethods: Array<string>, contactEmails: Array<string>, contactPhones: Array<string>, requirements?: unknown | null, confidence?: unknown | null, createdAt: string, updatedAt: string, displaySections: Array<{ __typename?: 'DisplaySection', title: string, content: string }>, representativePay?: { __typename?: 'RepresentativePay', unit: string, displayText: string, minManwon?: number | null, maxManwon?: number | null, evidence?: string | null, confidence: string, hasConflict: boolean, alternateEvidence?: string | null } | null, academyGallery: Array<{ __typename?: 'AcademyGalleryImage', type: string, order: number, url: string, sourceUrl?: string | null }>, sources: Array<{ __typename?: 'JobPostSourceLink', id: string, source: SourceName, sourceUrl: string, confidence?: string | null, sourcePost: { __typename?: 'SourcePostSummary', id: string, sourcePostId: string, title: string, sourceUrl: string, postedAt?: string | null } }> } | null };
 
+export type SubstitutePostsQueryVariables = Exact<{
+  filter?: InputMaybe<SubstitutePostFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
 
-export const HealthDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Health"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"health"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ok"}},{"kind":"Field","name":{"kind":"Name","value":"service"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}}]}}]}}]} as unknown as DocumentNode<HealthQuery, HealthQueryVariables>;
+
+export type SubstitutePostsQuery = { __typename?: 'Query', substitutePosts: { __typename?: 'SubstitutePostConnection', items: Array<{ __typename?: 'SubstitutePostSummary', id: string, title: string, author?: string | null, postedAt?: string | null, lessonDates: Array<string>, locationText?: string | null, sido?: string | null, sigungu?: string | null, dongOrStation?: string | null, payText?: string | null, urgency?: string | null, status: SubstitutePostStatus, sourceUrl: string, createdAt: string, updatedAt: string, timeSlots: Array<{ __typename?: 'SubstituteTimeSlot', start?: string | null, end?: string | null, raw?: string | null }> }>, pageInfo: { __typename?: 'PageInfo', page: number, limit: number, total: number, totalPages: number } } };
+
+export type SubstitutePostQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type SubstitutePostQuery = { __typename?: 'Query', substitutePost?: { __typename?: 'SubstitutePost', id: string, title: string, author?: string | null, postedAt?: string | null, body?: string | null, lessonDates: Array<string>, locationText?: string | null, sido?: string | null, sigungu?: string | null, dongOrStation?: string | null, payText?: string | null, urgency?: string | null, status: SubstitutePostStatus, expiresAt?: string | null, recommendCount: number, viewCount: number, contactMethods: Array<string>, contactEmails: Array<string>, contactPhones: Array<string>, sourceUrl: string, classification?: unknown | null, createdAt: string, updatedAt: string, timeSlots: Array<{ __typename?: 'SubstituteTimeSlot', start?: string | null, end?: string | null, raw?: string | null }> } | null };
+
+
+export const HealthDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Health"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"health"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ok"}},{"kind":"Field","name":{"kind":"Name","value":"service"}},{"kind":"Field","name":{"kind":"Name","value":"jobCount"}},{"kind":"Field","name":{"kind":"Name","value":"substituteCount"}}]}}]}}]} as unknown as DocumentNode<HealthQuery, HealthQueryVariables>;
 export const JobPostsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"JobPosts"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"jobPosts"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"sourcePrimary"}},{"kind":"Field","name":{"kind":"Name","value":"jobType"}},{"kind":"Field","name":{"kind":"Name","value":"postedAt"}},{"kind":"Field","name":{"kind":"Name","value":"locationText"}},{"kind":"Field","name":{"kind":"Name","value":"sido"}},{"kind":"Field","name":{"kind":"Name","value":"sigungu"}},{"kind":"Field","name":{"kind":"Name","value":"dongOrStation"}},{"kind":"Field","name":{"kind":"Name","value":"audienceTypes"}},{"kind":"Field","name":{"kind":"Name","value":"subjectTypes"}},{"kind":"Field","name":{"kind":"Name","value":"days"}},{"kind":"Field","name":{"kind":"Name","value":"timeSlots"}},{"kind":"Field","name":{"kind":"Name","value":"times"}},{"kind":"Field","name":{"kind":"Name","value":"payText"}},{"kind":"Field","name":{"kind":"Name","value":"payMinManwon"}},{"kind":"Field","name":{"kind":"Name","value":"payMaxManwon"}},{"kind":"Field","name":{"kind":"Name","value":"payNegotiable"}},{"kind":"Field","name":{"kind":"Name","value":"representativePayText"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"page"}},{"kind":"Field","name":{"kind":"Name","value":"limit"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"totalPages"}}]}}]}}]}}]} as unknown as DocumentNode<JobPostsQuery, JobPostsQueryVariables>;
 export const JobPostDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"JobPost"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"jobPost"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"sourcePrimary"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"jobType"}},{"kind":"Field","name":{"kind":"Name","value":"postedAt"}},{"kind":"Field","name":{"kind":"Name","value":"isBallet"}},{"kind":"Field","name":{"kind":"Name","value":"balletConfidence"}},{"kind":"Field","name":{"kind":"Name","value":"locationText"}},{"kind":"Field","name":{"kind":"Name","value":"sido"}},{"kind":"Field","name":{"kind":"Name","value":"sigungu"}},{"kind":"Field","name":{"kind":"Name","value":"dongOrStation"}},{"kind":"Field","name":{"kind":"Name","value":"audienceTypes"}},{"kind":"Field","name":{"kind":"Name","value":"subjectTypes"}},{"kind":"Field","name":{"kind":"Name","value":"days"}},{"kind":"Field","name":{"kind":"Name","value":"timeSlots"}},{"kind":"Field","name":{"kind":"Name","value":"times"}},{"kind":"Field","name":{"kind":"Name","value":"classCount"}},{"kind":"Field","name":{"kind":"Name","value":"durationMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"payType"}},{"kind":"Field","name":{"kind":"Name","value":"payText"}},{"kind":"Field","name":{"kind":"Name","value":"payMinManwon"}},{"kind":"Field","name":{"kind":"Name","value":"payMaxManwon"}},{"kind":"Field","name":{"kind":"Name","value":"payNegotiable"}},{"kind":"Field","name":{"kind":"Name","value":"representativePayText"}},{"kind":"Field","name":{"kind":"Name","value":"displaySections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}}]}},{"kind":"Field","name":{"kind":"Name","value":"representativePay"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"displayText"}},{"kind":"Field","name":{"kind":"Name","value":"minManwon"}},{"kind":"Field","name":{"kind":"Name","value":"maxManwon"}},{"kind":"Field","name":{"kind":"Name","value":"evidence"}},{"kind":"Field","name":{"kind":"Name","value":"confidence"}},{"kind":"Field","name":{"kind":"Name","value":"hasConflict"}},{"kind":"Field","name":{"kind":"Name","value":"alternateEvidence"}}]}},{"kind":"Field","name":{"kind":"Name","value":"locationSource"}},{"kind":"Field","name":{"kind":"Name","value":"academyLogoUrl"}},{"kind":"Field","name":{"kind":"Name","value":"academyGallery"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"order"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"sourceUrl"}}]}},{"kind":"Field","name":{"kind":"Name","value":"contactMethods"}},{"kind":"Field","name":{"kind":"Name","value":"contactEmails"}},{"kind":"Field","name":{"kind":"Name","value":"contactPhones"}},{"kind":"Field","name":{"kind":"Name","value":"requirements"}},{"kind":"Field","name":{"kind":"Name","value":"confidence"}},{"kind":"Field","name":{"kind":"Name","value":"sources"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"sourceUrl"}},{"kind":"Field","name":{"kind":"Name","value":"confidence"}},{"kind":"Field","name":{"kind":"Name","value":"sourcePost"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sourcePostId"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"sourceUrl"}},{"kind":"Field","name":{"kind":"Name","value":"postedAt"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]}}]} as unknown as DocumentNode<JobPostQuery, JobPostQueryVariables>;
+export const SubstitutePostsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SubstitutePosts"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"SubstitutePostFilterInput"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"substitutePosts"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}},{"kind":"Argument","name":{"kind":"Name","value":"pagination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pagination"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"author"}},{"kind":"Field","name":{"kind":"Name","value":"postedAt"}},{"kind":"Field","name":{"kind":"Name","value":"lessonDates"}},{"kind":"Field","name":{"kind":"Name","value":"timeSlots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"start"}},{"kind":"Field","name":{"kind":"Name","value":"end"}},{"kind":"Field","name":{"kind":"Name","value":"raw"}}]}},{"kind":"Field","name":{"kind":"Name","value":"locationText"}},{"kind":"Field","name":{"kind":"Name","value":"sido"}},{"kind":"Field","name":{"kind":"Name","value":"sigungu"}},{"kind":"Field","name":{"kind":"Name","value":"dongOrStation"}},{"kind":"Field","name":{"kind":"Name","value":"payText"}},{"kind":"Field","name":{"kind":"Name","value":"urgency"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"sourceUrl"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"page"}},{"kind":"Field","name":{"kind":"Name","value":"limit"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"totalPages"}}]}}]}}]}}]} as unknown as DocumentNode<SubstitutePostsQuery, SubstitutePostsQueryVariables>;
+export const SubstitutePostDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SubstitutePost"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"substitutePost"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"author"}},{"kind":"Field","name":{"kind":"Name","value":"postedAt"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"lessonDates"}},{"kind":"Field","name":{"kind":"Name","value":"timeSlots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"start"}},{"kind":"Field","name":{"kind":"Name","value":"end"}},{"kind":"Field","name":{"kind":"Name","value":"raw"}}]}},{"kind":"Field","name":{"kind":"Name","value":"locationText"}},{"kind":"Field","name":{"kind":"Name","value":"sido"}},{"kind":"Field","name":{"kind":"Name","value":"sigungu"}},{"kind":"Field","name":{"kind":"Name","value":"dongOrStation"}},{"kind":"Field","name":{"kind":"Name","value":"payText"}},{"kind":"Field","name":{"kind":"Name","value":"urgency"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"recommendCount"}},{"kind":"Field","name":{"kind":"Name","value":"viewCount"}},{"kind":"Field","name":{"kind":"Name","value":"contactMethods"}},{"kind":"Field","name":{"kind":"Name","value":"contactEmails"}},{"kind":"Field","name":{"kind":"Name","value":"contactPhones"}},{"kind":"Field","name":{"kind":"Name","value":"sourceUrl"}},{"kind":"Field","name":{"kind":"Name","value":"classification"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]}}]} as unknown as DocumentNode<SubstitutePostQuery, SubstitutePostQueryVariables>;
