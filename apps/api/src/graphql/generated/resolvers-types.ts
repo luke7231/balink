@@ -19,6 +19,14 @@ export type Scalars = {
   JSON: { input: unknown; output: unknown; }
 };
 
+export type AcademyGalleryImage = {
+  __typename?: 'AcademyGalleryImage';
+  order: Scalars['Int']['output'];
+  sourceUrl?: Maybe<Scalars['String']['output']>;
+  type: Scalars['String']['output'];
+  url: Scalars['String']['output'];
+};
+
 export type DisplaySection = {
   __typename?: 'DisplaySection';
   content: Scalars['String']['output'];
@@ -35,6 +43,8 @@ export type Health = {
 
 export type JobPost = {
   __typename?: 'JobPost';
+  academyGallery: Array<AcademyGalleryImage>;
+  academyLogoUrl?: Maybe<Scalars['String']['output']>;
   audienceTypes: Array<Scalars['String']['output']>;
   balletConfidence?: Maybe<Scalars['String']['output']>;
   classCount?: Maybe<Scalars['Int']['output']>;
@@ -289,6 +299,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  AcademyGalleryImage: ResolverTypeWrapper<AcademyGalleryImage>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   DisplaySection: ResolverTypeWrapper<DisplaySection>;
@@ -317,6 +328,7 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  AcademyGalleryImage: AcademyGalleryImage;
   Boolean: Scalars['Boolean']['output'];
   DateTime: Scalars['DateTime']['output'];
   DisplaySection: DisplaySection;
@@ -339,6 +351,14 @@ export type ResolversParentTypes = {
   ScraperRun: ScraperRun;
   SourcePostSummary: SourcePostSummary;
   String: Scalars['String']['output'];
+};
+
+export type AcademyGalleryImageResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['AcademyGalleryImage'] = ResolversParentTypes['AcademyGalleryImage']> = {
+  order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  sourceUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
@@ -364,6 +384,8 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 }
 
 export type JobPostResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['JobPost'] = ResolversParentTypes['JobPost']> = {
+  academyGallery?: Resolver<Array<ResolversTypes['AcademyGalleryImage']>, ParentType, ContextType>;
+  academyLogoUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   audienceTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   balletConfidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   classCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -509,6 +531,7 @@ export type SourcePostSummaryResolvers<ContextType = GraphQLContext, ParentType 
 };
 
 export type Resolvers<ContextType = GraphQLContext> = {
+  AcademyGalleryImage?: AcademyGalleryImageResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
   DisplaySection?: DisplaySectionResolvers<ContextType>;
   Health?: HealthResolvers<ContextType>;

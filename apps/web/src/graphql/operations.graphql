@@ -83,6 +83,13 @@ query JobPost($id: ID!) {
       alternateEvidence
     }
     locationSource
+    academyLogoUrl
+    academyGallery {
+      type
+      order
+      url
+      sourceUrl
+    }
     contactMethods
     contactEmails
     contactPhones

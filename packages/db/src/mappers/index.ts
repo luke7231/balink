@@ -2,6 +2,7 @@ import type { JobPost, JobPostSource, SourcePost } from "@prisma/client";
 import {
   jsonArray,
   jsonValue,
+  type AcademyGalleryImage,
   type DisplaySection,
   type JobPostDetail,
   type JobPostSourceLink,
@@ -62,6 +63,8 @@ export function toJobPostDetail(job: JobPostWithSources): JobPostDetail {
     displaySections: parseDisplaySections(job.displaySectionsJson),
     representativePay: parseRepresentativePay(job.representativePayJson),
     locationSource: (job.locationSource as LocationSource | null) ?? null,
+    academyLogoUrl: job.academyLogoUrl,
+    academyGallery: parseAcademyGallery(job.academyGalleryJson),
   };
 }
 
@@ -107,4 +110,16 @@ function parseRepresentativePay(value: unknown): RepresentativePay | null {
   const pay = value as RepresentativePay;
   if (typeof pay.unit !== "string" || typeof pay.displayText !== "string") return null;
   return pay;
+}
+
+function parseAcademyGallery(value: unknown): AcademyGalleryImage[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (item): item is AcademyGalleryImage =>
+      Boolean(item) &&
+      typeof item === "object" &&
+      typeof (item as AcademyGalleryImage).type === "string" &&
+      typeof (item as AcademyGalleryImage).order === "number" &&
+      typeof (item as AcademyGalleryImage).url === "string",
+  );
 }

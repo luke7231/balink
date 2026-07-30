@@ -5,6 +5,7 @@ import { SourcePostRepository } from "@black-swan/db";
 import type { ListingEnrichment, LocationSource, SourceName } from "@black-swan/domain";
 import { sanitizeLocationTextForStorage } from "@black-swan/domain";
 import { classifiedPayloadSchema, parseOrThrow } from "@black-swan/validation";
+import { mirrorAcademyImagesToS3, parseRawAcademyImages } from "./academy-images.js";
 
 const sourcePostRepository = new SourcePostRepository();
 
@@ -35,7 +36,7 @@ export async function importClassifiedFile(filePath: string): Promise<ImportResu
 }
 
 async function importClassifiedItem(source: SourceName, item: ClassifiedListingInput): Promise<void> {
-  const normalized = normalizeItem(source, item);
+  const normalized = await normalizeItem(source, item);
   await sourcePostRepository.importClassifiedItem({
     source,
     sourcePostId: item.sourcePostId,
@@ -47,7 +48,7 @@ async function importClassifiedItem(source: SourceName, item: ClassifiedListingI
   });
 }
 
-function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
+async function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
   const raw = item.raw;
   const classification = item.classification;
   const enrichment = item.enrichment;
@@ -58,6 +59,11 @@ function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
   const requirements = asRecord(classification.requirements);
   const llm = asRecord(classification.llm);
   const representativePay = enrichment?.representativePay ?? null;
+  const academyImages = await mirrorAcademyImagesToS3(
+    source,
+    item.sourcePostId,
+    parseRawAcademyImages(raw.academyImages),
+  );
   const title = stringValue(raw.title) || "Untitled job post";
   const description = stringValue(raw.detailText);
   const contentHash = hashContent([source, title, description, stringValue(raw.postedDate)].join("\n"));
@@ -129,6 +135,8 @@ function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
       representativePayMaxManwon: representativePay?.maxManwon ?? null,
       representativePayJson: jsonValue(representativePay),
       locationSource: (enrichment?.location.source as LocationSource | undefined) ?? null,
+      academyLogoUrl: academyImages?.logoUrl ?? null,
+      academyGalleryJson: jsonValue(academyImages?.gallery ?? []),
       contactMethods: jsonArray(contact.applyMethods),
       contactEmails: jsonArray(contact.emails),
       contactPhones: jsonArray(contact.phones),

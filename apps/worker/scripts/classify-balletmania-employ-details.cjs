@@ -44,6 +44,7 @@ async function main() {
       summaryRegionText: detail.summary.region || null,
       summaryPayText: detail.summary.pay || null,
       detailText: detail.detailText,
+      academyImages: detail.academyImages,
     };
 
     let classification = classify(raw);
@@ -192,13 +193,48 @@ async function fetchDetail(url, cookie) {
   const html = iconv.decode(Buffer.from(await response.arrayBuffer()), "euc-kr");
   const $ = cheerio.load(html, { decodeEntities: false });
   const summary = parseSummary($);
+  const academyImages = parseAcademyImages($);
 
   return {
     title: cleanText($(".detail_title").first().text()),
     summary,
     closingDateText: parseContactTable($)["접수기간"] || null,
     detailText: restoreLabelLineBreaks(cleanDetailText($("#employ_detail_textarea").val() || "")),
+    academyImages,
   };
+}
+
+function parseAcademyImages($) {
+  const toAbsolute = (src) => {
+    if (!src) return null;
+    if (src.startsWith("http")) return src;
+    return `${BASE_URL}${src.startsWith("/") ? src : `/${src}`}`;
+  };
+
+  let logoUrl = null;
+  $('a[href*="company_detail.html"]')
+    .closest("table")
+    .find('img[src*="/PEG/"]')
+    .each((_, element) => {
+      if (logoUrl) return;
+      logoUrl = toAbsolute($(element).attr("src"));
+    });
+
+  const gallery = [0, 1, 2, 3]
+    .map((index) => {
+      const src = $(`#my_cphoto${index}`).attr("src");
+      const url = toAbsolute(src);
+      if (!url) return null;
+      return { type: "interior", order: index + 1, url };
+    })
+    .filter(Boolean);
+
+  const profileHref = $('a[href*="company_detail.html"]').attr("href");
+  const companyProfileUrl = profileHref ? toAbsolute(profileHref) : null;
+
+  if (!logoUrl && gallery.length === 0) return null;
+
+  return { logoUrl, gallery, companyProfileUrl };
 }
 
 function parseSummary($) {

@@ -5,4 +5,5 @@ export * from "./scraper-run.js";
 export * from "./formatted-post.js";
 export * from "./location/index.js";
 export * from "./pay/index.js";
+export * from "./academy-images.js";
 export * from "./format.js";

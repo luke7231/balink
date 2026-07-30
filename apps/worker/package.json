@@ -14,10 +14,12 @@
     "classify:esangdance": "node scripts/classify-esangdance-employ-details.cjs",
     "backfill:existing-descriptions": "node scripts/backfill-existing-descriptions.cjs",
     "backfill:formatted": "pnpm run build && node dist/backfill-formatted.js",
+    "backfill:academy-images": "pnpm run build && node dist/backfill-academy-images.js",
     "verify:deps": "node scripts/verify-runtime-deps.cjs",
     "test": "pnpm run build && node --test dist/**/*.test.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.888.0",
     "@black-swan/db": "workspace:*",
     "@black-swan/domain": "workspace:*",
     "@black-swan/validation": "workspace:*",

@@ -67,6 +67,13 @@ type RepresentativePay {
   alternateEvidence: String
 }
 
+type AcademyGalleryImage {
+  type: String!
+  order: Int!
+  url: String!
+  sourceUrl: String
+}
+
 type JobPost {
   id: ID!
   title: String!
@@ -97,6 +104,8 @@ type JobPost {
   displaySections: [DisplaySection!]!
   representativePay: RepresentativePay
   locationSource: String
+  academyLogoUrl: String
+  academyGallery: [AcademyGalleryImage!]!
   contactMethods: [String!]!
   contactEmails: [String!]!
   contactPhones: [String!]!

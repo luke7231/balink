@@ -70,6 +70,8 @@ model JobPost {
   representativePayMaxManwon Float?
   representativePayJson Json?
   locationSource    String?
+  academyLogoUrl    String?
+  academyGalleryJson Json?
   contactMethods    Json
   contactEmails     Json
   contactPhones     Json

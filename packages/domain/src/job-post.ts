@@ -1,4 +1,5 @@
 import type { SourceName } from "./enums.js";
+import type { AcademyGalleryImage } from "./academy-images.js";
 import type { DisplaySection, LocationSource, RepresentativePay } from "./formatted-post.js";
 
 export interface JobPostFilterInput {
@@ -64,6 +65,8 @@ export interface JobPostDetail extends JobPostSummary {
   displaySections: DisplaySection[];
   representativePay: RepresentativePay | null;
   locationSource: LocationSource | null;
+  academyLogoUrl: string | null;
+  academyGallery: AcademyGalleryImage[];
 }
 
 export interface JobRegionCount {

@@ -10,6 +10,7 @@ import {
 } from "@black-swan/domain";
 import { Badge } from "@black-swan/ui/badge";
 import { OriginalDescription } from "@/components/original-description";
+import { AcademyGallery } from "@/components/academy-gallery";
 import { fetchJobPost } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -87,6 +88,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               ))}
             </section>
           ) : null}
+
+          <AcademyGallery logoUrl={job.academyLogoUrl} gallery={job.academyGallery} />
 
           {job.description ? <OriginalDescription description={job.description} /> : null}
 
