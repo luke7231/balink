@@ -23,7 +23,7 @@ export default async function AccountPage() {
   const districtGroups = listAdminDistrictGroups();
 
   return (
-    <main className="flex min-h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,#fff1f2,#ffffff_55%)]">
+    <main className="flex min-h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,#fff9fa,#ffffff_42%)]">
       <div className="mx-auto w-full max-w-lg px-6 py-8">
         <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-800">
           ← 홈으로

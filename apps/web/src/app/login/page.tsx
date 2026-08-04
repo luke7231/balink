@@ -20,7 +20,7 @@ export default async function LoginPage({
   const deletedMessage = params.deleted ? "계정이 삭제되었습니다." : null;
 
   return (
-    <main className="flex min-h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,#fff1f2,#ffffff_55%)]">
+    <main className="flex min-h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,#fff9fa,#ffffff_42%)]">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-8">
         <Link
           href="/"

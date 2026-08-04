@@ -15,36 +15,40 @@ export async function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps)
 
   return (
     <header className="border-b border-rose-100/80 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-5">
         <div>
           <p className="text-sm font-medium text-rose-600">Black Swan</p>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">발레 강사 구인 알림</h1>
+          <h1 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl">
+            발레 강사 구인 알림
+          </h1>
         </div>
 
-        <nav className="flex flex-wrap items-center gap-2">
-          <Link
-            href="/"
-            className="rounded-full px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
-          >
-            채용공고{jobCount != null ? ` (${jobCount})` : ""}
-          </Link>
-          <Link
-            href="/substitutes"
-            className="rounded-full px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
-          >
-            대타 게시판{substituteCount != null ? ` (${substituteCount})` : ""}
-          </Link>
-          {user ? (
+        <div className="flex items-center gap-2">
+          <nav className="hidden items-center gap-1 md:flex" aria-label="주요 메뉴">
             <Link
-              href="/saved"
-              className="rounded-full px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
+              href="/"
+              className="rounded-full px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
             >
-              저장한 공고
+              채용{jobCount != null ? ` (${jobCount})` : ""}
             </Link>
-          ) : null}
+            <Link
+              href="/substitutes"
+              className="rounded-full px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
+            >
+              대타{substituteCount != null ? ` (${substituteCount})` : ""}
+            </Link>
+            {user ? (
+              <Link
+                href="/saved"
+                className="rounded-full px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
+              >
+                저장
+              </Link>
+            ) : null}
+          </nav>
 
           {user ? (
-            <div className="ml-1 flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-2 py-1.5">
+            <div className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-2 py-1.5">
               <Image
                 src={user.image || DEFAULT_AVATAR_PATH}
                 alt=""
@@ -59,7 +63,7 @@ export async function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps)
               >
                 {user.name ?? "회원"}
               </Link>
-              <form action={signOutAction}>
+              <form action={signOutAction} className="hidden sm:block">
                 <button
                   type="submit"
                   className="rounded-full px-2.5 py-1 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
@@ -76,7 +80,7 @@ export async function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps)
               로그인
             </Link>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
