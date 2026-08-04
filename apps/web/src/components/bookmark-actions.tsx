@@ -41,6 +41,7 @@ export async function toggleJobBookmarkAction(jobPostId: string): Promise<Bookma
 
   if (existing) {
     await prisma.jobBookmark.delete({ where: { id: existing.id } });
+    revalidatePath("/");
     revalidatePath(`/jobs/${jobPostId}`);
     revalidatePath("/saved");
     revalidatePath("/account");
@@ -50,6 +51,7 @@ export async function toggleJobBookmarkAction(jobPostId: string): Promise<Bookma
   await prisma.jobBookmark.create({
     data: { userId, jobPostId },
   });
+  revalidatePath("/");
   revalidatePath(`/jobs/${jobPostId}`);
   revalidatePath("/saved");
   revalidatePath("/account");

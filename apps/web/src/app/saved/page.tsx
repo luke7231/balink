@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma, toJobPostSummary } from "@black-swan/db";
 import { JobList } from "@black-swan/ui/job-list";
 import { auth } from "@/auth";
+import { BookmarkButton } from "@/components/bookmark-button";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
 
@@ -51,7 +52,14 @@ export default async function SavedJobsPage() {
             </Link>
           </div>
         ) : (
-          <JobList jobs={jobs} getHref={(job) => `/jobs/${job.id}`} linkComponent={Link} />
+          <JobList
+            jobs={jobs}
+            getHref={(job) => `/jobs/${job.id}`}
+            linkComponent={Link}
+            renderAction={(job) => (
+              <BookmarkButton jobPostId={job.id} initialBookmarked variant="icon" />
+            )}
+          />
         )}
       </main>
     </div>
