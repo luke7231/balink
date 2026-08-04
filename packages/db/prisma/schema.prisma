@@ -180,15 +180,28 @@ model ScraperRun {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
+  id               String               @id @default(cuid())
+  name             String?
+  email            String?              @unique
+  emailVerified    DateTime?
+  image            String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  accounts         Account[]
+  sessions         Session[]
+  interestRegions  UserInterestRegion[]
+}
+
+model UserInterestRegion {
+  id        String   @id @default(cuid())
+  userId    String
+  sido      String
+  sigungu   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sido, sigungu])
+  @@index([userId])
 }
 
 model Account {

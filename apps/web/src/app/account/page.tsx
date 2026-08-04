@@ -1,17 +1,26 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
+import { prisma } from "@black-swan/db";
+import { listAdminDistrictGroups } from "@black-swan/domain";
 import { auth } from "@/auth";
 import { deleteAccountAction } from "@/components/account-actions";
+import { InterestRegionPicker } from "@/components/interest-region-picker";
 import { DEFAULT_AVATAR_PATH } from "@/lib/profile-image";
-import Image from "next/image";
 
 export default async function AccountPage() {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect("/login");
   }
 
   const user = session.user;
+  const interestRegions = await prisma.userInterestRegion.findMany({
+    where: { userId: user.id },
+    orderBy: [{ sido: "asc" }, { sigungu: "asc" }],
+    select: { id: true, sido: true, sigungu: true },
+  });
+  const districtGroups = listAdminDistrictGroups();
 
   return (
     <main className="flex min-h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,#fff1f2,#ffffff_55%)]">
@@ -22,7 +31,7 @@ export default async function AccountPage() {
 
         <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h1 className="text-xl font-bold tracking-tight text-zinc-900">내 계정</h1>
-          <p className="mt-1 text-sm text-zinc-500">프로필과 계정 삭제</p>
+          <p className="mt-1 text-sm text-zinc-500">프로필과 관심지역</p>
 
           <div className="mt-6 flex items-center gap-3">
             <Image
@@ -37,6 +46,19 @@ export default async function AccountPage() {
               <p className="font-semibold text-zinc-900">{user.name ?? "회원"}</p>
               <p className="text-sm text-zinc-500">{user.email ?? "이메일 없음"}</p>
             </div>
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-zinc-900">관심지역</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            알림을 받을 시·군·구를 원하는 만큼 추가하세요.
+          </p>
+          <div className="mt-5">
+            <InterestRegionPicker
+              initialRegions={interestRegions}
+              districtGroups={districtGroups}
+            />
           </div>
         </section>
 
