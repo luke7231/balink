@@ -7,8 +7,8 @@ query Health {
   }
 }
 
-query JobPosts($pagination: PaginationInput) {
-  jobPosts(pagination: $pagination) {
+query JobPosts($filter: JobPostFilterInput, $pagination: PaginationInput) {
+  jobPosts(filter: $filter, pagination: $pagination) {
     items {
       id
       title
@@ -38,6 +38,16 @@ query JobPosts($pagination: PaginationInput) {
       limit
       total
       totalPages
+    }
+  }
+}
+
+query JobRegions {
+  jobRegions {
+    sido
+    districts {
+      sigungu
+      count
     }
   }
 }

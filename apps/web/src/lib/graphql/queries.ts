@@ -2,23 +2,35 @@ import {
   HealthDocument,
   JobPostDocument,
   JobPostsDocument,
+  JobRegionsDocument,
   SubstitutePostDocument,
   SubstitutePostsDocument,
   type HealthQuery,
+  type JobPostFilterInput,
   type JobPostQuery,
   type JobPostsQuery,
+  type JobRegionsQuery,
   type SubstitutePostQuery,
   type SubstitutePostsQuery,
 } from "@/generated/graphql";
 import { graphqlRequest } from "./client";
 
-export async function fetchJobPosts(page = 1, limit = 20): Promise<JobPostsQuery["jobPosts"]> {
+export async function fetchJobPosts(
+  page = 1,
+  limit = 20,
+  filter?: JobPostFilterInput | null,
+): Promise<JobPostsQuery["jobPosts"]> {
   const data = await graphqlRequest<JobPostsQuery>(
     JobPostsDocument,
-    { pagination: { page, limit } },
+    { pagination: { page, limit }, filter: filter ?? null },
     { revalidate: 0 },
   );
   return data.jobPosts;
+}
+
+export async function fetchJobRegions(): Promise<JobRegionsQuery["jobRegions"]> {
+  const data = await graphqlRequest<JobRegionsQuery>(JobRegionsDocument, undefined, { revalidate: 60 });
+  return data.jobRegions;
 }
 
 export async function fetchJobPost(id: string): Promise<JobPostQuery["jobPost"]> {
