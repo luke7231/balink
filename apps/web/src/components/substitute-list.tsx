@@ -84,6 +84,12 @@ export function SubstituteList({ posts, getHref, linkComponent: LinkComponent = 
     <div className="grid gap-4">
       {posts.map((post) => {
         const urgencyLabel = formatSubstituteUrgency(post.urgency ?? null);
+        const scheduleLabel = formatNextSession(post);
+        const hasNormalizedLocation = Boolean(post.sido || post.sigungu || post.dongOrStation);
+        const locationLabel = hasNormalizedLocation
+          ? formatLocation(post.sido ?? null, post.sigungu ?? null, post.dongOrStation ?? null)
+          : post.locationText || "지역 미상";
+        const payLabel = post.representativePayText || post.payText || "급여 협의";
         const timeLabel =
           post.timeSlots
             .map((slot) => slot.raw || [slot.start, slot.end].filter(Boolean).join("~"))
@@ -94,44 +100,40 @@ export function SubstituteList({ posts, getHref, linkComponent: LinkComponent = 
           <LinkComponent
             key={post.id}
             href={getHref(post)}
-            className="block rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-rose-200 hover:shadow-md"
+            className="group block overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"
           >
-            <div className="mb-3 flex flex-wrap gap-2">
-              {urgencyLabel ? <Badge variant="rose">{urgencyLabel}</Badge> : null}
-              <Badge>{formatSubstituteStatus(post.status)}</Badge>
+            <div className="border-b border-rose-100 bg-rose-50/70 px-5 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    {urgencyLabel ? <Badge variant="rose">{urgencyLabel}</Badge> : null}
+                    <Badge>{formatSubstituteStatus(post.status)}</Badge>
+                  </div>
+                  <p className="text-lg font-bold tracking-tight text-zinc-950">{scheduleLabel}</p>
+                  {timeLabel !== "시간 미상" && !scheduleLabel.includes(timeLabel) ? (
+                    <p className="mt-1 text-sm text-zinc-600">{timeLabel}</p>
+                  ) : null}
+                </div>
+                <span className="shrink-0 rounded-full bg-white px-3 py-1.5 text-sm font-bold text-rose-700 shadow-sm">
+                  {payLabel}
+                </span>
+              </div>
             </div>
 
-            <h2 className="text-lg font-semibold leading-snug text-zinc-900">{post.title}</h2>
-            {post.summary ? <p className="mt-2 text-sm text-zinc-600">{post.summary}</p> : null}
+            <div className="p-5">
+              <p className="flex items-center gap-2 text-sm font-semibold text-zinc-800">
+                <span aria-hidden="true">📍</span>
+                {locationLabel}
+              </p>
 
-            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-              <div>
-                <dt className="text-zinc-500">지역</dt>
-                <dd className="mt-1 font-medium text-zinc-900">
-                  {post.locationText ||
-                    formatLocation(post.sido ?? null, post.sigungu ?? null, post.dongOrStation ?? null)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-zinc-500">다음 수업</dt>
-                <dd className="mt-1 font-medium text-zinc-900">{formatNextSession(post)}</dd>
-              </div>
-              <div>
-                <dt className="text-zinc-500">시간</dt>
-                <dd className="mt-1 font-medium text-zinc-900">{timeLabel}</dd>
-              </div>
-              <div>
-                <dt className="text-zinc-500">급여</dt>
-                <dd className="mt-1 font-medium text-zinc-900">
-                  {post.representativePayText || post.payText || "협의"}
-                </dd>
-              </div>
-            </dl>
+              <h2 className="mt-4 text-base font-semibold leading-snug text-zinc-900 group-hover:text-rose-700">
+                {post.title}
+              </h2>
 
-            <div className="mt-4 flex flex-wrap gap-3 text-xs text-zinc-500">
-              {post.author ? <span>{post.author}</span> : null}
-              <span>{formatPostedAt(post.postedAt ?? null)}</span>
-              {post.academyName ? <span>{post.academyName}</span> : null}
+              <div className="mt-3 flex flex-wrap gap-3 text-xs text-zinc-500">
+                {post.academyName ? <span>{post.academyName}</span> : null}
+                <span>{formatPostedAt(post.postedAt ?? null)}</span>
+              </div>
             </div>
           </LinkComponent>
         );

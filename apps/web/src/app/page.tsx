@@ -14,16 +14,11 @@ export default async function HomePage() {
 
       <main className="mx-auto max-w-5xl px-4 py-8">
         <section className="mb-8 rounded-3xl bg-zinc-900 px-6 py-8 text-white">
-          <p className="text-sm text-zinc-300">실시간 수집 · AI 분류</p>
-          <h2 className="mt-2 text-2xl font-semibold leading-tight">
+          <h2 className="text-2xl font-semibold leading-tight">
             조건에 맞는 발레 공고를
             <br />
             한곳에서 확인하세요
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-300">
-            발레매니아, 이상댄스 등 외부 사이트 공고를 모아 보여줍니다. 상세 페이지에서 원본 링크로 이동할 수
-            있습니다.
-          </p>
         </section>
 
         <div className="mb-4 flex items-center justify-between">
