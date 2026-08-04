@@ -1,0 +1,15 @@
+"use server";
+
+import { signIn, signOut } from "@/auth";
+
+export async function signInWithKakao() {
+  await signIn("kakao", { redirectTo: "/" });
+}
+
+export async function signInWithApple() {
+  await signIn("apple", { redirectTo: "/" });
+}
+
+export async function signOutAction() {
+  await signOut({ redirectTo: "/" });
+}
