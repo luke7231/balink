@@ -1,10 +1,12 @@
 import { normalizeSido, normalizeSigungu, parseAddressTokens } from "./admin-districts.js";
 
+const SUBSTITUTE_REGION_LINE_PATTERN = /▶\s*지역\s*:\s*([^\n]+)/g;
+
 const LOCATION_HINT_PATTERNS = [
   /([가-힣]{2,8}(?:특별시|광역시|특별자치시|도))\s+([가-힣0-9]+(?:시|군|구))/g,
   /([가-힣]{2,8}(?:특별시|광역시|특별자치시|도))\s+([가-힣0-9]+(?:시|군|구))\s+([가-힣0-9]+(?:동|읍|면|역))/g,
   /(?:^|[\s·|,])((?:서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)(?:시|도)?)\s+([가-힣0-9]+(?:시|군|구))/g,
-  /([가-힣A-Za-z0-9]+역)\s*(?:인근|부근|근처|앞|옆)?/g,
+  /([가-힣A-Za-z0-9]{2,}역)\s*(?:인근|부근|근처|앞|옆)?/g,
 ];
 
 export interface LocationHint {
@@ -24,6 +26,17 @@ export function extractLocationHints(title: string, description: string): Locati
 
   for (const { text, source } of sources) {
     if (!text) continue;
+
+    SUBSTITUTE_REGION_LINE_PATTERN.lastIndex = 0;
+    let regionLineMatch: RegExpExecArray | null;
+    while ((regionLineMatch = SUBSTITUTE_REGION_LINE_PATTERN.exec(text)) !== null) {
+      const evidence = regionLineMatch[0].trim();
+      hints.push({
+        ...parseAddressTokens(regionLineMatch[1]?.trim() ?? evidence),
+        evidence,
+        source,
+      });
+    }
 
     for (const pattern of LOCATION_HINT_PATTERNS) {
       pattern.lastIndex = 0;

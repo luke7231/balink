@@ -17,6 +17,7 @@
     "collect:balletmania-working": "node scripts/collect-balletmania-working-list.cjs",
     "classify:balletmania-working": "node scripts/classify-balletmania-working-details.cjs",
     "backfill:substitutes": "pnpm run build && node dist/backfill-substitutes.js",
+    "backfill:substitutes-all": "pnpm run build && node dist/backfill-substitutes-all.js",
     "verify:deps": "node scripts/verify-runtime-deps.cjs",
     "test": "pnpm run build && node --test dist/**/*.test.js"
   },

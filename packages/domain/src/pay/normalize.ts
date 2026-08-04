@@ -6,7 +6,7 @@ export const PAY_UNIT_LABELS: Record<PayUnit, string> = {
   daily: "일당",
   weekly: "주급",
   monthly: "월급",
-  lump_sum: "총액/건당",
+  lump_sum: "총액",
   variable: "타임별 상이",
   negotiable: "추후 협의",
   unspecified: "미기재",
@@ -38,6 +38,15 @@ export function formatRepresentativePayDisplay(pay: RepresentativePay): string {
   if (pay.unit === "variable") return PAY_UNIT_LABELS.variable;
   if (pay.unit === "unspecified") return PAY_UNIT_LABELS.unspecified;
 
+  if (pay.unit === "lump_sum") {
+    if (pay.minManwon != null && pay.maxManwon != null && pay.minManwon !== pay.maxManwon) {
+      return `${formatManwonAmount(pay.minManwon)}~${formatManwonAmount(pay.maxManwon)}`;
+    }
+    if (pay.minManwon != null) return formatManwonAmount(pay.minManwon);
+    if (pay.maxManwon != null) return formatManwonAmount(pay.maxManwon);
+    return PAY_UNIT_LABELS.unspecified;
+  }
+
   const label = PAY_UNIT_LABELS[pay.unit];
   if (pay.minManwon != null && pay.maxManwon != null && pay.minManwon !== pay.maxManwon) {
     return `${label} ${formatManwonAmount(pay.minManwon)}~${formatManwonAmount(pay.maxManwon)}`;
@@ -47,7 +56,7 @@ export function formatRepresentativePayDisplay(pay: RepresentativePay): string {
   return label;
 }
 
-const PAY_SLANG_PATTERN = /페이\s*(\d+(?:\.\d+)?)/i;
+const PAY_SLANG_PATTERN = /페이(?:는|이|[:\s_])*\s*(\d+(?:\.\d+)?)/i;
 
 export function parsePaySlangFromText(text: string): {
   unit: PayUnit;
@@ -69,6 +78,38 @@ export function parsePaySlangFromText(text: string): {
   };
 }
 
+/** 대타 게시글 본문 끝에 '45000'처럼 원화만 단독 기재된 경우 */
+export function parseBareWonPayFromText(text: string): {
+  unit: PayUnit;
+  minManwon: number | null;
+  maxManwon: number | null;
+  evidence: string;
+} | null {
+  const lines = text
+    .split(/\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    const line = lines[index];
+    if (!/^\d{4,6}$/.test(line)) continue;
+
+    const won = Number(line);
+    if (!Number.isFinite(won) || won < 25_000 || won > 300_000) continue;
+    if (line.startsWith("010")) continue;
+
+    const manwon = won / 10_000;
+    return {
+      unit: "lump_sum",
+      minManwon: manwon,
+      maxManwon: manwon,
+      evidence: line,
+    };
+  }
+
+  return null;
+}
+
 export function parsePayFromAnyText(text: string | null | undefined): {
   unit: PayUnit;
   minManwon: number | null;
@@ -76,7 +117,7 @@ export function parsePayFromAnyText(text: string | null | undefined): {
   evidence: string;
 } | null {
   if (!text?.trim()) return null;
-  return parsePaySlangFromText(text) ?? parseExplicitPayFromText(text);
+  return parsePaySlangFromText(text) ?? parseExplicitPayFromText(text) ?? parseBareWonPayFromText(text);
 }
 
 export function parseExplicitPayFromText(text: string): {
@@ -128,6 +169,8 @@ export function resolveRepresentativePayConflict(
     if (slang) explicitSources.push(slang);
     const explicit = parseExplicitPayFromText(text);
     if (explicit) explicitSources.push(explicit);
+    const bareWon = parseBareWonPayFromText(text);
+    if (bareWon) explicitSources.push(bareWon);
   }
 
   if (summaryPayText && !isRangeSummary(summaryPayText)) {
@@ -144,6 +187,10 @@ export function resolveRepresentativePayConflict(
     return sanitizedLlmPay;
   }
 
+  if (shouldPreferLlmPay(sanitizedLlmPay)) {
+    return sanitizedLlmPay;
+  }
+
   const preferred = explicitSources[0];
   const summaryConflict =
     summaryPayText &&
@@ -151,7 +198,16 @@ export function resolveRepresentativePayConflict(
     !summaryPayText.includes(String(preferred.minManwon ?? "")) &&
     summaryPayText.trim().length > 0;
 
-  const displayText = `${PAY_UNIT_LABELS[preferred.unit]} ${formatManwonAmount(preferred.minManwon ?? preferred.maxManwon ?? 0)}`;
+  const displayText = formatRepresentativePayDisplay({
+    unit: preferred.unit,
+    displayText: "",
+    minManwon: preferred.minManwon,
+    maxManwon: preferred.maxManwon,
+    evidence: preferred.evidence,
+    confidence: "high",
+    hasConflict: false,
+    alternateEvidence: null,
+  });
 
   return {
     unit: preferred.unit,
@@ -236,7 +292,11 @@ function isPayMatchInContext(text: string, index: number, matchText: string): bo
 }
 
 function isPlausiblePayAmount(unit: PayUnit, amountManwon: number, evidence: string): boolean {
-  if (/페이\s*\d/.test(evidence)) return amountManwon > 0 && amountManwon <= 50;
+  if (parsePaySlangFromText(evidence)) return amountManwon > 0 && amountManwon <= 50;
+  if (/^\d{4,6}$/.test(evidence.trim())) {
+    const won = Number(evidence);
+    return won >= 25_000 && won <= 300_000;
+  }
   if (!/(?:시간당|회당|일당|주급|월급|만\s*원|만원|원)/.test(evidence)) return false;
   if (unit === "hourly" && amountManwon > 50) return false;
   if (unit === "per_class" && amountManwon > 100) return false;
@@ -260,11 +320,29 @@ function normalizePaySlangRepresentativePay(
     minManwon: slangSource.minManwon,
     maxManwon: slangSource.maxManwon,
     evidence: slangSource.evidence,
-    displayText: `${PAY_UNIT_LABELS.lump_sum} ${formatManwonAmount(slangSource.minManwon ?? slangSource.maxManwon ?? 0)}`,
+    displayText: formatRepresentativePayDisplay({
+      unit: slangSource.unit,
+      displayText: "",
+      minManwon: slangSource.minManwon,
+      maxManwon: slangSource.maxManwon,
+      evidence: slangSource.evidence,
+      confidence: pay.confidence,
+      hasConflict: pay.hasConflict,
+      alternateEvidence: pay.alternateEvidence,
+    }),
     confidence: pay.confidence === "low" ? "high" : pay.confidence,
     hasConflict: pay.hasConflict,
     alternateEvidence: pay.alternateEvidence,
   };
+}
+
+function shouldPreferLlmPay(pay: RepresentativePay): boolean {
+  if (pay.unit === "unspecified") return false;
+  if (pay.unit === "negotiable" || pay.unit === "variable") {
+    return pay.confidence !== "low" || Boolean(pay.evidence?.trim());
+  }
+  if (pay.confidence === "low") return false;
+  return isPlausibleRepresentativePay(pay);
 }
 
 function isPlausibleRepresentativePay(pay: RepresentativePay): boolean {

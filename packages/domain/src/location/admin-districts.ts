@@ -187,7 +187,40 @@ export function parseAddressTokens(address: string): { sido: string | null; sigu
     tokens[2] ??
     null;
 
+  if (sido) {
+    return { sido, sigungu, dongOrStation };
+  }
+
+  if (tokens[0]?.endsWith("시") && tokens[1]?.endsWith("구")) {
+    const inferredSido = inferSidoForSigunguCity(tokens[0]);
+    if (inferredSido) {
+      return {
+        sido: inferredSido,
+        sigungu: `${tokens[0]} ${tokens[1]}`,
+        dongOrStation: tokens[2] ?? null,
+      };
+    }
+  }
+
+  if (tokens[0]?.endsWith("시") || tokens[0]?.endsWith("군")) {
+    const inferredSido = inferSidoForSigunguCity(tokens[0]);
+    if (inferredSido) {
+      return {
+        sido: inferredSido,
+        sigungu: tokens[0],
+        dongOrStation: tokens[1] ?? null,
+      };
+    }
+  }
+
   return { sido, sigungu, dongOrStation };
+}
+
+function inferSidoForSigunguCity(cityName: string): string | null {
+  for (const [sido, cities] of Object.entries(SIGUNGU_BY_SIDO)) {
+    if (cities.includes(cityName)) return sido;
+  }
+  return null;
 }
 
 export const KNOWN_SIDO = [...new Set(Object.values(SIDO_ALIASES))];

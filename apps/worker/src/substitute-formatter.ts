@@ -7,11 +7,21 @@ import type {
 } from "@black-swan/domain";
 import {
   defaultRepresentativePay,
-  finalizeRepresentativePay,
   formatRepresentativePayDisplay,
 } from "@black-swan/domain";
 import OpenAI from "openai";
 import { geocodeLocation } from "./location-geocoder.js";
+import {
+  buildRepresentativePayJsonSchema,
+  normalizeRepresentativePayFromSources,
+  REPRESENTATIVE_PAY_LLM_RULES,
+} from "./representative-pay-llm.js";
+import {
+  buildLocationHintsPayload,
+  buildLocationJsonSchema,
+  LOCATION_LLM_RULES,
+  resolveLocationTextForGeocode,
+} from "./location-llm.js";
 
 const llmModel = process.env.OPENAI_MODEL || "gpt-5.5";
 const confidenceEnum = ["high", "medium", "low"] as const;
@@ -71,7 +81,10 @@ export async function formatSubstitutePost(input: FormatSubstituteInput): Promis
           "원문에 없는 학원명, 급여, 수업 조건, 날짜, 시간을 만들지 않는다.",
           "게시일과 수업일을 구분한다. 오늘/내일, 8/4·11, 8월 한 달 화·목을 KST 절대 날짜로 해석한다.",
           "날짜와 시간의 대응 관계를 유지하고 같은 제목·본문에서 중복 추출하지 않는다.",
-          "페이 9는 총액 9만원(lump_sum)이며 날짜·시각·전화번호 숫자는 급여가 아니다.",
+          "representativePay는 일정만큼 중요하다. 본문에 급여·페이·대강료로 읽히는 표현이 있으면 unspecified로 두지 않는다.",
+          REPRESENTATIVE_PAY_LLM_RULES,
+          "대타 게시판에는 채용공고처럼 목록 지역 요약이 없다. locationHints와 제목·본문에서 지역을 파악한다.",
+          LOCATION_LLM_RULES,
           "개별 날짜가 모두 열거되지 않은 반복 일정은 recurrence에 저장하고 sessions에는 확정 날짜만 넣는다.",
           "evidence에는 판단 근거가 된 원문 구절을 그대로 적는다.",
         ].join("\n"),
@@ -83,6 +96,7 @@ export async function formatSubstitutePost(input: FormatSubstituteInput): Promis
             title: input.title,
             detailText: input.detailText,
             postedAt: input.postedAt,
+            locationHints: buildLocationHintsPayload(input.title, input.detailText),
           },
           null,
           2,
@@ -100,13 +114,22 @@ export async function formatSubstitutePost(input: FormatSubstituteInput): Promis
   });
 
   const parsed = JSON.parse(extractResponseText(response)) as Record<string, unknown>;
-  const representativePay = finalizeRepresentativePay(parseRepresentativePay(parsed.representativePay));
+  const representativePay = normalizeRepresentativePayFromSources(
+    parseRepresentativePay(parsed.representativePay),
+    input.title,
+    input.detailText,
+    null,
+  );
   const location = parseLocation(parsed.location);
   const normalizedLocation = await geocodeLocation({
     title: input.title,
     description: input.detailText,
     company: stringValue(parsed.academyName),
-    locationText: location.evidence,
+    locationText: resolveLocationTextForGeocode({
+      llmEvidence: location.evidence,
+      title: input.title,
+      description: input.detailText,
+    }),
     parsedSido: location.sido,
     parsedSigungu: location.sigungu,
     parsedDongOrStation: location.dongOrStation,
@@ -169,18 +192,7 @@ function buildSubstituteSchema() {
     ],
     properties: {
       summary: { type: ["string", "null"] },
-      location: {
-        type: "object",
-        additionalProperties: false,
-        required: ["sido", "sigungu", "dongOrStation", "evidence", "confidence"],
-        properties: {
-          sido: { type: ["string", "null"] },
-          sigungu: { type: ["string", "null"] },
-          dongOrStation: { type: ["string", "null"] },
-          evidence: { type: ["string", "null"] },
-          confidence: { type: "string", enum: confidenceEnum },
-        },
-      },
+      location: buildLocationJsonSchema(),
       sessions: {
         type: "array",
         items: {
@@ -283,28 +295,7 @@ function buildSubstituteSchema() {
           },
         ],
       },
-      representativePay: {
-        type: "object",
-        additionalProperties: false,
-        required: [
-          "unit",
-          "minManwon",
-          "maxManwon",
-          "evidence",
-          "confidence",
-          "hasConflict",
-          "alternateEvidence",
-        ],
-        properties: {
-          unit: { type: "string", enum: payUnitEnum },
-          minManwon: { type: ["number", "null"] },
-          maxManwon: { type: ["number", "null"] },
-          evidence: { type: ["string", "null"] },
-          confidence: { type: "string", enum: confidenceEnum },
-          hasConflict: { type: "boolean" },
-          alternateEvidence: { type: ["string", "null"] },
-        },
-      },
+      representativePay: buildRepresentativePayJsonSchema(),
       academyName: { type: ["string", "null"] },
       requirements: { type: "array", items: { type: "string" } },
       applicationInstructions: { type: ["string", "null"] },
@@ -359,15 +350,17 @@ function parseRepresentativePay(value: unknown): RepresentativePay {
   const record = value as Record<string, unknown>;
   const pay: RepresentativePay = {
     unit: (record.unit as RepresentativePay["unit"]) || "unspecified",
+    displayText: stringValue(record.displayText) ?? "",
     minManwon: numberValue(record.minManwon),
     maxManwon: numberValue(record.maxManwon),
     evidence: stringValue(record.evidence),
     confidence: parseConfidence(record.confidence),
     hasConflict: Boolean(record.hasConflict),
     alternateEvidence: stringValue(record.alternateEvidence),
-    displayText: "",
   };
-  pay.displayText = formatRepresentativePayDisplay(pay);
+  if (!pay.displayText) {
+    pay.displayText = formatRepresentativePayDisplay(pay);
+  }
   return pay;
 }
 

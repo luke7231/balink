@@ -1,7 +1,7 @@
 import type { SourceName } from "./enums.js";
 import type { RepresentativePay } from "./formatted-post.js";
 
-export const SUBSTITUTE_NORMALIZATION_VERSION = 1;
+export const SUBSTITUTE_NORMALIZATION_VERSION = 6;
 
 export type SubstitutePostStatus = "OPEN" | "EXPIRED" | "DELETED";
 export type SubstituteUrgency = "same_day" | "next_day" | "normal";

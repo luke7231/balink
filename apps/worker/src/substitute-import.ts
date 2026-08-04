@@ -5,6 +5,7 @@ import {
   deriveSubstituteSchedule,
   deriveSubstituteStatus,
   formatRepresentativePayDisplay,
+  sanitizeLocationTextForStorage,
 } from "@black-swan/domain";
 import { SubstitutePostRepository } from "@black-swan/db";
 import type { FormattedSubstitutePost } from "./substitute-formatter.js";
@@ -75,7 +76,12 @@ export async function persistNormalizedSubstitute(input: PersistSubstituteInput)
     timeSlots: derived.timeSlots,
     audienceTypes: derived.audienceTypes.length ? derived.audienceTypes : ["unknown"],
     subjectTypes: derived.subjectTypes.length ? derived.subjectTypes : ["unknown"],
-    locationText: input.formatted.location.locationText,
+    locationText: sanitizeLocationTextForStorage(
+      input.formatted.location.locationText,
+      input.formatted.location.sido,
+      input.formatted.location.sigungu,
+      input.formatted.location.dongOrStation,
+    ),
     sido: input.formatted.location.sido,
     sigungu: input.formatted.location.sigungu,
     dongOrStation: input.formatted.location.dongOrStation,
