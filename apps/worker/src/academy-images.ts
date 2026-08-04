@@ -1,4 +1,9 @@
-import type { RawAcademyImages, SourceName, StoredAcademyImages } from "@black-swan/domain";
+import {
+  isAcademyPlaceholderImageUrl,
+  type RawAcademyImages,
+  type SourceName,
+  type StoredAcademyImages,
+} from "@black-swan/domain";
 import { fetch } from "undici";
 import {
   buildAcademyImageObjectKey,
@@ -11,7 +16,8 @@ import {
 export function parseRawAcademyImages(value: unknown): RawAcademyImages | null {
   if (!value || typeof value !== "object") return null;
   const record = value as Record<string, unknown>;
-  const logoUrl = typeof record.logoUrl === "string" && record.logoUrl.trim() ? record.logoUrl.trim() : null;
+  const rawLogoUrl = typeof record.logoUrl === "string" && record.logoUrl.trim() ? record.logoUrl.trim() : null;
+  const logoUrl = rawLogoUrl && !isAcademyPlaceholderImageUrl(rawLogoUrl) ? rawLogoUrl : null;
   const gallery = Array.isArray(record.gallery)
     ? record.gallery
         .map((item, index) => parseGalleryItem(item, index + 1))
@@ -37,12 +43,20 @@ export async function mirrorAcademyImagesToS3(
 ): Promise<StoredAcademyImages | null> {
   if (!rawImages) return null;
 
+  const usableGallery = rawImages.gallery.filter(
+    (item) => !isAcademyPlaceholderImageUrl(item.url) && !isAcademyPlaceholderImageUrl(item.sourceUrl),
+  );
+  const usableLogo =
+    rawImages.logoUrl && !isAcademyPlaceholderImageUrl(rawImages.logoUrl) ? rawImages.logoUrl : null;
+
+  if (!usableLogo && usableGallery.length === 0) return null;
+
   const config = getS3StorageConfig();
   if (!config) {
     console.warn("[academy-images] AWS S3 env missing; keeping source URLs without upload.");
     return {
-      logoUrl: rawImages.logoUrl,
-      gallery: rawImages.gallery.map((item) => ({ ...item, sourceUrl: item.url })),
+      logoUrl: usableLogo,
+      gallery: usableGallery.map((item) => ({ ...item, sourceUrl: item.url })),
     };
   }
 
@@ -50,11 +64,11 @@ export async function mirrorAcademyImagesToS3(
   const gallery: StoredAcademyImages["gallery"] = [];
   let logoUrl: string | null = null;
 
-  if (rawImages.logoUrl) {
-    logoUrl = await uploadRemoteImage(config, sourcePrefix, sourcePostId, "logo", 0, rawImages.logoUrl);
+  if (usableLogo) {
+    logoUrl = await uploadRemoteImage(config, sourcePrefix, sourcePostId, "logo", 0, usableLogo);
   }
 
-  for (const item of rawImages.gallery) {
+  for (const item of usableGallery) {
     const uploadedUrl = await uploadRemoteImage(
       config,
       sourcePrefix,
@@ -102,10 +116,13 @@ function parseGalleryItem(value: unknown, fallbackOrder: number) {
   if (!value || typeof value !== "object") return null;
   const record = value as Record<string, unknown>;
   const url = typeof record.url === "string" && record.url.trim() ? record.url.trim() : null;
-  if (!url) return null;
+  if (!url || isAcademyPlaceholderImageUrl(url)) return null;
 
   const type = record.type === "logo" ? "logo" : "interior";
   const order = typeof record.order === "number" && Number.isFinite(record.order) ? record.order : fallbackOrder;
+  const sourceUrl =
+    typeof record.sourceUrl === "string" && record.sourceUrl.trim() ? record.sourceUrl.trim() : null;
+  if (isAcademyPlaceholderImageUrl(sourceUrl)) return null;
 
-  return { type, order, url } as StoredAcademyImages["gallery"][number];
+  return { type, order, url, sourceUrl } as StoredAcademyImages["gallery"][number];
 }

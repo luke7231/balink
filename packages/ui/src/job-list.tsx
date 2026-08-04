@@ -14,7 +14,7 @@ export function JobList({ jobs, getHref, linkComponent }: JobListProps) {
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid min-w-0 gap-4">
       {jobs.map((job) => (
         <JobCard key={job.id} job={job} href={getHref(job)} linkComponent={linkComponent} />
       ))}

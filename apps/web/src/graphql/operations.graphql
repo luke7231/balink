@@ -29,6 +29,7 @@ query JobPosts($pagination: PaginationInput) {
       payMaxManwon
       payNegotiable
       representativePayText
+      academyThumbnailUrl
       createdAt
       updatedAt
     }

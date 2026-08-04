@@ -45,6 +45,7 @@ export interface JobPostSummary {
   payMaxManwon: number | null;
   payNegotiable: boolean;
   representativePayText: string | null;
+  academyThumbnailUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -13,9 +13,11 @@ import {
 import { graphqlRequest } from "./client";
 
 export async function fetchJobPosts(page = 1, limit = 20): Promise<JobPostsQuery["jobPosts"]> {
-  const data = await graphqlRequest<JobPostsQuery>(JobPostsDocument, {
-    pagination: { page, limit },
-  });
+  const data = await graphqlRequest<JobPostsQuery>(
+    JobPostsDocument,
+    { pagination: { page, limit } },
+    { revalidate: 0 },
+  );
   return data.jobPosts;
 }
 

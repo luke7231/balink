@@ -1,6 +1,6 @@
 import iconv from "iconv-lite";
 import { load } from "cheerio";
-import type { RawAcademyImages } from "@black-swan/domain";
+import { isAcademyPlaceholderImageUrl, type RawAcademyImages } from "@black-swan/domain";
 
 const BASE_URL = "https://www.balletmania.com";
 
@@ -18,14 +18,17 @@ export function parseBalletmaniaAcademyImages(html: string): RawAcademyImages | 
     .find('img[src*="/PEG/"]')
     .each(function () {
       if (logoUrl) return;
-      logoUrl = toAbsolute($(this).attr("src"));
+      const candidate = toAbsolute($(this).attr("src"));
+      if (candidate && !isAcademyPlaceholderImageUrl(candidate)) {
+        logoUrl = candidate;
+      }
     });
 
   const gallery = [0, 1, 2, 3]
     .map((index) => {
       const src = $(`#my_cphoto${index}`).attr("src");
       const url = toAbsolute(src);
-      if (!url) return null;
+      if (!url || isAcademyPlaceholderImageUrl(url)) return null;
       return {
         type: "interior" as const,
         order: index + 1,

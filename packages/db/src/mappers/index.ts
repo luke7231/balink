@@ -19,6 +19,8 @@ import {
   type SubstituteSession,
   type SubstituteTimeSlot,
   type SubstituteUrgency,
+  isAcademyPlaceholderImageUrl,
+  pickAcademyThumbnailUrl,
 } from "@black-swan/domain";
 
 type JobPostWithSources = JobPost & {
@@ -48,6 +50,7 @@ export function toJobPostSummary(job: JobPost): JobPostSummary {
     payMaxManwon: job.payMaxManwon,
     payNegotiable: job.payNegotiable,
     representativePayText: job.representativePayText,
+    academyThumbnailUrl: pickAcademyThumbnailUrl(parseAcademyGallery(job.academyGalleryJson), job.academyLogoUrl),
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
   };
@@ -71,7 +74,7 @@ export function toJobPostDetail(job: JobPostWithSources): JobPostDetail {
     displaySections: parseDisplaySections(job.displaySectionsJson),
     representativePay: parseRepresentativePay(job.representativePayJson),
     locationSource: (job.locationSource as LocationSource | null) ?? null,
-    academyLogoUrl: job.academyLogoUrl,
+    academyLogoUrl: isAcademyPlaceholderImageUrl(job.academyLogoUrl) ? null : job.academyLogoUrl,
     academyGallery: parseAcademyGallery(job.academyGalleryJson),
   };
 }
@@ -128,7 +131,9 @@ function parseAcademyGallery(value: unknown): AcademyGalleryImage[] {
       typeof item === "object" &&
       typeof (item as AcademyGalleryImage).type === "string" &&
       typeof (item as AcademyGalleryImage).order === "number" &&
-      typeof (item as AcademyGalleryImage).url === "string",
+      typeof (item as AcademyGalleryImage).url === "string" &&
+      !isAcademyPlaceholderImageUrl((item as AcademyGalleryImage).url) &&
+      !isAcademyPlaceholderImageUrl((item as AcademyGalleryImage).sourceUrl),
   );
 }
 

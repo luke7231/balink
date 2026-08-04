@@ -46,6 +46,7 @@ export type JobPost = {
   __typename?: 'JobPost';
   academyGallery: Array<AcademyGalleryImage>;
   academyLogoUrl?: Maybe<Scalars['String']['output']>;
+  academyThumbnailUrl?: Maybe<Scalars['String']['output']>;
   audienceTypes: Array<Scalars['String']['output']>;
   balletConfidence?: Maybe<Scalars['String']['output']>;
   classCount?: Maybe<Scalars['Int']['output']>;
@@ -109,6 +110,7 @@ export type JobPostSourceLink = {
 
 export type JobPostSummary = {
   __typename?: 'JobPostSummary';
+  academyThumbnailUrl?: Maybe<Scalars['String']['output']>;
   audienceTypes: Array<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
   days: Array<Scalars['String']['output']>;
@@ -559,6 +561,7 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export type JobPostResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['JobPost'] = ResolversParentTypes['JobPost']> = {
   academyGallery?: Resolver<Array<ResolversTypes['AcademyGalleryImage']>, ParentType, ContextType>;
   academyLogoUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  academyThumbnailUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   audienceTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   balletConfidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   classCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -615,6 +618,7 @@ export type JobPostSourceLinkResolvers<ContextType = GraphQLContext, ParentType 
 };
 
 export type JobPostSummaryResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['JobPostSummary'] = ResolversParentTypes['JobPostSummary']> = {
+  academyThumbnailUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   audienceTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   days?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
