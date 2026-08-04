@@ -20,7 +20,7 @@ import {
   type SubstituteTimeSlot,
   type SubstituteUrgency,
   isAcademyPlaceholderImageUrl,
-  pickAcademyThumbnailUrl,
+  pickAcademyThumbnail,
 } from "@black-swan/domain";
 
 type JobPostWithSources = JobPost & {
@@ -30,6 +30,11 @@ type JobPostWithSources = JobPost & {
 };
 
 export function toJobPostSummary(job: JobPost): JobPostSummary {
+  const thumbnail = pickAcademyThumbnail(
+    parseAcademyGallery(job.academyGalleryJson),
+    job.academyLogoUrl,
+  );
+
   return {
     id: job.id,
     title: job.title,
@@ -50,7 +55,8 @@ export function toJobPostSummary(job: JobPost): JobPostSummary {
     payMaxManwon: job.payMaxManwon,
     payNegotiable: job.payNegotiable,
     representativePayText: job.representativePayText,
-    academyThumbnailUrl: pickAcademyThumbnailUrl(parseAcademyGallery(job.academyGalleryJson), job.academyLogoUrl),
+    academyThumbnailUrl: thumbnail?.url ?? null,
+    academyThumbnailType: thumbnail?.type ?? null,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
   };

@@ -24,6 +24,7 @@ export interface JobCardData {
   payMaxManwon?: number | null;
   representativePayText?: string | null;
   academyThumbnailUrl?: string | null;
+  academyThumbnailType?: string | null;
 }
 
 interface JobCardProps {
@@ -60,7 +61,11 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
                 alt=""
                 width={80}
                 height={80}
-                className="block object-cover transition duration-300 group-hover:scale-105"
+                className={
+                  job.academyThumbnailType === "interior"
+                    ? "block object-cover transition duration-300 group-hover:scale-105"
+                    : "block object-contain p-1.5"
+                }
                 style={{ width: 80, height: 80 }}
               />
             ) : (

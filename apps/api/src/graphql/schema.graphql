@@ -57,6 +57,7 @@ type JobPostSummary {
   payNegotiable: Boolean!
   representativePayText: String
   academyThumbnailUrl: String
+  academyThumbnailType: String
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -112,6 +113,7 @@ type JobPost {
   payNegotiable: Boolean!
   representativePayText: String
   academyThumbnailUrl: String
+  academyThumbnailType: String
   displaySections: [DisplaySection!]!
   representativePay: RepresentativePay
   locationSource: String

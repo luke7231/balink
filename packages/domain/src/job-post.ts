@@ -1,5 +1,5 @@
 import type { SourceName } from "./enums.js";
-import type { AcademyGalleryImage } from "./academy-images.js";
+import type { AcademyGalleryImage, AcademyGalleryImageType } from "./academy-images.js";
 import type { DisplaySection, LocationSource, RepresentativePay } from "./formatted-post.js";
 
 export interface JobPostFilterInput {
@@ -46,6 +46,7 @@ export interface JobPostSummary {
   payNegotiable: boolean;
   representativePayText: string | null;
   academyThumbnailUrl: string | null;
+  academyThumbnailType: AcademyGalleryImageType | null;
   createdAt: Date;
   updatedAt: Date;
 }

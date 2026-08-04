@@ -30,6 +30,7 @@ query JobPosts($filter: JobPostFilterInput, $pagination: PaginationInput) {
       payNegotiable
       representativePayText
       academyThumbnailUrl
+      academyThumbnailType
       createdAt
       updatedAt
     }

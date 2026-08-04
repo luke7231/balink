@@ -18,6 +18,11 @@ export interface StoredAcademyImages {
   gallery: AcademyGalleryImage[];
 }
 
+export interface AcademyThumbnail {
+  url: string;
+  type: AcademyGalleryImageType;
+}
+
 /** 발레매니아 등 빈 슬롯용 플레이스홀더 이미지 */
 export function isAcademyPlaceholderImageUrl(url: string | null | undefined): boolean {
   if (!url?.trim()) return true;
@@ -32,14 +37,48 @@ export function isAcademyPlaceholderImageUrl(url: string | null | undefined): bo
   );
 }
 
+function isUsableImageUrl(url: string | null | undefined): url is string {
+  return Boolean(url?.trim()) && !isAcademyPlaceholderImageUrl(url);
+}
+
+export function pickAcademyThumbnail(
+  gallery: Array<{
+    type?: string | null;
+    url?: string | null;
+    sourceUrl?: string | null;
+  }> | null | undefined,
+  logoUrl?: string | null,
+): AcademyThumbnail | null {
+  const usable = (gallery ?? []).filter((item) => {
+    if (!isUsableImageUrl(item.url)) return false;
+    // sourceUrl이 있을 때만 원본 플레이스홀더 여부를 검사한다.
+    if (item.sourceUrl?.trim() && isAcademyPlaceholderImageUrl(item.sourceUrl)) return false;
+    return true;
+  });
+
+  const interior = usable.find((item) => item.type === "interior");
+  if (interior?.url?.trim()) {
+    return { url: interior.url.trim(), type: "interior" };
+  }
+
+  if (isUsableImageUrl(logoUrl)) {
+    return { url: logoUrl.trim(), type: "logo" };
+  }
+
+  const fallback = usable.find((item) => item.url?.trim());
+  if (fallback?.url?.trim()) {
+    return {
+      url: fallback.url.trim(),
+      type: fallback.type === "logo" ? "logo" : "interior",
+    };
+  }
+
+  return null;
+}
+
 export function pickAcademyThumbnailUrl(
-  gallery: Array<{ url?: string | null; sourceUrl?: string | null }> | null | undefined,
+  gallery: Array<{ url?: string | null; sourceUrl?: string | null; type?: string | null }> | null | undefined,
   logoUrl?: string | null,
 ): string | null {
-  for (const item of gallery ?? []) {
-    if (isAcademyPlaceholderImageUrl(item.url) || isAcademyPlaceholderImageUrl(item.sourceUrl)) continue;
-    if (item.url?.trim()) return item.url.trim();
-  }
-  if (logoUrl?.trim() && !isAcademyPlaceholderImageUrl(logoUrl)) return logoUrl.trim();
-  return null;
+  return pickAcademyThumbnail(gallery, logoUrl)?.url ?? null;
 }
