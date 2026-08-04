@@ -1,3 +1,4 @@
+import "./config.js";
 import { createServer } from "node:http";
 import { prisma } from "@black-swan/db";
 import { createYoga } from "graphql-yoga";
