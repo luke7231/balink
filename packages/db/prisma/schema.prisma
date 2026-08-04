@@ -88,6 +88,7 @@ model JobPost {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   jobPostSources    JobPostSource[]
+  bookmarks         JobBookmark[]
 
   @@index([postedAt])
   @@index([sourcePrimary])
@@ -190,6 +191,7 @@ model User {
   accounts         Account[]
   sessions         Session[]
   interestRegions  UserInterestRegion[]
+  jobBookmarks     JobBookmark[]
 }
 
 model UserInterestRegion {
@@ -202,6 +204,19 @@ model UserInterestRegion {
 
   @@unique([userId, sido, sigungu])
   @@index([userId])
+}
+
+model JobBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  jobPostId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobPost   JobPost  @relation(fields: [jobPostId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobPostId])
+  @@index([userId, createdAt])
+  @@index([jobPostId])
 }
 
 model Account {

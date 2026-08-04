@@ -50,6 +50,17 @@ export default async function AccountPage() {
         </section>
 
         <section className="mt-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-zinc-900">저장한 공고</h2>
+          <p className="mt-1 text-sm text-zinc-500">관심 있는 채용 공고를 모아 볼 수 있습니다.</p>
+          <Link
+            href="/saved"
+            className="mt-4 inline-flex rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:border-rose-200 hover:text-rose-700"
+          >
+            저장한 공고 보기
+          </Link>
+        </section>
+
+        <section className="mt-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-base font-semibold text-zinc-900">관심지역</h2>
           <p className="mt-1 text-sm text-zinc-500">
             알림을 받을 시·군·구를 원하는 만큼 추가하세요.

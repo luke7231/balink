@@ -34,6 +34,14 @@ export async function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps)
           >
             대타 게시판{substituteCount != null ? ` (${substituteCount})` : ""}
           </Link>
+          {user ? (
+            <Link
+              href="/saved"
+              className="rounded-full px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
+            >
+              저장한 공고
+            </Link>
+          ) : null}
 
           {user ? (
             <div className="ml-1 flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-2 py-1.5">

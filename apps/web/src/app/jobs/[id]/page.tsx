@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { prisma } from "@black-swan/db";
 import {
   formatJobType,
   formatLocation,
@@ -9,6 +10,8 @@ import {
   formatTimeSlot,
 } from "@black-swan/domain";
 import { Badge } from "@black-swan/ui/badge";
+import { auth } from "@/auth";
+import { BookmarkButton } from "@/components/bookmark-button";
 import { OriginalDescription } from "@/components/original-description";
 import { AcademyGallery } from "@/components/academy-gallery";
 import { fetchJobPost } from "@/lib/graphql/queries";
@@ -21,9 +24,23 @@ interface JobDetailPageProps {
 
 export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const { id } = await params;
-  const job = await fetchJobPost(id);
+  const [job, session] = await Promise.all([fetchJobPost(id), auth()]);
 
   if (!job) notFound();
+
+  const bookmarked = session?.user?.id
+    ? Boolean(
+        await prisma.jobBookmark.findUnique({
+          where: {
+            userId_jobPostId: {
+              userId: session.user.id,
+              jobPostId: id,
+            },
+          },
+          select: { id: true },
+        }),
+      )
+    : false;
 
   const payLabel = formatPay(
     job.payText ?? null,
@@ -35,10 +52,20 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   return (
     <div className="min-h-screen bg-zinc-50">
       <header className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-5">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-5">
           <Link href="/" className="text-sm font-medium text-rose-600 hover:text-rose-700">
             ← 목록으로
           </Link>
+          {session?.user ? (
+            <BookmarkButton jobPostId={id} initialBookmarked={bookmarked} />
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 hover:border-rose-200 hover:text-rose-700"
+            >
+              로그인 후 저장
+            </Link>
+          )}
         </div>
       </header>
 
