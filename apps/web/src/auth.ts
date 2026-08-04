@@ -4,10 +4,16 @@ import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Kakao from "next-auth/providers/kakao";
 import type { Provider } from "next-auth/providers";
+import { finalizeNewUserProfile } from "@/lib/user-profile";
 
 const providers: Provider[] = [
   Kakao({
     allowDangerousEmailAccountLinking: true,
+    authorization: {
+      params: {
+        scope: "profile_nickname profile_image account_email",
+      },
+    },
   }),
 ];
 
@@ -27,10 +33,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
     error: "/login",
   },
+  events: {
+    async createUser({ user }) {
+      if (!user.id) return;
+      await finalizeNewUserProfile({ id: user.id, image: user.image });
+    },
+  },
   callbacks: {
     session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;
+        session.user.name = user.name;
+        session.user.image = user.image;
       }
       return session;
     },

@@ -6,7 +6,7 @@ import { signInWithApple, signInWithKakao } from "@/components/login-actions";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; deleted?: string }>;
 }) {
   const session = await auth();
   if (session?.user) {
@@ -17,6 +17,7 @@ export default async function LoginPage({
   const errorMessage = params.error
     ? "로그인에 실패했습니다. 다시 시도해 주세요."
     : null;
+  const deletedMessage = params.deleted ? "계정이 삭제되었습니다." : null;
 
   return (
     <main className="flex min-h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,#fff1f2,#ffffff_55%)]">
@@ -45,6 +46,12 @@ export default async function LoginPage({
               </p>
             </div>
           </div>
+
+          {deletedMessage ? (
+            <p className="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              {deletedMessage}
+            </p>
+          ) : null}
 
           {errorMessage ? (
             <p className="w-full rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
