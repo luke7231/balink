@@ -244,6 +244,8 @@ export type SourcePostSummary = {
 
 export type SubstitutePost = {
   __typename?: 'SubstitutePost';
+  academyName?: Maybe<Scalars['String']['output']>;
+  applicationInstructions?: Maybe<Scalars['String']['output']>;
   audienceTypes: Array<Scalars['String']['output']>;
   author?: Maybe<Scalars['String']['output']>;
   body?: Maybe<Scalars['String']['output']>;
@@ -257,15 +259,24 @@ export type SubstitutePost = {
   id: Scalars['ID']['output'];
   lessonDates: Array<Scalars['String']['output']>;
   locationText?: Maybe<Scalars['String']['output']>;
+  nextLessonAt?: Maybe<Scalars['DateTime']['output']>;
+  notes: Array<Scalars['String']['output']>;
   payText?: Maybe<Scalars['String']['output']>;
   postedAt?: Maybe<Scalars['DateTime']['output']>;
   recommendCount: Scalars['Int']['output'];
+  recurrence?: Maybe<SubstituteRecurrence>;
+  representativePay?: Maybe<RepresentativePay>;
+  representativePayText?: Maybe<Scalars['String']['output']>;
+  requirements: Array<Scalars['String']['output']>;
+  scheduleKind: Scalars['String']['output'];
+  sessions: Array<SubstituteSession>;
   sido?: Maybe<Scalars['String']['output']>;
   sigungu?: Maybe<Scalars['String']['output']>;
   source: SourceName;
   sourceUrl: Scalars['String']['output'];
   status: SubstitutePostStatus;
   subjectTypes: Array<Scalars['String']['output']>;
+  summary?: Maybe<Scalars['String']['output']>;
   timeSlots: Array<SubstituteTimeSlot>;
   title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
@@ -294,6 +305,7 @@ export enum SubstitutePostStatus {
 
 export type SubstitutePostSummary = {
   __typename?: 'SubstitutePostSummary';
+  academyName?: Maybe<Scalars['String']['output']>;
   audienceTypes: Array<Scalars['String']['output']>;
   author?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
@@ -302,20 +314,66 @@ export type SubstitutePostSummary = {
   id: Scalars['ID']['output'];
   lessonDates: Array<Scalars['String']['output']>;
   locationText?: Maybe<Scalars['String']['output']>;
+  nextLessonAt?: Maybe<Scalars['DateTime']['output']>;
   payText?: Maybe<Scalars['String']['output']>;
   postedAt?: Maybe<Scalars['DateTime']['output']>;
   recommendCount: Scalars['Int']['output'];
+  recurrence?: Maybe<SubstituteRecurrence>;
+  representativePayText?: Maybe<Scalars['String']['output']>;
+  scheduleKind: Scalars['String']['output'];
+  sessions: Array<SubstituteSession>;
   sido?: Maybe<Scalars['String']['output']>;
   sigungu?: Maybe<Scalars['String']['output']>;
   source: SourceName;
   sourceUrl: Scalars['String']['output'];
   status: SubstitutePostStatus;
   subjectTypes: Array<Scalars['String']['output']>;
+  summary?: Maybe<Scalars['String']['output']>;
   timeSlots: Array<SubstituteTimeSlot>;
   title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
   urgency?: Maybe<Scalars['String']['output']>;
   viewCount: Scalars['Int']['output'];
+};
+
+export type SubstituteRecurrence = {
+  __typename?: 'SubstituteRecurrence';
+  audienceTypes: Array<Scalars['String']['output']>;
+  confidence: Scalars['String']['output'];
+  daysOfWeek: Array<Scalars['String']['output']>;
+  durationMinutes?: Maybe<Scalars['Int']['output']>;
+  endDate?: Maybe<Scalars['String']['output']>;
+  endDateInferred: Scalars['Boolean']['output'];
+  endTime?: Maybe<Scalars['String']['output']>;
+  evidence?: Maybe<Scalars['String']['output']>;
+  pay?: Maybe<SubstituteSessionPay>;
+  startDate?: Maybe<Scalars['String']['output']>;
+  startTime?: Maybe<Scalars['String']['output']>;
+  subjectTypes: Array<Scalars['String']['output']>;
+};
+
+export type SubstituteSession = {
+  __typename?: 'SubstituteSession';
+  audienceTypes: Array<Scalars['String']['output']>;
+  confidence: Scalars['String']['output'];
+  date?: Maybe<Scalars['String']['output']>;
+  day?: Maybe<Scalars['String']['output']>;
+  durationMinutes?: Maybe<Scalars['Int']['output']>;
+  endTime?: Maybe<Scalars['String']['output']>;
+  evidence?: Maybe<Scalars['String']['output']>;
+  origin: Scalars['String']['output'];
+  pay?: Maybe<SubstituteSessionPay>;
+  startTime?: Maybe<Scalars['String']['output']>;
+  subjectTypes: Array<Scalars['String']['output']>;
+};
+
+export type SubstituteSessionPay = {
+  __typename?: 'SubstituteSessionPay';
+  confidence: Scalars['String']['output'];
+  evidence?: Maybe<Scalars['String']['output']>;
+  maxManwon?: Maybe<Scalars['Float']['output']>;
+  minManwon?: Maybe<Scalars['Float']['output']>;
+  unit: Scalars['String']['output'];
 };
 
 export type SubstituteTimeSlot = {
@@ -426,6 +484,9 @@ export type ResolversTypes = {
   SubstitutePostFilterInput: SubstitutePostFilterInput;
   SubstitutePostStatus: SubstitutePostStatus;
   SubstitutePostSummary: ResolverTypeWrapper<SubstitutePostSummary>;
+  SubstituteRecurrence: ResolverTypeWrapper<SubstituteRecurrence>;
+  SubstituteSession: ResolverTypeWrapper<SubstituteSession>;
+  SubstituteSessionPay: ResolverTypeWrapper<SubstituteSessionPay>;
   SubstituteTimeSlot: ResolverTypeWrapper<SubstituteTimeSlot>;
 };
 
@@ -458,6 +519,9 @@ export type ResolversParentTypes = {
   SubstitutePostConnection: SubstitutePostConnection;
   SubstitutePostFilterInput: SubstitutePostFilterInput;
   SubstitutePostSummary: SubstitutePostSummary;
+  SubstituteRecurrence: SubstituteRecurrence;
+  SubstituteSession: SubstituteSession;
+  SubstituteSessionPay: SubstituteSessionPay;
   SubstituteTimeSlot: SubstituteTimeSlot;
 };
 
@@ -642,6 +706,8 @@ export type SourcePostSummaryResolvers<ContextType = GraphQLContext, ParentType 
 };
 
 export type SubstitutePostResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['SubstitutePost'] = ResolversParentTypes['SubstitutePost']> = {
+  academyName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  applicationInstructions?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   audienceTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   author?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   body?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -655,15 +721,24 @@ export type SubstitutePostResolvers<ContextType = GraphQLContext, ParentType ext
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lessonDates?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   locationText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  nextLessonAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  notes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   payText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   postedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   recommendCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  recurrence?: Resolver<Maybe<ResolversTypes['SubstituteRecurrence']>, ParentType, ContextType>;
+  representativePay?: Resolver<Maybe<ResolversTypes['RepresentativePay']>, ParentType, ContextType>;
+  representativePayText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  requirements?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  scheduleKind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sessions?: Resolver<Array<ResolversTypes['SubstituteSession']>, ParentType, ContextType>;
   sido?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sigungu?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   source?: Resolver<ResolversTypes['SourceName'], ParentType, ContextType>;
   sourceUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['SubstitutePostStatus'], ParentType, ContextType>;
   subjectTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  summary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timeSlots?: Resolver<Array<ResolversTypes['SubstituteTimeSlot']>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -679,6 +754,7 @@ export type SubstitutePostConnectionResolvers<ContextType = GraphQLContext, Pare
 };
 
 export type SubstitutePostSummaryResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['SubstitutePostSummary'] = ResolversParentTypes['SubstitutePostSummary']> = {
+  academyName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   audienceTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   author?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -687,20 +763,66 @@ export type SubstitutePostSummaryResolvers<ContextType = GraphQLContext, ParentT
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lessonDates?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   locationText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  nextLessonAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   payText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   postedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   recommendCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  recurrence?: Resolver<Maybe<ResolversTypes['SubstituteRecurrence']>, ParentType, ContextType>;
+  representativePayText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  scheduleKind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sessions?: Resolver<Array<ResolversTypes['SubstituteSession']>, ParentType, ContextType>;
   sido?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sigungu?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   source?: Resolver<ResolversTypes['SourceName'], ParentType, ContextType>;
   sourceUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['SubstitutePostStatus'], ParentType, ContextType>;
   subjectTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  summary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timeSlots?: Resolver<Array<ResolversTypes['SubstituteTimeSlot']>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   urgency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   viewCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type SubstituteRecurrenceResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['SubstituteRecurrence'] = ResolversParentTypes['SubstituteRecurrence']> = {
+  audienceTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  confidence?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  daysOfWeek?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  durationMinutes?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  endDate?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  endDateInferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  endTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  evidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  pay?: Resolver<Maybe<ResolversTypes['SubstituteSessionPay']>, ParentType, ContextType>;
+  startDate?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  subjectTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type SubstituteSessionResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['SubstituteSession'] = ResolversParentTypes['SubstituteSession']> = {
+  audienceTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  confidence?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  durationMinutes?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  endTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  evidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  origin?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pay?: Resolver<Maybe<ResolversTypes['SubstituteSessionPay']>, ParentType, ContextType>;
+  startTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  subjectTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type SubstituteSessionPayResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['SubstituteSessionPay'] = ResolversParentTypes['SubstituteSessionPay']> = {
+  confidence?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  evidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  maxManwon?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  minManwon?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  unit?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -731,6 +853,9 @@ export type Resolvers<ContextType = GraphQLContext> = {
   SubstitutePost?: SubstitutePostResolvers<ContextType>;
   SubstitutePostConnection?: SubstitutePostConnectionResolvers<ContextType>;
   SubstitutePostSummary?: SubstitutePostSummaryResolvers<ContextType>;
+  SubstituteRecurrence?: SubstituteRecurrenceResolvers<ContextType>;
+  SubstituteSession?: SubstituteSessionResolvers<ContextType>;
+  SubstituteSessionPay?: SubstituteSessionPayResolvers<ContextType>;
   SubstituteTimeSlot?: SubstituteTimeSlotResolvers<ContextType>;
 };
 

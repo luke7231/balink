@@ -49,8 +49,34 @@ export function formatSubstituteUrgency(urgency: string | null): string | null {
 }
 
 export function formatLessonDates(dates: string[]): string {
-  if (dates.length === 0) return "일정 미상";
+  if (dates.length === 0) return "일정 협의";
   return dates.join(", ");
+}
+
+export function formatSubstituteScheduleKind(kind: string | null): string {
+  if (kind === "recurring") return "반복 일정";
+  if (kind === "unscheduled") return "일정 협의";
+  return "확정 일정";
+}
+
+export function formatRecurrenceSummary(recurrence: {
+  startDate?: string | null;
+  endDate?: string | null;
+  daysOfWeek?: string[];
+  startTime?: string | null;
+  endTime?: string | null;
+} | null): string | null {
+  if (!recurrence) return null;
+  const days = recurrence.daysOfWeek?.join("·") || "";
+  const time =
+    recurrence.startTime && recurrence.endTime
+      ? `${recurrence.startTime}~${recurrence.endTime}`
+      : recurrence.startTime || recurrence.endTime || "";
+  const range =
+    recurrence.startDate && recurrence.endDate
+      ? `${recurrence.startDate}~${recurrence.endDate}`
+      : recurrence.endDate || recurrence.startDate || "";
+  return [range, days, time].filter(Boolean).join(" ");
 }
 
 export function formatPay(

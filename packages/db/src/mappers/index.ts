@@ -14,6 +14,9 @@ import {
   type SubstitutePostDetail,
   type SubstitutePostStatus,
   type SubstitutePostSummary,
+  type SubstituteRecurrence,
+  type SubstituteScheduleKind,
+  type SubstituteSession,
   type SubstituteTimeSlot,
   type SubstituteUrgency,
 } from "@black-swan/domain";
@@ -135,8 +138,12 @@ export function toSubstitutePostSummary(post: SubstitutePost): SubstitutePostSum
     source: post.source as SourceName,
     sourceUrl: post.sourceUrl,
     title: post.title,
+    summary: post.summary,
     author: post.author,
     postedAt: post.postedAt,
+    scheduleKind: (post.scheduleKind as SubstituteScheduleKind) || "unscheduled",
+    sessions: parseSessions(post.sessionsJson),
+    recurrence: parseRecurrence(post.recurrenceJson),
     lessonDates: jsonArray(post.lessonDatesJson),
     timeSlots: parseTimeSlots(post.timeSlotsJson),
     audienceTypes: jsonArray(post.audienceTypes),
@@ -146,8 +153,11 @@ export function toSubstitutePostSummary(post: SubstitutePost): SubstitutePostSum
     sigungu: post.sigungu,
     dongOrStation: post.dongOrStation,
     payText: post.payText,
+    representativePayText: post.representativePayText,
+    academyName: post.academyName,
     urgency: (post.urgency as SubstituteUrgency | null) ?? null,
     status: post.status as SubstitutePostStatus,
+    nextLessonAt: post.nextLessonAt,
     expiresAt: post.expiresAt,
     recommendCount: post.recommendCount,
     viewCount: post.viewCount,
@@ -160,11 +170,25 @@ export function toSubstitutePostDetail(post: SubstitutePost): SubstitutePostDeta
   return {
     ...toSubstitutePostSummary(post),
     body: post.body,
+    requirements: jsonArray(post.requirementsJson),
+    applicationInstructions: post.applicationInstructions,
+    notes: jsonArray(post.notesJson),
+    representativePay: parseRepresentativePay(post.representativePayJson),
     contactMethods: jsonArray(post.contactMethodsJson),
     contactEmails: jsonArray(post.contactEmailsJson),
     contactPhones: jsonArray(post.contactPhonesJson),
     classification: jsonValue(post.classificationJson),
   };
+}
+
+function parseSessions(value: unknown): SubstituteSession[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is SubstituteSession => Boolean(item) && typeof item === "object");
+}
+
+function parseRecurrence(value: unknown): SubstituteRecurrence | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as SubstituteRecurrence;
 }
 
 function parseTimeSlots(value: unknown): SubstituteTimeSlot[] {

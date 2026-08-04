@@ -3,8 +3,27 @@ query SubstitutePosts($filter: SubstitutePostFilterInput, $pagination: Paginatio
     items {
       id
       title
+      summary
       author
       postedAt
+      scheduleKind
+      sessions {
+        date
+        day
+        startTime
+        endTime
+        audienceTypes
+        subjectTypes
+        origin
+      }
+      recurrence {
+        startDate
+        endDate
+        daysOfWeek
+        startTime
+        endTime
+        evidence
+      }
       lessonDates
       timeSlots {
         start
@@ -16,8 +35,11 @@ query SubstitutePosts($filter: SubstitutePostFilterInput, $pagination: Paginatio
       sigungu
       dongOrStation
       payText
+      representativePayText
+      academyName
       urgency
       status
+      nextLessonAt
       sourceUrl
       createdAt
       updatedAt
@@ -35,9 +57,40 @@ query SubstitutePost($id: ID!) {
   substitutePost(id: $id) {
     id
     title
+    summary
     author
     postedAt
     body
+    scheduleKind
+    sessions {
+      date
+      day
+      startTime
+      endTime
+      durationMinutes
+      audienceTypes
+      subjectTypes
+      pay {
+        unit
+        minManwon
+        maxManwon
+        evidence
+      }
+      evidence
+      origin
+    }
+    recurrence {
+      startDate
+      endDate
+      endDateInferred
+      daysOfWeek
+      startTime
+      endTime
+      durationMinutes
+      audienceTypes
+      subjectTypes
+      evidence
+    }
     lessonDates
     timeSlots {
       start
@@ -49,8 +102,22 @@ query SubstitutePost($id: ID!) {
     sigungu
     dongOrStation
     payText
+    representativePay {
+      unit
+      displayText
+      minManwon
+      maxManwon
+      evidence
+      confidence
+    }
+    representativePayText
+    academyName
+    requirements
+    applicationInstructions
+    notes
     urgency
     status
+    nextLessonAt
     expiresAt
     recommendCount
     viewCount

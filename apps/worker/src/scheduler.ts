@@ -32,13 +32,17 @@ async function tickScheduler(): Promise<void> {
     console.info(
       `[scheduler] completed ${date}: runId=${result.runId} collected=${result.collected} classified=${result.classified} imported=${result.imported}`,
     );
+  } catch (error) {
+    console.error(`[scheduler] job scraper failed ${date}`, error);
+  }
 
+  try {
     const substituteResult = await runSubstituteScraper();
     console.info(
-      `[scheduler] substitute completed ${date}: runId=${substituteResult.runId} collected=${substituteResult.collected} imported=${substituteResult.imported} skipped=${substituteResult.skipped}`,
+      `[scheduler] substitute completed ${date}: runId=${substituteResult.runId} collected=${substituteResult.collected} normalized=${substituteResult.normalized} unchanged=${substituteResult.unchanged} llmFailed=${substituteResult.llmFailed}`,
     );
   } catch (error) {
-    console.error(`[scheduler] failed ${date}`, error);
+    console.error(`[scheduler] substitute scraper failed ${date}`, error);
   } finally {
     running = false;
   }

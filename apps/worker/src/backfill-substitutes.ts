@@ -4,7 +4,7 @@ import { runSubstituteScraper } from "./substitute-scraper.js";
 async function main() {
   const result = await runSubstituteScraper();
   console.log(
-    `[backfill-substitutes] complete: collected=${result.collected} imported=${result.imported} skipped=${result.skipped}`,
+    `[backfill-substitutes] complete: collected=${result.collected} normalized=${result.normalized} unchanged=${result.unchanged} llmFailed=${result.llmFailed}`,
   );
 }
 

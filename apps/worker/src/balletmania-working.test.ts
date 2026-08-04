@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  htmlToPlainText,
   normalizePostedAtRaw,
   parseWorkingDetail,
   parseWorkingListings,
@@ -27,6 +28,7 @@ test("parseWorkingListings extracts no from href and skips notice rows", () => {
   const listings = parseWorkingListings(html, { todayKstDate: "2026-07-30" });
   assert.equal(listings.length, 1);
   assert.equal(listings[0]?.no, "12277");
+  assert.equal(listings[0]?.author, "이호석");
   assert.equal(listings[0]?.postedAtIso, "2026-07-30T10:55:04+09:00");
 });
 
@@ -35,10 +37,16 @@ test("normalizePostedAtRaw handles date-only values", () => {
   assert.equal(posted.postedAtIso, "2026-07-29T00:00:00+09:00");
 });
 
-test("parseWorkingDetail reads tmp_content and contact fields", () => {
+test("htmlToPlainText converts br tags to newlines", () => {
+  const text = htmlToPlainText("7/30 목 4시<br>성인발레 대강<br><button>추천</button>");
+  assert.match(text || "", /7\/30 목 4시\n성인발레 대강/);
+  assert.doesNotMatch(text || "", /추천/);
+});
+
+test("parseWorkingDetail reads cleaned tmp_content and contact fields", () => {
   const html = `
     <div class="view_title">마포 대강</div>
-    <textarea id="tmp_content">7/30 목 4시 성인발레 대강\n010-1234-5678</textarea>
+    <textarea id="tmp_content">7/30 목 4시<br>성인발레 대강<br>010-1234-5678</textarea>
     <table><tr><td>핸드폰 : 010-1234-5678</td></tr><tr><td>이메일 : test@example.com</td></tr></table>
     조회 : 34
   `;
@@ -46,12 +54,13 @@ test("parseWorkingDetail reads tmp_content and contact fields", () => {
   const detail = parseWorkingDetail(html);
   assert.equal(detail.state, "ok");
   assert.match(detail.detailText || "", /7\/30/);
+  assert.doesNotMatch(detail.detailText || "", /<br>/);
   assert.deepEqual(detail.contactPhones, ["010-1234-5678"]);
   assert.deepEqual(detail.contactEmails, ["test@example.com"]);
 });
 
 test("hashSubstituteContent changes when body changes", () => {
-  const first = hashSubstituteContent({ title: "A", detailText: "before" });
-  const second = hashSubstituteContent({ title: "A", detailText: "after" });
+  const first = hashSubstituteContent("A", "before");
+  const second = hashSubstituteContent("A", "after");
   assert.notEqual(first, second);
 });

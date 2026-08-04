@@ -169,13 +169,54 @@ type SubstituteTimeSlot {
   raw: String
 }
 
+type SubstituteSessionPay {
+  unit: String!
+  minManwon: Float
+  maxManwon: Float
+  evidence: String
+  confidence: String!
+}
+
+type SubstituteSession {
+  date: String
+  day: String
+  startTime: String
+  endTime: String
+  durationMinutes: Int
+  audienceTypes: [String!]!
+  subjectTypes: [String!]!
+  pay: SubstituteSessionPay
+  evidence: String
+  confidence: String!
+  origin: String!
+}
+
+type SubstituteRecurrence {
+  startDate: String
+  endDate: String
+  endDateInferred: Boolean!
+  daysOfWeek: [String!]!
+  startTime: String
+  endTime: String
+  durationMinutes: Int
+  audienceTypes: [String!]!
+  subjectTypes: [String!]!
+  pay: SubstituteSessionPay
+  evidence: String
+  confidence: String!
+}
+
 type SubstitutePostSummary {
   id: ID!
   source: SourceName!
   sourceUrl: String!
   title: String!
+  summary: String
   author: String
   postedAt: DateTime
+  scheduleKind: String!
+  sessions: [SubstituteSession!]!
+  recurrence: SubstituteRecurrence
   lessonDates: [String!]!
   timeSlots: [SubstituteTimeSlot!]!
   audienceTypes: [String!]!
@@ -185,8 +226,11 @@ type SubstitutePostSummary {
   sigungu: String
   dongOrStation: String
   payText: String
+  representativePayText: String
+  academyName: String
   urgency: String
   status: SubstitutePostStatus!
+  nextLessonAt: DateTime
   expiresAt: DateTime
   recommendCount: Int!
   viewCount: Int!
@@ -199,9 +243,13 @@ type SubstitutePost {
   source: SourceName!
   sourceUrl: String!
   title: String!
+  summary: String
   author: String
   postedAt: DateTime
   body: String
+  scheduleKind: String!
+  sessions: [SubstituteSession!]!
+  recurrence: SubstituteRecurrence
   lessonDates: [String!]!
   timeSlots: [SubstituteTimeSlot!]!
   audienceTypes: [String!]!
@@ -211,8 +259,15 @@ type SubstitutePost {
   sigungu: String
   dongOrStation: String
   payText: String
+  representativePay: RepresentativePay
+  representativePayText: String
+  academyName: String
+  requirements: [String!]!
+  applicationInstructions: String
+  notes: [String!]!
   urgency: String
   status: SubstitutePostStatus!
+  nextLessonAt: DateTime
   expiresAt: DateTime
   recommendCount: Int!
   viewCount: Int!

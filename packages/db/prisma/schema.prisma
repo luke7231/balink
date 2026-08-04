@@ -110,40 +110,55 @@ model JobPostSource {
 }
 
 model SubstitutePost {
-  id                 String               @id @default(cuid())
-  source             SourceName
-  sourcePostId       String
-  sourceUrl          String
-  title              String
-  body               String?
-  author             String?
-  authorMemberNo     String?
-  postedAt           DateTime?
-  lessonDatesJson    Json
-  timeSlotsJson      Json
-  audienceTypes      Json
-  subjectTypes       Json
-  locationText       String?
-  sido               String?
-  sigungu            String?
-  dongOrStation      String?
-  payText            String?
-  contactMethodsJson Json
-  contactEmailsJson  Json
-  contactPhonesJson  Json
-  urgency            String?
-  status             SubstitutePostStatus @default(OPEN)
-  expiresAt          DateTime?
-  recommendCount     Int                  @default(0)
-  viewCount          Int                  @default(0)
-  rawJson            Json
-  classificationJson Json?
-  contentHash        String?
-  lastSeenAt         DateTime             @default(now())
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  id                       String               @id @default(cuid())
+  source                   SourceName
+  sourcePostId             String
+  sourceUrl                String
+  title                    String
+  summary                  String?
+  body                     String?
+  author                   String?
+  authorMemberNo           String?
+  postedAt                 DateTime?
+  sessionsJson             Json                 @default("[]")
+  recurrenceJson           Json?
+  scheduleKind             String               @default("unscheduled")
+  lessonDatesJson          Json
+  timeSlotsJson            Json
+  audienceTypes            Json
+  subjectTypes             Json
+  locationText             String?
+  sido                     String?
+  sigungu                  String?
+  dongOrStation            String?
+  payText                  String?
+  representativePayJson    Json?
+  representativePayText    String?
+  academyName              String?
+  requirementsJson         Json                 @default("[]")
+  applicationInstructions  String?
+  notesJson                Json                 @default("[]")
+  contactMethodsJson       Json
+  contactEmailsJson        Json
+  contactPhonesJson        Json
+  urgency                  String?
+  status                   SubstitutePostStatus @default(OPEN)
+  nextLessonAt             DateTime?
+  expiresAt                DateTime?
+  recommendCount           Int                  @default(0)
+  viewCount                Int                  @default(0)
+  rawJson                  Json
+  classificationJson       Json?
+  contentHash              String?
+  normalizationVersion     Int                  @default(0)
+  normalizedAt             DateTime?
+  lastSeenAt               DateTime             @default(now())
+  lastDeletionCheckAt      DateTime?
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
 
   @@unique([source, sourcePostId])
+  @@index([status, nextLessonAt])
   @@index([status, postedAt])
   @@index([status, expiresAt])
   @@index([contentHash])

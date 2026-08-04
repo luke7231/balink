@@ -253,10 +253,14 @@ export interface UpsertSubstitutePostInput {
   sourcePostId: string;
   sourceUrl: string;
   title: string;
+  summary: string | null;
   body: string | null;
   author: string | null;
   authorMemberNo: string | null;
   postedAt: Date | null;
+  sessions: import("@black-swan/domain").SubstituteSession[];
+  recurrence: import("@black-swan/domain").SubstituteRecurrence | null;
+  scheduleKind: import("@black-swan/domain").SubstituteScheduleKind;
   lessonDates: string[];
   timeSlots: Array<{ start: string | null; end: string | null; raw: string | null }>;
   audienceTypes: string[];
@@ -266,17 +270,26 @@ export interface UpsertSubstitutePostInput {
   sigungu: string | null;
   dongOrStation: string | null;
   payText: string | null;
+  representativePay: import("@black-swan/domain").RepresentativePay | null;
+  representativePayText: string | null;
+  academyName: string | null;
+  requirements: string[];
+  applicationInstructions: string | null;
+  notes: string[];
   contactMethods: string[];
   contactEmails: string[];
   contactPhones: string[];
   urgency: string | null;
   status: "OPEN" | "EXPIRED" | "DELETED";
+  nextLessonAt: Date | null;
   expiresAt: Date | null;
   recommendCount: number;
   viewCount: number;
   raw: Record<string, unknown>;
   classification: Record<string, unknown>;
   contentHash: string;
+  normalizationVersion: number;
+  normalizedAt: Date;
   lastSeenAt: Date;
 }
 
@@ -293,7 +306,7 @@ export class SubstitutePostRepository {
   async findMany(where: Prisma.SubstitutePostWhereInput, skip: number, take: number) {
     const items = await prisma.substitutePost.findMany({
       where,
-      orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
+      orderBy: [{ nextLessonAt: { sort: "asc", nulls: "last" } }, { postedAt: "desc" }, { createdAt: "desc" }],
       skip,
       take,
     });
@@ -314,23 +327,57 @@ export class SubstitutePostRepository {
 
     return prisma.substitutePost.findMany({
       where: { source, sourcePostId: { in: sourcePostIds } },
-      select: { sourcePostId: true, contentHash: true, status: true },
+      select: {
+        id: true,
+        sourcePostId: true,
+        contentHash: true,
+        normalizationVersion: true,
+        status: true,
+        lastDeletionCheckAt: true,
+        nextLessonAt: true,
+      },
     });
   }
 
   async findOpenPostsNeedingLifecycleCheck(limit = 50) {
+    const now = new Date();
+    const soon = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+
     return prisma.substitutePost.findMany({
-      where: { status: "OPEN" },
-      orderBy: [{ expiresAt: "asc" }, { postedAt: "desc" }],
+      where: {
+        status: "OPEN",
+        OR: [{ nextLessonAt: { lte: soon } }, { expiresAt: { lte: now } }],
+      },
+      orderBy: [{ nextLessonAt: "asc" }, { expiresAt: "asc" }],
       take: limit,
       select: {
         id: true,
         source: true,
         sourcePostId: true,
         sourceUrl: true,
-        lessonDatesJson: true,
         expiresAt: true,
+        nextLessonAt: true,
+        lastDeletionCheckAt: true,
       },
+    });
+  }
+
+  async touchLastSeenAt(source: SourceName, sourcePostId: string, lastSeenAt: Date) {
+    return prisma.substitutePost.update({
+      where: {
+        source_sourcePostId: {
+          source,
+          sourcePostId,
+        },
+      },
+      data: { lastSeenAt },
+    });
+  }
+
+  async markDeletionChecked(id: string, checkedAt: Date) {
+    return prisma.substitutePost.update({
+      where: { id },
+      data: { lastDeletionCheckAt: checkedAt },
     });
   }
 
@@ -338,10 +385,14 @@ export class SubstitutePostRepository {
     const data = {
       sourceUrl: input.sourceUrl,
       title: input.title,
+      summary: input.summary,
       body: input.body,
       author: input.author,
       authorMemberNo: input.authorMemberNo,
       postedAt: input.postedAt,
+      sessionsJson: input.sessions as unknown as Prisma.InputJsonValue,
+      recurrenceJson: (input.recurrence as unknown as Prisma.InputJsonValue) ?? null,
+      scheduleKind: input.scheduleKind,
       lessonDatesJson: input.lessonDates as unknown as Prisma.InputJsonValue,
       timeSlotsJson: input.timeSlots as unknown as Prisma.InputJsonValue,
       audienceTypes: input.audienceTypes as unknown as Prisma.InputJsonValue,
@@ -351,17 +402,26 @@ export class SubstitutePostRepository {
       sigungu: input.sigungu,
       dongOrStation: input.dongOrStation,
       payText: input.payText,
+      representativePayJson: (input.representativePay as unknown as Prisma.InputJsonValue) ?? null,
+      representativePayText: input.representativePayText,
+      academyName: input.academyName,
+      requirementsJson: input.requirements as unknown as Prisma.InputJsonValue,
+      applicationInstructions: input.applicationInstructions,
+      notesJson: input.notes as unknown as Prisma.InputJsonValue,
       contactMethodsJson: input.contactMethods as unknown as Prisma.InputJsonValue,
       contactEmailsJson: input.contactEmails as unknown as Prisma.InputJsonValue,
       contactPhonesJson: input.contactPhones as unknown as Prisma.InputJsonValue,
       urgency: input.urgency,
       status: input.status,
+      nextLessonAt: input.nextLessonAt,
       expiresAt: input.expiresAt,
       recommendCount: input.recommendCount,
       viewCount: input.viewCount,
       rawJson: input.raw as unknown as Prisma.InputJsonValue,
       classificationJson: input.classification as unknown as Prisma.InputJsonValue,
       contentHash: input.contentHash,
+      normalizationVersion: input.normalizationVersion,
+      normalizedAt: input.normalizedAt,
       lastSeenAt: input.lastSeenAt,
     };
 

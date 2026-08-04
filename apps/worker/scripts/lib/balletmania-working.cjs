@@ -109,12 +109,39 @@ function parseWorkingListings(html, options = {}) {
 
     const cells = $row.children("td");
     const title = cleanText(anchor.text());
-    const author = cleanText(cells.eq(2).text()) || null;
+    const cellTexts = cells
+      .toArray()
+      .map((cell) => cleanText($(cell).text()))
+      .filter(Boolean);
+    const titleCellIndex = cells.index(anchor.closest("td"));
+
+    let author = null;
+    for (let index = titleCellIndex + 1; index < cellTexts.length; index += 1) {
+      const value = cellTexts[index];
+      if (!value || value === title) continue;
+      if (/^\d+$/.test(value)) continue;
+      if (/^\d{2}:\d{2}:\d{2}$/.test(value)) continue;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) continue;
+      author = value;
+      break;
+    }
+
+    let postedAtRaw = null;
+    for (let index = cellTexts.length - 1; index >= 0; index -= 1) {
+      const value = cellTexts[index];
+      if (/^\d{2}:\d{2}:\d{2}$/.test(value) || /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        postedAtRaw = value;
+        break;
+      }
+    }
+
     const recommendCount = Number($row.find(".recommend-btn[data-count]").attr("data-count") || 0);
     const authorMemberNo = $row.find(".recommend-btn[data-mno]").attr("data-mno") || null;
-    const viewCount = Number(cleanText(cells.eq(4).text()) || 0);
-    const posted = normalizePostedAtRaw(cleanText(cells.eq(5).text()), todayKstDate);
-    const listSeq = cleanText(cells.eq(0).text()) || null;
+    const viewCount = Number(
+      cellTexts.find((value, index) => index > titleCellIndex && /^\d+$/.test(value)) || 0,
+    );
+    const posted = normalizePostedAtRaw(postedAtRaw, todayKstDate);
+    const listSeq = cellTexts[0] || null;
 
     rows.push({
       no,
@@ -144,12 +171,35 @@ function detectWorkingDetailState(html) {
 function parseWorkingDetail(html) {
   const state = detectWorkingDetailState(html);
   if (state !== "ok") {
-    return { state, title: null, detailText: null, contactPhones: [], contactEmails: [], viewCount: 0, applicantCount: 0 };
+    return {
+      state,
+      title: null,
+      detailText: null,
+      author: null,
+      postedAtIso: null,
+      contactPhones: [],
+      contactEmails: [],
+      viewCount: 0,
+      applicantCount: 0,
+    };
   }
 
   const $ = cheerio.load(html);
-  const detailText = cleanText($("#tmp_content").text()) || cleanText($("#div_content").text()) || null;
+  const tmp = $("#tmp_content");
+  const rawContent = tmp.length
+    ? tmp.is("textarea")
+      ? tmp.text()
+      : tmp.html() || tmp.text()
+    : $("#div_content").html() || $("#div_content").text() || null;
+  const detailText = cleanDetailHtml(rawContent) || cleanMultilineText($("#div_content").text()) || null;
   const title = cleanText($(".view_title").first().text()) || null;
+  const author =
+    cleanText($(".view_name").first().text()) ||
+    cleanText($(".writer").first().text()) ||
+    cleanText($("td.view_writer").first().text()) ||
+    null;
+  const postedRaw = cleanText($(".view_date").first().text()) || cleanText($("td.view_date").first().text()) || null;
+  const posted = postedRaw ? normalizePostedAtRaw(postedRaw, getTodayKstDate()) : { postedAtRaw: null, postedAtIso: null };
   const bodyText = $.root().text();
   const viewMatch = bodyText.match(/조회\s*:\s*(\d+)/);
   const applicantMatch = bodyText.match(/지원자수\s*:\s*(\d+)/);
@@ -168,12 +218,20 @@ function parseWorkingDetail(html) {
     }
   });
 
+  const detailPhones = detailText ? [...detailText.matchAll(/01[016789]-?\d{3,4}-?\d{4}/g)].map((match) => match[0]) : [];
+  const detailEmails = detailText
+    ? [...detailText.matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)].map((match) => match[0])
+    : [];
+
   return {
     state: "ok",
     title,
     detailText,
-    contactPhones: [...new Set(contactPhones)],
-    contactEmails: [...new Set(contactEmails)],
+    author,
+    postedAtIso: posted.postedAtIso,
+    postedAtRaw: posted.postedAtRaw,
+    contactPhones: [...new Set([...contactPhones, ...detailPhones])],
+    contactEmails: [...new Set([...contactEmails, ...detailEmails])],
     viewCount: viewMatch ? Number(viewMatch[1]) : 0,
     applicantCount: applicantMatch ? Number(applicantMatch[1]) : 0,
   };
@@ -333,6 +391,32 @@ function cleanText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
+function cleanMultilineText(value) {
+  return (
+    String(value || "")
+      .replace(/\u00a0/g, " ")
+      .replace(/\r\n/g, "\n")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .join("\n")
+      .trim() || null
+  );
+}
+
+function htmlToPlainText(html) {
+  if (!html) return null;
+  const $ = cheerio.load(`<div>${html}</div>`, null, false);
+  $("script, style, button, input, textarea, iframe").remove();
+  $("div[class*='btn'], .recommend-btn, .comment, .reply").remove();
+  $("br").replaceWith("\n");
+  return cleanMultilineText($("div").text());
+}
+
+function cleanDetailHtml(html) {
+  return htmlToPlainText(html);
+}
+
 function dedupeByNo(listings) {
   const seen = new Set();
   return listings.filter((listing) => {
@@ -355,8 +439,8 @@ module.exports = {
   parseWorkingListings,
   detectWorkingDetailState,
   parseWorkingDetail,
-  classifySubstitute,
-  computeExpiresAt,
+  cleanDetailHtml,
+  htmlToPlainText,
   dedupeByNo,
   cleanText,
 };

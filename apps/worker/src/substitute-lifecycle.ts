@@ -1,34 +1,43 @@
 import { SubstitutePostRepository } from "@black-swan/db";
-import { fetchEucKrHtml, loginBalletmania, parseWorkingDetail } from "./balletmania-working.js";
+import { deriveSubstituteStatus } from "@black-swan/domain";
+import { detectWorkingDetailState, fetchEucKrHtml, loginBalletmania } from "./balletmania-working.js";
 
 const substitutePostRepository = new SubstitutePostRepository();
+const DELETION_CHECK_COOLDOWN_MS = 6 * 60 * 60 * 1000;
+const MAX_DELETION_CHECKS = 10;
 
 export async function refreshSubstituteLifecycle(limit = 50): Promise<{ expired: number; deleted: number }> {
   const openPosts = await substitutePostRepository.findOpenPostsNeedingLifecycleCheck(limit);
   let expired = 0;
   let deleted = 0;
-  const today = todayKstDate();
+  const now = new Date();
 
   for (const post of openPosts) {
-    const lessonDates = parseLessonDates(post.lessonDatesJson);
-    if (lessonDates.length > 0 && lessonDates.every((date) => date < today)) {
-      await substitutePostRepository.updateStatus(post.id, "EXPIRED");
-      expired += 1;
-      continue;
-    }
-
-    if (post.expiresAt && post.expiresAt < new Date()) {
+    const status = deriveSubstituteStatus({ expiresAt: post.expiresAt, now });
+    if (status === "EXPIRED") {
       await substitutePostRepository.updateStatus(post.id, "EXPIRED");
       expired += 1;
     }
   }
 
-  if (openPosts.length > 0) {
+  const deletionCandidates = openPosts
+    .filter((post) => {
+      if (!post.nextLessonAt) return false;
+      if (post.nextLessonAt.getTime() > now.getTime() + 48 * 60 * 60 * 1000) return false;
+      if (post.lastDeletionCheckAt && now.getTime() - post.lastDeletionCheckAt.getTime() < DELETION_CHECK_COOLDOWN_MS) {
+        return false;
+      }
+      return true;
+    })
+    .slice(0, MAX_DELETION_CHECKS);
+
+  if (deletionCandidates.length > 0) {
     const cookie = await loginBalletmania();
-    for (const post of openPosts.slice(0, 10)) {
+    for (const post of deletionCandidates) {
       const html = await fetchEucKrHtml(post.sourceUrl, cookie);
-      const detail = parseWorkingDetail(html);
-      if (detail.state === "deleted" || detail.state === "missing") {
+      const state = detectWorkingDetailState(html);
+      await substitutePostRepository.markDeletionChecked(post.id, now);
+      if (state === "deleted" || state === "missing") {
         await substitutePostRepository.updateStatus(post.id, "DELETED");
         deleted += 1;
       }
@@ -36,18 +45,4 @@ export async function refreshSubstituteLifecycle(limit = 50): Promise<{ expired:
   }
 
   return { expired, deleted };
-}
-
-function parseLessonDates(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === "string");
-}
-
-function todayKstDate(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
 }

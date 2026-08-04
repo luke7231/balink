@@ -8,3 +8,4 @@ export * from "./pay/index.js";
 export * from "./academy-images.js";
 export * from "./format.js";
 export * from "./substitute-post.js";
+export * from "./substitute-schedule.js";
