@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import {
   ALERT_DAYS,
@@ -7,6 +8,7 @@ import {
   MAX_NOTIFICATION_RULES,
   createNotificationRuleId,
   defaultNotificationRule,
+  formatNotificationRuleSummary,
   formatSidoForDisplay,
   formatTimeSlot,
   type AlertJobType,
@@ -29,16 +31,32 @@ const WEEKDAY_PRESETS = [
 export function NotificationPreferenceForm({
   initialPreference,
   districtGroups,
+  editRuleId,
+  redirectOnSave = "/notifications",
 }: {
   initialPreference: NotificationPreference;
   districtGroups: DistrictGroup[];
+  /** 지정하면 해당 규칙만 수정하는 단건 모드 */
+  editRuleId?: string;
+  redirectOnSave?: string;
 }) {
+  const router = useRouter();
   const [preference, setPreference] = useState(initialPreference);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const singleMode = Boolean(editRuleId);
+
+  const visibleRules = useMemo(() => {
+    if (!editRuleId) return preference.rules;
+    return preference.rules.filter((rule) => rule.id === editRuleId);
+  }, [editRuleId, preference.rules]);
 
   const summary = useMemo(() => buildSummary(preference), [preference]);
+  const editingRule = visibleRules[0] ?? null;
+  const editingIndex = editingRule
+    ? preference.rules.findIndex((rule) => rule.id === editingRule.id)
+    : -1;
 
   function updateRule(ruleId: string, next: NotificationRule) {
     setPreference((prev) => ({
@@ -89,42 +107,110 @@ export function NotificationPreferenceForm({
     });
   }
 
+  function save(nextPreference: NotificationPreference, options?: { redirect?: boolean }) {
+    setMessage(null);
+    setError(null);
+    startTransition(async () => {
+      const result = await saveNotificationPreferenceAction(nextPreference);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setPreference(nextPreference);
+      if (options?.redirect !== false && singleMode) {
+        router.push(redirectOnSave);
+        router.refresh();
+        return;
+      }
+      setMessage("저장했습니다.");
+    });
+  }
+
+  if (singleMode && !editingRule) {
+    return (
+      <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-8 text-center">
+        <p className="text-sm text-zinc-600">수정할 조건을 찾을 수 없습니다.</p>
+        <button
+          type="button"
+          onClick={() => router.push(redirectOnSave)}
+          className="mt-4 text-sm font-semibold text-zinc-800 underline"
+        >
+          알림으로 돌아가기
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
-      <label className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3.5 shadow-sm">
-        <div>
-          <p className="text-sm font-semibold text-zinc-900">알림 받기</p>
-          <p className="mt-0.5 text-xs text-zinc-500">꺼 두면 새 공고 알림이 오지 않습니다.</p>
-        </div>
-        <Toggle
-          checked={preference.enabled}
-          onChange={(enabled) => setPreference((prev) => ({ ...prev, enabled }))}
-        />
-      </label>
+      {!singleMode ? (
+        <label className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3.5 shadow-sm">
+          <div>
+            <p className="text-sm font-semibold text-zinc-900">알림 받기</p>
+            <p className="mt-0.5 text-xs text-zinc-500">꺼 두면 새 공고 알림이 오지 않습니다.</p>
+          </div>
+          <Toggle
+            checked={preference.enabled}
+            onChange={(enabled) => setPreference((prev) => ({ ...prev, enabled }))}
+          />
+        </label>
+      ) : null}
 
       <div
-        className={`space-y-4 ${preference.enabled ? "" : "pointer-events-none opacity-45"}`}
+        className={`space-y-4 ${
+          preference.enabled || singleMode ? "" : "pointer-events-none opacity-45"
+        }`}
       >
-        <div>
-          <h2 className="text-base font-semibold text-zinc-900">알림 규칙</h2>
-          <p className="mt-1 text-xs text-zinc-500">
-            규칙마다 지역·정규/대타·요일·시간대를 따로 정합니다. 하나라도 맞으면 알림이 옵니다.
-          </p>
-        </div>
+        {!singleMode ? (
+          <div>
+            <h2 className="text-base font-semibold text-zinc-900">알림 규칙</h2>
+            <p className="mt-1 text-xs text-zinc-500">
+              규칙마다 지역·정규/대타·요일·시간대를 따로 정합니다. 하나라도 맞으면 알림이 옵니다.
+            </p>
+          </div>
+        ) : null}
 
-        {preference.rules.map((rule, index) => (
+        {visibleRules.map((rule) => (
           <RuleCard
             key={rule.id}
-            index={index}
+            index={editingIndex >= 0 ? editingIndex : preference.rules.indexOf(rule)}
             rule={rule}
             districtGroups={districtGroups}
             canRemove={preference.rules.length > 1}
+            hideHeader={singleMode}
             onChange={(next) => updateRule(rule.id, next)}
-            onRemove={() => removeRule(rule.id)}
+            onRemove={() => {
+              if (singleMode) {
+                const next =
+                  preference.rules.length <= 1
+                    ? {
+                        ...preference,
+                        enabled: false,
+                        rules: [
+                          defaultNotificationRule({
+                            id: rule.id,
+                            enabled: false,
+                            jobType: "regular",
+                            sido: "",
+                            sigungu: "",
+                            days: [],
+                            timeSlots: [],
+                          }),
+                        ],
+                      }
+                    : {
+                        ...preference,
+                        rules: preference.rules.filter((item) => item.id !== rule.id),
+                      };
+                save(next);
+                return;
+              }
+              removeRule(rule.id);
+            }}
           />
         ))}
 
-        {preference.rules.length < MAX_NOTIFICATION_RULES ? (
+        {!singleMode && preference.rules.length < MAX_NOTIFICATION_RULES ? (
           <button
             type="button"
             onClick={addRule}
@@ -132,40 +218,50 @@ export function NotificationPreferenceForm({
           >
             + 규칙 추가
           </button>
-        ) : (
+        ) : null}
+
+        {!singleMode && preference.rules.length >= MAX_NOTIFICATION_RULES ? (
           <p className="text-center text-xs text-zinc-500">
             규칙은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있습니다.
           </p>
-        )}
+        ) : null}
 
-        <div className="rounded-2xl border border-rose-100 bg-rose-50/50 px-4 py-3">
-          <p className="text-xs font-semibold text-rose-800">이렇게 알림이 옵니다</p>
-          <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-zinc-800">
-            {summary}
-          </p>
-        </div>
+        {!singleMode ? (
+          <div className="rounded-2xl border border-rose-100 bg-rose-50/50 px-4 py-3">
+            <p className="text-xs font-semibold text-rose-800">이렇게 알림이 옵니다</p>
+            <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-zinc-800">
+              {summary}
+            </p>
+          </div>
+        ) : editingRule ? (
+          <div className="rounded-2xl border border-rose-100 bg-rose-50/50 px-4 py-3">
+            <p className="text-xs font-semibold text-rose-800">미리보기</p>
+            <p className="mt-1 text-sm leading-relaxed text-zinc-800">
+              {formatNotificationRuleSummary(editingRule)}
+            </p>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
-            setMessage(null);
-            setError(null);
-            startTransition(async () => {
-              const result = await saveNotificationPreferenceAction(preference);
-              if (!result.ok) {
-                setError(result.error);
-                return;
-              }
-              setMessage("저장했습니다.");
-            });
-          }}
+          onClick={() => save(preference)}
           className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-60"
         >
           {pending ? "저장 중..." : "저장하기"}
         </button>
+        {singleMode ? (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => router.push(redirectOnSave)}
+            className="rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:border-zinc-300"
+          >
+            취소
+          </button>
+        ) : null}
         {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
         {error ? <p className="text-sm text-rose-700">{error}</p> : null}
       </div>
@@ -178,6 +274,7 @@ function RuleCard({
   rule,
   districtGroups,
   canRemove,
+  hideHeader,
   onChange,
   onRemove,
 }: {
@@ -185,6 +282,7 @@ function RuleCard({
   rule: NotificationRule;
   districtGroups: DistrictGroup[];
   canRemove: boolean;
+  hideHeader?: boolean;
   onChange: (next: NotificationRule) => void;
   onRemove: () => void;
 }) {
@@ -198,10 +296,26 @@ function RuleCard({
         rule.enabled ? "border-zinc-200 bg-white shadow-sm" : "border-zinc-200 bg-zinc-50 opacity-70"
       }`}
     >
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-zinc-900">규칙 {index + 1}</p>
-        <div className="flex items-center gap-2">
-          {canRemove ? (
+      {!hideHeader ? (
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-zinc-900">규칙 {index + 1}</p>
+          <div className="flex items-center gap-2">
+            {canRemove ? (
+              <button
+                type="button"
+                onClick={onRemove}
+                className="text-xs font-medium text-zinc-500 hover:text-rose-700"
+              >
+                삭제
+              </button>
+            ) : null}
+            <Toggle checked={rule.enabled} onChange={(enabled) => onChange({ ...rule, enabled })} />
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-zinc-900">조건 {index + 1}</p>
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onRemove}
@@ -209,10 +323,10 @@ function RuleCard({
             >
               삭제
             </button>
-          ) : null}
-          <Toggle checked={rule.enabled} onChange={(enabled) => onChange({ ...rule, enabled })} />
+            <Toggle checked={rule.enabled} onChange={(enabled) => onChange({ ...rule, enabled })} />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={`mt-4 space-y-5 ${rule.enabled ? "" : "pointer-events-none opacity-45"}`}>
         <section>
@@ -440,21 +554,6 @@ function Toggle({
   );
 }
 
-function formatRuleLine(rule: NotificationRule): string {
-  const kind = rule.jobType === "regular" ? "정규" : "대타";
-  const region =
-    rule.sido && rule.sigungu
-      ? `${formatSidoForDisplay(rule.sido)} ${rule.sigungu}`
-      : "지역 미선택";
-  const dayText =
-    rule.days.length === 0 ? "요일 상관없음" : `${rule.days.join("·")} 모두`;
-  const timeText =
-    rule.timeSlots.length === 0
-      ? "시간 상관없음"
-      : rule.timeSlots.map(formatTimeSlot).join("·");
-  return `${region} · ${kind} · ${dayText} · ${timeText}`;
-}
-
 function buildSummary(preference: NotificationPreference): string {
   if (!preference.enabled) return "알림이 꺼져 있습니다.";
 
@@ -466,5 +565,7 @@ function buildSummary(preference: NotificationPreference): string {
     return "지역이 선택된 규칙이 없습니다. 각 규칙에서 지역을 골라 주세요.";
   }
 
-  return enabledRules.map((rule, index) => `${index + 1}. ${formatRuleLine(rule)}`).join("\n");
+  return enabledRules
+    .map((rule, index) => `${index + 1}. ${formatNotificationRuleSummary(rule)}`)
+    .join("\n");
 }

@@ -1,3 +1,5 @@
+import { TIME_SLOT_LABELS } from "./enums.js";
+import { formatSidoForDisplay } from "./location/display.js";
 import { matchesPostDays } from "./schedule.js";
 
 export type AlertTimeSlot = "morning" | "afternoon" | "evening";
@@ -25,6 +27,34 @@ export interface NotificationRule {
 export interface NotificationPreference {
   enabled: boolean;
   rules: NotificationRule[];
+}
+
+export function formatNotificationRuleSummary(rule: NotificationRule): string {
+  const kind = rule.jobType === "regular" ? "정규" : "대타";
+  const region =
+    rule.sido && rule.sigungu
+      ? `${formatSidoForDisplay(rule.sido)} ${rule.sigungu}`
+      : "지역 미선택";
+  const dayText =
+    rule.days.length === 0 ? "요일 상관없음" : `${rule.days.join("·")} 모두`;
+  const timeText =
+    rule.timeSlots.length === 0
+      ? "시간 상관없음"
+      : rule.timeSlots.map((slot) => TIME_SLOT_LABELS[slot] ?? slot).join("·");
+  return `${region} · ${kind} · ${dayText} · ${timeText}`;
+}
+
+/** 아직 지역을 고르지 않은 기본 빈 규칙만 있는지 */
+export function isBlankNotificationPreference(preference: NotificationPreference): boolean {
+  if (preference.rules.length !== 1) return false;
+  const rule = preference.rules[0];
+  if (!rule) return true;
+  return (
+    !rule.sido &&
+    !rule.sigungu &&
+    rule.days.length === 0 &&
+    rule.timeSlots.length === 0
+  );
 }
 
 /** @deprecated 레거시 조건 카드 */
