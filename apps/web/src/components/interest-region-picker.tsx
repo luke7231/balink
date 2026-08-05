@@ -19,14 +19,24 @@ type DistrictGroup = {
 export function InterestRegionPicker({
   initialRegions,
   districtGroups,
+  onRegionsChange,
 }: {
   initialRegions: InterestRegion[];
   districtGroups: DistrictGroup[];
+  onRegionsChange?: (regions: InterestRegion[]) => void;
 }) {
   const [regions, setRegions] = useState(initialRegions);
   const [selectedSido, setSelectedSido] = useState(districtGroups[0]?.sido ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  function commitRegions(updater: (prev: InterestRegion[]) => InterestRegion[]) {
+    setRegions((prev) => {
+      const next = updater(prev);
+      onRegionsChange?.(next);
+      return next;
+    });
+  }
 
   const selectedKeys = useMemo(
     () => new Set(regions.map((region) => interestRegionKey(region.sido, region.sigungu))),
@@ -50,7 +60,7 @@ export function InterestRegionPicker({
           setError(result.error);
           return;
         }
-        setRegions((prev) => prev.filter((region) => region.id !== existing.id));
+        commitRegions((prev) => prev.filter((region) => region.id !== existing.id));
         return;
       }
 
@@ -61,14 +71,12 @@ export function InterestRegionPicker({
       }
       if (!result.region) return;
 
-      setRegions((prev) => {
-        const next = prev.filter(
-          (region) => interestRegionKey(region.sido, region.sigungu) !== key,
-        );
-        return [...next, result.region!].sort((a, b) =>
-          `${a.sido}${a.sigungu}`.localeCompare(`${b.sido}${b.sigungu}`, "ko"),
-        );
-      });
+      const added = result.region;
+      commitRegions((prev) =>
+        [...prev.filter((region) => interestRegionKey(region.sido, region.sigungu) !== key), added].sort(
+          (a, b) => `${a.sido}${a.sigungu}`.localeCompare(`${b.sido}${b.sigungu}`, "ko"),
+        ),
+      );
     });
   }
 
@@ -80,7 +88,7 @@ export function InterestRegionPicker({
         setError(result.error);
         return;
       }
-      setRegions((prev) => prev.filter((region) => region.id !== regionId));
+      commitRegions((prev) => prev.filter((region) => region.id !== regionId));
     });
   }
 
