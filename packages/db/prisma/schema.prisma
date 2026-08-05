@@ -190,8 +190,46 @@ model User {
   updatedAt        DateTime             @updatedAt
   accounts         Account[]
   sessions         Session[]
-  interestRegions  UserInterestRegion[]
-  jobBookmarks     JobBookmark[]
+  interestRegions           UserInterestRegion[]
+  jobBookmarks              JobBookmark[]
+  notificationPreference    UserNotificationPreference?
+  notifications             UserNotification[]
+}
+
+enum UserNotificationType {
+  job_match
+  substitute_match
+  system
+}
+
+model UserNotification {
+  id               String               @id @default(cuid())
+  userId           String
+  type             UserNotificationType
+  title            String
+  body             String
+  href             String?
+  jobPostId        String?
+  substitutePostId String?
+  readAt           DateTime?
+  createdAt        DateTime             @default(now())
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+}
+
+model UserNotificationPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  enabled   Boolean  @default(true)
+  /// { enabled, days, daysMode, timeSlots }
+  regularJson    Json
+  /// { enabled, days, daysMode, timeSlots }
+  substituteJson Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserInterestRegion {

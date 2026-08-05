@@ -39,10 +39,10 @@ export async function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps)
             </Link>
             {user ? (
               <Link
-                href="/saved"
+                href="/notifications"
                 className="rounded-full px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
               >
-                저장
+                알림
               </Link>
             ) : null}
           </nav>

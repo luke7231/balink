@@ -1,7 +1,11 @@
 "use server";
 
 import { prisma } from "@black-swan/db";
-import { validateAdminDistrict } from "@black-swan/domain";
+import {
+  parseJobTypeAlertPreference,
+  validateAdminDistrict,
+  type NotificationPreference,
+} from "@black-swan/domain";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
@@ -54,6 +58,7 @@ export async function addInterestRegionAction(
   });
 
   revalidatePath("/account");
+  revalidatePath("/notifications/settings");
   return { ok: true, region };
 }
 
@@ -70,6 +75,42 @@ export async function removeInterestRegionAction(
   });
 
   revalidatePath("/account");
+  revalidatePath("/notifications/settings");
+  return { ok: true };
+}
+
+export type NotificationPreferenceActionResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+export async function saveNotificationPreferenceAction(
+  preference: NotificationPreference,
+): Promise<NotificationPreferenceActionResult> {
+  const userId = await requireUserId();
+  const regular = parseJobTypeAlertPreference(preference.regular);
+  const substitute = parseJobTypeAlertPreference(preference.substitute);
+
+  const regularJson = JSON.parse(JSON.stringify(regular)) as object;
+  const substituteJson = JSON.parse(JSON.stringify(substitute)) as object;
+
+  await prisma.userNotificationPreference.upsert({
+    where: { userId },
+    create: {
+      userId,
+      enabled: preference.enabled !== false,
+      regularJson,
+      substituteJson,
+    },
+    update: {
+      enabled: preference.enabled !== false,
+      regularJson,
+      substituteJson,
+    },
+  });
+
+  revalidatePath("/account");
+  revalidatePath("/notifications");
+  revalidatePath("/notifications/settings");
   return { ok: true };
 }
 

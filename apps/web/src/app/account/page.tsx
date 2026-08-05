@@ -1,11 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { prisma } from "@black-swan/db";
-import { listAdminDistrictGroups } from "@black-swan/domain";
 import { auth } from "@/auth";
 import { deleteAccountAction } from "@/components/account-actions";
-import { InterestRegionPicker } from "@/components/interest-region-picker";
 import { DEFAULT_AVATAR_PATH } from "@/lib/profile-image";
 
 export default async function AccountPage() {
@@ -15,12 +12,6 @@ export default async function AccountPage() {
   }
 
   const user = session.user;
-  const interestRegions = await prisma.userInterestRegion.findMany({
-    where: { userId: user.id },
-    orderBy: [{ sido: "asc" }, { sigungu: "asc" }],
-    select: { id: true, sido: true, sigungu: true },
-  });
-  const districtGroups = listAdminDistrictGroups();
 
   return (
     <main className="flex min-h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,#fff9fa,#ffffff_42%)]">
@@ -31,7 +22,7 @@ export default async function AccountPage() {
 
         <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h1 className="text-xl font-bold tracking-tight text-zinc-900">내 계정</h1>
-          <p className="mt-1 text-sm text-zinc-500">프로필과 관심지역</p>
+          <p className="mt-1 text-sm text-zinc-500">프로필과 바로가기</p>
 
           <div className="mt-6 flex items-center gap-3">
             <Image
@@ -49,28 +40,29 @@ export default async function AccountPage() {
           </div>
         </section>
 
-        <section className="mt-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-zinc-900">저장한 공고</h2>
-          <p className="mt-1 text-sm text-zinc-500">관심 있는 채용 공고를 모아 볼 수 있습니다.</p>
+        <section className="mt-4 space-y-3 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-zinc-900">바로가기</h2>
+          <Link
+            href="/notifications"
+            className="flex items-center justify-between rounded-2xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-800 hover:border-rose-200 hover:text-rose-700"
+          >
+            알림함
+            <span aria-hidden>→</span>
+          </Link>
+          <Link
+            href="/notifications/settings"
+            className="flex items-center justify-between rounded-2xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-800 hover:border-rose-200 hover:text-rose-700"
+          >
+            알림 조건 설정
+            <span aria-hidden>→</span>
+          </Link>
           <Link
             href="/saved"
-            className="mt-4 inline-flex rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:border-rose-200 hover:text-rose-700"
+            className="flex items-center justify-between rounded-2xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-800 hover:border-rose-200 hover:text-rose-700"
           >
-            저장한 공고 보기
+            저장한 공고
+            <span aria-hidden>→</span>
           </Link>
-        </section>
-
-        <section className="mt-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-zinc-900">관심지역</h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            알림을 받을 시·군·구를 원하는 만큼 추가하세요.
-          </p>
-          <div className="mt-5">
-            <InterestRegionPicker
-              initialRegions={interestRegions}
-              districtGroups={districtGroups}
-            />
-          </div>
         </section>
 
         <section className="mt-4 rounded-3xl border border-rose-200 bg-rose-50/60 p-6">

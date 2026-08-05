@@ -17,10 +17,10 @@ const tabs = [
     icon: CalendarIcon,
   },
   {
-    href: "/saved",
-    label: "저장",
-    match: (pathname: string) => pathname === "/saved",
-    icon: BookmarkIcon,
+    href: "/notifications",
+    label: "알림",
+    match: (pathname: string) => pathname.startsWith("/notifications"),
+    icon: BellIcon,
   },
   {
     href: "/account",
@@ -125,24 +125,23 @@ function CalendarIcon({ active }: { active: boolean }) {
   );
 }
 
-function BookmarkIcon({ active }: { active: boolean }) {
+function BellIcon({ active }: { active: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" aria-hidden="true">
-      {active ? (
-        <path
-          fill="currentColor"
-          d="M6 3.75A2.25 2.25 0 0 1 8.25 1.5h7.5A2.25 2.25 0 0 1 18 3.75v18.19a.75.75 0 0 1-1.2.6L12 18.75l-4.8 3.79a.75.75 0 0 1-1.2-.6V3.75Z"
-        />
-      ) : (
-        <path
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M6.75 3.75h10.5A1.5 1.5 0 0 1 18.75 5.25v15.19a.75.75 0 0 1-1.2.6L12 17.25l-5.55 3.79a.75.75 0 0 1-1.2-.6V5.25a1.5 1.5 0 0 1 1.5-1.5Z"
-        />
-      )}
+    <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" aria-hidden="true">
+      <path
+        d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 3.5 1.5 5 1.5 5H5s1.5-1.5 1.5-5Z"
+        stroke="currentColor"
+        strokeWidth={active ? 2.2 : 1.7}
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.12 : 0}
+      />
+      <path
+        d="M10 18.5a2 2 0 0 0 4 0"
+        stroke="currentColor"
+        strokeWidth={active ? 2.2 : 1.7}
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
