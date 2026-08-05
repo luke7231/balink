@@ -2,7 +2,8 @@
 
 import { prisma } from "@black-swan/db";
 import {
-  parseJobTypeAlertPreference,
+  MAX_NOTIFICATION_RULES,
+  parseNotificationPreference,
   validateAdminDistrict,
   type NotificationPreference,
 } from "@black-swan/domain";
@@ -87,24 +88,42 @@ export async function saveNotificationPreferenceAction(
   preference: NotificationPreference,
 ): Promise<NotificationPreferenceActionResult> {
   const userId = await requireUserId();
-  const regular = parseJobTypeAlertPreference(preference.regular);
-  const substitute = parseJobTypeAlertPreference(preference.substitute);
+  const parsed = parseNotificationPreference({
+    enabled: preference.enabled,
+    rulesJson: preference.rules,
+  });
 
-  const regularJson = JSON.parse(JSON.stringify(regular)) as object;
-  const substituteJson = JSON.parse(JSON.stringify(substitute)) as object;
+  if (parsed.rules.length > MAX_NOTIFICATION_RULES) {
+    return { ok: false, error: `규칙은 최대 ${MAX_NOTIFICATION_RULES}개까지 저장할 수 있습니다.` };
+  }
+
+  for (const rule of parsed.rules) {
+    if (!rule.enabled) continue;
+    if (!rule.sido || !rule.sigungu) {
+      return { ok: false, error: "켜 둔 규칙에는 지역을 모두 선택해 주세요." };
+    }
+    const validated = validateAdminDistrict(rule.sido, rule.sigungu);
+    if (!validated.valid) {
+      return { ok: false, error: "올바른 지역을 선택해 주세요." };
+    }
+  }
+
+  const rulesJson = JSON.parse(JSON.stringify(parsed.rules)) as object;
 
   await prisma.userNotificationPreference.upsert({
     where: { userId },
     create: {
       userId,
-      enabled: preference.enabled !== false,
-      regularJson,
-      substituteJson,
+      enabled: parsed.enabled,
+      rulesJson,
+      regularJson: {},
+      substituteJson: {},
     },
     update: {
-      enabled: preference.enabled !== false,
-      regularJson,
-      substituteJson,
+      enabled: parsed.enabled,
+      rulesJson,
+      regularJson: {},
+      substituteJson: {},
     },
   });
 

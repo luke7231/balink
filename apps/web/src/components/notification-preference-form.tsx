@@ -4,19 +4,21 @@ import { useMemo, useState, useTransition } from "react";
 import {
   ALERT_DAYS,
   ALERT_TIME_SLOTS,
-  MAX_ALERT_CONDITIONS,
-  createAlertConditionId,
-  defaultAlertCondition,
+  MAX_NOTIFICATION_RULES,
+  createNotificationRuleId,
+  defaultNotificationRule,
   formatSidoForDisplay,
   formatTimeSlot,
-  type AlertCondition,
-  type JobTypeAlertPreference,
+  type AlertJobType,
   type NotificationPreference,
+  type NotificationRule,
 } from "@black-swan/domain";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
-import type { InterestRegion } from "@/lib/interest-regions";
 
-type TabKey = "regular" | "substitute";
+type DistrictGroup = {
+  sido: string;
+  districts: readonly string[];
+};
 
 const WEEKDAY_PRESETS = [
   { id: "any", label: "상관없음", days: [] as string[] },
@@ -26,59 +28,64 @@ const WEEKDAY_PRESETS = [
 
 export function NotificationPreferenceForm({
   initialPreference,
-  interestRegions,
+  districtGroups,
 }: {
   initialPreference: NotificationPreference;
-  interestRegions: InterestRegion[];
+  districtGroups: DistrictGroup[];
 }) {
   const [preference, setPreference] = useState(initialPreference);
-  const [tab, setTab] = useState<TabKey>("regular");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const active = preference[tab];
+  const summary = useMemo(() => buildSummary(preference), [preference]);
 
-  const summary = useMemo(
-    () => buildSummary(preference, interestRegions, tab),
-    [preference, interestRegions, tab],
-  );
-
-  function updateActive(next: JobTypeAlertPreference) {
-    setPreference((prev) => ({ ...prev, [tab]: next }));
+  function updateRule(ruleId: string, next: NotificationRule) {
+    setPreference((prev) => ({
+      ...prev,
+      rules: prev.rules.map((rule) => (rule.id === ruleId ? next : rule)),
+    }));
   }
 
-  function updateCondition(conditionId: string, next: AlertCondition) {
-    updateActive({
-      ...active,
-      conditions: active.conditions.map((item) => (item.id === conditionId ? next : item)),
-    });
-  }
-
-  function addCondition() {
-    if (active.conditions.length >= MAX_ALERT_CONDITIONS) return;
-    updateActive({
-      ...active,
-      conditions: [
-        ...active.conditions,
-        defaultAlertCondition({ id: createAlertConditionId() }),
+  function addRule() {
+    if (preference.rules.length >= MAX_NOTIFICATION_RULES) return;
+    const last = preference.rules[preference.rules.length - 1];
+    setPreference((prev) => ({
+      ...prev,
+      rules: [
+        ...prev.rules,
+        defaultNotificationRule({
+          id: createNotificationRuleId(),
+          jobType: last?.jobType ?? "regular",
+          sido: "",
+          sigungu: "",
+        }),
       ],
-    });
+    }));
   }
 
-  function removeCondition(conditionId: string) {
-    if (active.conditions.length <= 1) {
-      updateCondition(conditionId, {
-        ...active.conditions[0]!,
-        days: [],
-        timeSlots: [],
-        enabled: true,
-      });
-      return;
-    }
-    updateActive({
-      ...active,
-      conditions: active.conditions.filter((item) => item.id !== conditionId),
+  function removeRule(ruleId: string) {
+    setPreference((prev) => {
+      if (prev.rules.length <= 1) {
+        return {
+          ...prev,
+          rules: [
+            defaultNotificationRule({
+              id: prev.rules[0]?.id ?? "default_0",
+              enabled: true,
+              jobType: "regular",
+              sido: "",
+              sigungu: "",
+              days: [],
+              timeSlots: [],
+            }),
+          ],
+        };
+      }
+      return {
+        ...prev,
+        rules: prev.rules.filter((rule) => rule.id !== ruleId),
+      };
     });
   }
 
@@ -98,83 +105,44 @@ export function NotificationPreferenceForm({
       <div
         className={`space-y-4 ${preference.enabled ? "" : "pointer-events-none opacity-45"}`}
       >
-        <div className="flex rounded-2xl border border-zinc-200 bg-zinc-50 p-1">
-          {(
-            [
-              { key: "regular", label: "정규 채용" },
-              { key: "substitute", label: "대타" },
-            ] as const
-          ).map((item) => {
-            const selected = tab === item.key;
-            const on = preference[item.key].enabled;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => setTab(item.key)}
-                className={`flex-1 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                  selected
-                    ? "bg-white text-zinc-900 shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-700"
-                }`}
-              >
-                {item.label}
-                {!on ? <span className="ml-1 text-xs font-medium text-zinc-400">꺼짐</span> : null}
-              </button>
-            );
-          })}
+        <div>
+          <h2 className="text-base font-semibold text-zinc-900">알림 규칙</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            규칙마다 지역·정규/대타·요일·시간대를 따로 정합니다. 하나라도 맞으면 알림이 옵니다.
+          </p>
         </div>
 
-        <div className="space-y-5 border-t border-zinc-100 pt-5">
-          <label className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-zinc-900">
-                {tab === "regular" ? "정규 채용 알림" : "대타 알림"}
-              </p>
-              <p className="mt-0.5 text-xs text-zinc-500">
-                조건을 여러 개 두면, 그중 하나라도 맞는 공고를 알려 드립니다.
-              </p>
-            </div>
-            <Toggle
-              checked={active.enabled}
-              disabled={!preference.enabled}
-              onChange={(enabled) => updateActive({ ...active, enabled })}
-            />
-          </label>
+        {preference.rules.map((rule, index) => (
+          <RuleCard
+            key={rule.id}
+            index={index}
+            rule={rule}
+            districtGroups={districtGroups}
+            canRemove={preference.rules.length > 1}
+            onChange={(next) => updateRule(rule.id, next)}
+            onRemove={() => removeRule(rule.id)}
+          />
+        ))}
 
-          <div
-            className={`space-y-4 ${active.enabled ? "" : "pointer-events-none opacity-45"}`}
+        {preference.rules.length < MAX_NOTIFICATION_RULES ? (
+          <button
+            type="button"
+            onClick={addRule}
+            className="w-full rounded-2xl border border-dashed border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-600 hover:border-zinc-400 hover:text-zinc-800"
           >
-            {active.conditions.map((condition, index) => (
-              <ConditionCard
-                key={condition.id}
-                index={index}
-                condition={condition}
-                canRemove={active.conditions.length > 1}
-                onChange={(next) => updateCondition(condition.id, next)}
-                onRemove={() => removeCondition(condition.id)}
-              />
-            ))}
-
-            {active.conditions.length < MAX_ALERT_CONDITIONS ? (
-              <button
-                type="button"
-                onClick={addCondition}
-                className="w-full rounded-2xl border border-dashed border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-600 hover:border-zinc-400 hover:text-zinc-800"
-              >
-                + 조건 추가
-              </button>
-            ) : (
-              <p className="text-center text-xs text-zinc-500">
-                조건은 최대 {MAX_ALERT_CONDITIONS}개까지 둘 수 있습니다.
-              </p>
-            )}
-          </div>
-        </div>
+            + 규칙 추가
+          </button>
+        ) : (
+          <p className="text-center text-xs text-zinc-500">
+            규칙은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있습니다.
+          </p>
+        )}
 
         <div className="rounded-2xl border border-rose-100 bg-rose-50/50 px-4 py-3">
           <p className="text-xs font-semibold text-rose-800">이렇게 알림이 옵니다</p>
-          <p className="mt-1 text-sm leading-relaxed text-zinc-800">{summary}</p>
+          <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-zinc-800">
+            {summary}
+          </p>
         </div>
       </div>
 
@@ -205,29 +173,33 @@ export function NotificationPreferenceForm({
   );
 }
 
-function ConditionCard({
+function RuleCard({
   index,
-  condition,
+  rule,
+  districtGroups,
   canRemove,
   onChange,
   onRemove,
 }: {
   index: number;
-  condition: AlertCondition;
+  rule: NotificationRule;
+  districtGroups: DistrictGroup[];
   canRemove: boolean;
-  onChange: (next: AlertCondition) => void;
+  onChange: (next: NotificationRule) => void;
   onRemove: () => void;
 }) {
-  const anyDaySelected = condition.days.length === 0;
+  const anyDay = rule.days.length === 0;
+  const districts =
+    districtGroups.find((group) => group.sido === rule.sido)?.districts ?? [];
 
   return (
     <div
       className={`rounded-2xl border px-4 py-4 ${
-        condition.enabled ? "border-zinc-200 bg-zinc-50/70" : "border-zinc-200 bg-zinc-50 opacity-60"
+        rule.enabled ? "border-zinc-200 bg-white shadow-sm" : "border-zinc-200 bg-zinc-50 opacity-70"
       }`}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-zinc-900">조건 {index + 1}</p>
+        <p className="text-sm font-semibold text-zinc-900">규칙 {index + 1}</p>
         <div className="flex items-center gap-2">
           {canRemove ? (
             <button
@@ -238,16 +210,81 @@ function ConditionCard({
               삭제
             </button>
           ) : null}
-          <Toggle
-            checked={condition.enabled}
-            onChange={(enabled) => onChange({ ...condition, enabled })}
-          />
+          <Toggle checked={rule.enabled} onChange={(enabled) => onChange({ ...rule, enabled })} />
         </div>
       </div>
 
-      <div
-        className={`mt-4 space-y-5 ${condition.enabled ? "" : "pointer-events-none opacity-45"}`}
-      >
+      <div className={`mt-4 space-y-5 ${rule.enabled ? "" : "pointer-events-none opacity-45"}`}>
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-900">유형</h3>
+          <div className="mt-2 flex rounded-2xl border border-zinc-200 bg-zinc-50 p-1">
+            {(
+              [
+                { key: "regular" as AlertJobType, label: "정규 채용" },
+                { key: "substitute" as AlertJobType, label: "대타" },
+              ] as const
+            ).map((item) => {
+              const selected = rule.jobType === item.key;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => onChange({ ...rule, jobType: item.key })}
+                  className={`flex-1 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                    selected
+                      ? "bg-white text-zinc-900 shadow-sm"
+                      : "text-zinc-500 hover:text-zinc-700"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-900">지역</h3>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            <label className="block">
+              <span className="sr-only">시·도</span>
+              <select
+                value={rule.sido}
+                onChange={(event) =>
+                  onChange({ ...rule, sido: event.target.value, sigungu: "" })
+                }
+                className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-800"
+              >
+                <option value="">시·도 선택</option>
+                {districtGroups.map((group) => (
+                  <option key={group.sido} value={group.sido}>
+                    {formatSidoForDisplay(group.sido)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="sr-only">시·군·구</span>
+              <select
+                value={rule.sigungu}
+                disabled={!rule.sido}
+                onChange={(event) => onChange({ ...rule, sigungu: event.target.value })}
+                className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-800 disabled:opacity-50"
+              >
+                <option value="">시·군·구 선택</option>
+                {districts.map((sigungu) => (
+                  <option key={sigungu} value={sigungu}>
+                    {sigungu}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {!rule.sido || !rule.sigungu ? (
+            <p className="mt-2 text-xs text-rose-600">지역을 선택해야 이 규칙으로 알림이 갑니다.</p>
+          ) : null}
+        </section>
+
         <section>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold text-zinc-900">요일</h3>
@@ -255,14 +292,14 @@ function ConditionCard({
               {WEEKDAY_PRESETS.map((preset) => {
                 const selected =
                   preset.days.length === 0
-                    ? anyDaySelected
-                    : preset.days.length === condition.days.length &&
-                      preset.days.every((day) => condition.days.includes(day));
+                    ? anyDay
+                    : preset.days.length === rule.days.length &&
+                      preset.days.every((day) => rule.days.includes(day));
                 return (
                   <button
                     key={preset.id}
                     type="button"
-                    onClick={() => onChange({ ...condition, days: [...preset.days] })}
+                    onClick={() => onChange({ ...rule, days: [...preset.days] })}
                     className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                       selected
                         ? "bg-zinc-900 text-white"
@@ -278,25 +315,25 @@ function ConditionCard({
 
           <div className="mt-3 grid grid-cols-7 gap-1.5">
             {ALERT_DAYS.map((day) => {
-              const selected = condition.days.includes(day);
+              const selected = rule.days.includes(day);
               return (
                 <button
                   key={day}
                   type="button"
                   onClick={() => {
-                    if (anyDaySelected) {
-                      onChange({ ...condition, days: [day] });
+                    if (anyDay) {
+                      onChange({ ...rule, days: [day] });
                       return;
                     }
                     const days = selected
-                      ? condition.days.filter((item) => item !== day)
-                      : [...condition.days, day];
-                    onChange({ ...condition, days });
+                      ? rule.days.filter((item) => item !== day)
+                      : [...rule.days, day];
+                    onChange({ ...rule, days });
                   }}
                   className={`rounded-xl py-2.5 text-sm font-semibold ${
                     selected
                       ? "bg-zinc-900 text-white"
-                      : anyDaySelected
+                      : anyDay
                         ? "border border-zinc-200 bg-white text-zinc-400"
                         : "border border-zinc-200 bg-white text-zinc-600"
                   }`}
@@ -306,11 +343,10 @@ function ConditionCard({
               );
             })}
           </div>
-
           <p className="mt-2 text-xs text-zinc-500">
-            {anyDaySelected
+            {anyDay
               ? "요일 상관없이 알림이 옵니다."
-              : "선택한 요일이 모두 들어 있는 공고만 맞습니다. 다른 조합은 조건을 하나 더 만드세요."}
+              : "선택한 요일이 모두 들어 있는 공고만 맞습니다."}
           </p>
         </section>
 
@@ -319,9 +355,9 @@ function ConditionCard({
           <div className="mt-3 space-y-2">
             <button
               type="button"
-              onClick={() => onChange({ ...condition, timeSlots: [] })}
+              onClick={() => onChange({ ...rule, timeSlots: [] })}
               className={`w-full rounded-2xl px-3 py-3 text-sm font-semibold ${
-                condition.timeSlots.length === 0
+                rule.timeSlots.length === 0
                   ? "bg-zinc-900 text-white"
                   : "border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300"
               }`}
@@ -330,27 +366,25 @@ function ConditionCard({
             </button>
             <div className="grid grid-cols-3 gap-2">
               {ALERT_TIME_SLOTS.map((slot) => {
-                const anyTime = condition.timeSlots.length === 0;
-                const selected = condition.timeSlots.includes(slot);
+                const anyTime = rule.timeSlots.length === 0;
+                const selected = rule.timeSlots.includes(slot);
                 return (
                   <button
                     key={slot}
                     type="button"
                     onClick={() => {
                       if (anyTime) {
-                        onChange({ ...condition, timeSlots: [slot] });
+                        onChange({ ...rule, timeSlots: [slot] });
                         return;
                       }
                       if (selected) {
-                        const timeSlots = condition.timeSlots.filter((item) => item !== slot);
-                        // 마지막 시간대를 끄면 상관없음으로 돌아감
-                        onChange({ ...condition, timeSlots });
+                        onChange({
+                          ...rule,
+                          timeSlots: rule.timeSlots.filter((item) => item !== slot),
+                        });
                         return;
                       }
-                      onChange({
-                        ...condition,
-                        timeSlots: [...condition.timeSlots, slot],
-                      });
+                      onChange({ ...rule, timeSlots: [...rule.timeSlots, slot] });
                     }}
                     className={`rounded-2xl px-2 py-3 text-sm font-semibold ${
                       selected
@@ -367,9 +401,9 @@ function ConditionCard({
             </div>
           </div>
           <p className="mt-2 text-xs text-zinc-500">
-            {condition.timeSlots.length === 0
+            {rule.timeSlots.length === 0
               ? "시간대 상관없이 알림이 옵니다. 오전·오후·저녁과는 함께 고를 수 없습니다."
-              : "선택한 시간대 중 하나라도 겹치면 알림이 옵니다. 상관없음을 고르면 이 선택이 해제됩니다."}
+              : "선택한 시간대 중 하나라도 겹치면 알림이 옵니다."}
           </p>
         </section>
       </div>
@@ -406,47 +440,31 @@ function Toggle({
   );
 }
 
-function formatConditionLine(condition: AlertCondition): string {
+function formatRuleLine(rule: NotificationRule): string {
+  const kind = rule.jobType === "regular" ? "정규" : "대타";
+  const region =
+    rule.sido && rule.sigungu
+      ? `${formatSidoForDisplay(rule.sido)} ${rule.sigungu}`
+      : "지역 미선택";
   const dayText =
-    condition.days.length === 0 ? "요일 상관없음" : `${condition.days.join("·")} 모두 포함`;
+    rule.days.length === 0 ? "요일 상관없음" : `${rule.days.join("·")} 모두`;
   const timeText =
-    condition.timeSlots.length === 0
+    rule.timeSlots.length === 0
       ? "시간 상관없음"
-      : condition.timeSlots.map(formatTimeSlot).join("·");
-  return `${dayText} · ${timeText}`;
+      : rule.timeSlots.map(formatTimeSlot).join("·");
+  return `${region} · ${kind} · ${dayText} · ${timeText}`;
 }
 
-function buildSummary(
-  preference: NotificationPreference,
-  interestRegions: InterestRegion[],
-  tab: TabKey,
-): string {
+function buildSummary(preference: NotificationPreference): string {
   if (!preference.enabled) return "알림이 꺼져 있습니다.";
 
-  const active = preference[tab];
-  if (!active.enabled) {
-    return tab === "regular"
-      ? "정규 채용 알림이 꺼져 있습니다. 대타 탭도 확인해 보세요."
-      : "대타 알림이 꺼져 있습니다. 정규 채용 탭도 확인해 보세요.";
+  const enabledRules = preference.rules.filter((rule) => rule.enabled);
+  if (enabledRules.length === 0) return "켜져 있는 규칙이 없습니다.";
+
+  const incomplete = enabledRules.filter((rule) => !rule.sido || !rule.sigungu);
+  if (incomplete.length === enabledRules.length) {
+    return "지역이 선택된 규칙이 없습니다. 각 규칙에서 지역을 골라 주세요.";
   }
 
-  if (interestRegions.length === 0) {
-    return "관심지역을 먼저 선택해 주세요. 지역이 없으면 알림이 가지 않습니다.";
-  }
-
-  const regionText = interestRegions
-    .slice(0, 3)
-    .map((region) => `${formatSidoForDisplay(region.sido)} ${region.sigungu}`)
-    .join(" · ");
-  const regionMore =
-    interestRegions.length > 3 ? ` 외 ${interestRegions.length - 3}곳` : "";
-
-  const enabledConditions = active.conditions.filter((item) => item.enabled);
-  if (enabledConditions.length === 0) {
-    return "켜져 있는 조건이 없습니다. 조건을 켜 주세요.";
-  }
-
-  const kind = tab === "regular" ? "정규 채용" : "대타";
-  const conditionText = enabledConditions.map(formatConditionLine).join(" / ");
-  return `${regionText}${regionMore}의 ${kind} 중, (${conditionText})이면 알려 드립니다.`;
+  return enabledRules.map((rule, index) => `${index + 1}. ${formatRuleLine(rule)}`).join("\n");
 }
