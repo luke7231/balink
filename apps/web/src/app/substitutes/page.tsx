@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { resolveSubstituteUrgency } from "@black-swan/domain";
 import { SiteHeader } from "@/components/site-header";
 import { SubstituteList } from "@/components/substitute-list";
+import { SubstitutesFilterBar } from "@/components/substitutes-filter-bar";
 import { fetchHealth, fetchSubstitutePosts } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -93,14 +95,6 @@ function sortByNextLesson<
   });
 }
 
-function buildFilterHref(dateFilter: DateFilter, region: string): string {
-  const params = new URLSearchParams();
-  if (dateFilter !== "all") params.set("date", dateFilter);
-  if (region) params.set("region", region);
-  const query = params.toString();
-  return query ? `/substitutes?${query}` : "/substitutes";
-}
-
 export default async function SubstitutesPage({ searchParams }: SubstitutesPageProps) {
   const query = await searchParams;
   const dateFilter = parseDateFilter(query.date);
@@ -125,73 +119,19 @@ export default async function SubstitutesPage({ searchParams }: SubstitutesPageP
     : posts.items;
   const filteredPosts = filterByDate(regionFilteredPosts, dateFilter);
   const sortedPosts = sortByNextLesson(filteredPosts);
-  const dateOptions: Array<{ value: DateFilter; label: string }> = [
-    { value: "all", label: "전체 일정" },
-    { value: "today", label: "오늘" },
-    { value: "tomorrow", label: "내일" },
-    { value: "week", label: "7일 이내" },
-  ];
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        <section aria-label="대타 공고 필터" className="mb-8 rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
-          <div className="flex flex-wrap gap-2">
-            {dateOptions.map((option) => {
-              const isSelected = dateFilter === option.value;
-              return (
-                <Link
-                  key={option.value}
-                  href={buildFilterHref(option.value, selectedRegion)}
-                  aria-current={isSelected ? "page" : undefined}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                    isSelected
-                      ? "bg-zinc-900 text-white"
-                      : "border border-zinc-200 bg-white text-zinc-600 hover:border-rose-200 hover:text-rose-700"
-                  }`}
-                >
-                  {option.label}
-                </Link>
-              );
-            })}
-          </div>
-
-          <form action="/substitutes" className="mt-4 flex flex-col gap-2 sm:flex-row">
-            {dateFilter !== "all" ? <input type="hidden" name="date" value={dateFilter} /> : null}
-            <label className="sr-only" htmlFor="substitute-region">
-              지역 선택
-            </label>
-            <select
-              id="substitute-region"
-              name="region"
-              defaultValue={selectedRegion}
-              className="min-w-0 flex-1 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-800 outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
-            >
-              <option value="">전체 지역</option>
-              {regionOptions.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white hover:bg-rose-700"
-            >
-              지역 적용
-            </button>
-            {dateFilter !== "all" || selectedRegion ? (
-              <Link
-                href="/substitutes"
-                className="rounded-2xl px-4 py-3 text-center text-sm font-semibold text-zinc-500 hover:bg-zinc-50"
-              >
-                초기화
-              </Link>
-            ) : null}
-          </form>
-        </section>
+        <Suspense fallback={<div className="mb-6 h-10" aria-hidden="true" />}>
+          <SubstitutesFilterBar
+            dateFilter={dateFilter}
+            selectedRegion={selectedRegion}
+            regionOptions={regionOptions}
+          />
+        </Suspense>
 
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-zinc-900">모집 중</h3>

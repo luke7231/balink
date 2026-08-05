@@ -1,0 +1,66 @@
+"use client";
+
+import { useEffect, useId, type ReactNode } from "react";
+
+interface BottomSheetProps {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}
+
+export function BottomSheet({ open, title, onClose, children }: BottomSheetProps) {
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[60]">
+      <button
+        type="button"
+        aria-label="필터 닫기"
+        className="absolute inset-0 bg-zinc-950/40"
+        onClick={onClose}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="absolute inset-x-0 bottom-0 mx-auto max-h-[85vh] w-full max-w-5xl rounded-t-3xl bg-white shadow-2xl"
+      >
+        <div className="flex justify-center pt-3">
+          <div className="h-1.5 w-12 rounded-full bg-zinc-200" />
+        </div>
+        <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-4">
+          <h2 id={titleId} className="text-lg font-semibold text-zinc-900">
+            {title}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-500 hover:bg-zinc-50"
+          >
+            닫기
+          </button>
+        </div>
+        <div className="max-h-[calc(85vh-5rem)] overflow-y-auto px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
