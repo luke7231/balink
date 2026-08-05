@@ -3,9 +3,11 @@ import { Suspense } from "react";
 import { JobList } from "@black-swan/ui/job-list";
 import { auth } from "@/auth";
 import { BookmarkButton } from "@/components/bookmark-button";
+import { HomeBanner } from "@/components/home-banner";
 import { JobsFilterBar } from "@/components/jobs-filter-bar";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth, fetchJobPosts, fetchJobRegions } from "@/lib/graphql/queries";
+import { HOME_BANNERS } from "@/lib/home-banners";
 import { getBookmarkedJobIdSet } from "@/lib/job-bookmarks";
 
 export const dynamic = "force-dynamic";
@@ -56,6 +58,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-5xl px-4 py-8">
+        <HomeBanner items={HOME_BANNERS} />
+
         <Suspense fallback={<div className="mb-6 h-10" aria-hidden="true" />}>
           <JobsFilterBar
             regions={regionOptions}
