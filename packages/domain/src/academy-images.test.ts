@@ -22,7 +22,7 @@ test("isAcademyPlaceholderImageUrl detects balletmania no_img", () => {
   );
 });
 
-test("pickAcademyThumbnail prefers interior photos for cover thumbnails", () => {
+test("pickAcademyThumbnail prefers logo over interior for list thumbnails", () => {
   assert.deepEqual(
     pickAcademyThumbnail(
       [
@@ -34,8 +34,8 @@ test("pickAcademyThumbnail prefers interior photos for cover thumbnails", () => 
       "https://habitstorage.s3.ap-northeast-2.amazonaws.com/x/logo.png",
     ),
     {
-      url: "https://habitstorage.s3.ap-northeast-2.amazonaws.com/x/interior.jpg",
-      type: "interior",
+      url: "https://habitstorage.s3.ap-northeast-2.amazonaws.com/x/logo.png",
+      type: "logo",
     },
   );
 });

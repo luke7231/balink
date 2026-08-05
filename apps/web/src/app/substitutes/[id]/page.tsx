@@ -9,6 +9,7 @@ import {
   formatSubstituteSessionsCardLabel,
   formatSubstituteStatus,
   formatSubstituteUrgency,
+  resolveSubstituteUrgency,
 } from "@black-swan/domain";
 import { Badge } from "@black-swan/ui/badge";
 import { fetchSubstitutePost } from "@/lib/graphql/queries";
@@ -29,7 +30,12 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
 
   if (!post) notFound();
 
-  const urgencyLabel = formatSubstituteUrgency(post.urgency ?? null);
+  const urgencyLabel = formatSubstituteUrgency(
+    resolveSubstituteUrgency({
+      sessions: post.sessions,
+      nextLessonAt: post.nextLessonAt,
+    }),
+  );
   const explicitSessions = post.sessions.filter((session) => session.origin !== "recurrence");
   const scheduleSummary =
     post.scheduleKind === "recurring"

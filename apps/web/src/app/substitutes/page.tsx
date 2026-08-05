@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { resolveSubstituteUrgency } from "@black-swan/domain";
 import { SiteHeader } from "@/components/site-header";
 import { SubstituteList } from "@/components/substitute-list";
 import { fetchHealth, fetchSubstitutePosts } from "@/lib/graphql/queries";
@@ -22,13 +23,26 @@ function toRegionValue(sido?: string | null, sigungu?: string | null): string {
   return [sido, sigungu].filter(Boolean).join("::");
 }
 
-function filterByDate<T extends { urgency?: string | null; nextLessonAt?: string | null }>(
-  posts: T[],
-  dateFilter: DateFilter,
-): T[] {
+function liveUrgency(post: {
+  sessions?: Array<{ date?: string | null; startTime?: string | null }>;
+  nextLessonAt?: string | null;
+}): string {
+  return resolveSubstituteUrgency({
+    sessions: post.sessions,
+    nextLessonAt: post.nextLessonAt,
+  });
+}
+
+function filterByDate<
+  T extends {
+    urgency?: string | null;
+    nextLessonAt?: string | null;
+    sessions?: Array<{ date?: string | null; startTime?: string | null }>;
+  },
+>(posts: T[], dateFilter: DateFilter): T[] {
   if (dateFilter === "all") return posts;
-  if (dateFilter === "today") return posts.filter((post) => post.urgency === "same_day");
-  if (dateFilter === "tomorrow") return posts.filter((post) => post.urgency === "next_day");
+  if (dateFilter === "today") return posts.filter((post) => liveUrgency(post) === "same_day");
+  if (dateFilter === "tomorrow") return posts.filter((post) => liveUrgency(post) === "next_day");
 
   const todayInKorea = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
@@ -38,22 +52,35 @@ function filterByDate<T extends { urgency?: string | null; nextLessonAt?: string
   }).format(new Date());
   const rangeStart = new Date(`${todayInKorea}T00:00:00+09:00`).getTime();
   const rangeEnd = rangeStart + 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
 
   return posts.filter((post) => {
-    if (!post.nextLessonAt) return false;
-    const lessonAt = Date.parse(post.nextLessonAt);
-    return lessonAt >= rangeStart && lessonAt < rangeEnd;
+    const upcoming = (post.sessions ?? [])
+      .map((session) => {
+        if (!session.date) return null;
+        const time = session.startTime || "12:00";
+        return Date.parse(`${session.date}T${time}:00+09:00`);
+      })
+      .filter((value): value is number => value != null && value >= now)
+      .sort((a, b) => a - b)[0];
+    const lessonAt = upcoming ?? (post.nextLessonAt ? Date.parse(post.nextLessonAt) : NaN);
+    return Number.isFinite(lessonAt) && lessonAt >= rangeStart && lessonAt < rangeEnd;
   });
 }
 
 function sortByNextLesson<
-  T extends { urgency?: string | null; nextLessonAt?: string | null; postedAt?: string | null },
+  T extends {
+    urgency?: string | null;
+    nextLessonAt?: string | null;
+    postedAt?: string | null;
+    sessions?: Array<{ date?: string | null; startTime?: string | null }>;
+  },
 >(posts: T[]): T[] {
-  const urgencyRank = (urgency?: string | null) =>
+  const urgencyRank = (urgency: string) =>
     urgency === "same_day" ? 0 : urgency === "next_day" ? 1 : 2;
 
   return posts.slice().sort((a, b) => {
-    const rankDifference = urgencyRank(a.urgency) - urgencyRank(b.urgency);
+    const rankDifference = urgencyRank(liveUrgency(a)) - urgencyRank(liveUrgency(b));
     if (rankDifference !== 0) return rankDifference;
 
     const aLesson = a.nextLessonAt ? Date.parse(a.nextLessonAt) : Number.POSITIVE_INFINITY;

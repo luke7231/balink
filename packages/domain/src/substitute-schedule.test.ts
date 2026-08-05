@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { deriveSubstituteSchedule, deriveSubstituteStatus } from "./substitute-schedule.js";
+import {
+  deriveSubstituteSchedule,
+  deriveSubstituteStatus,
+  resolveSubstituteUrgency,
+} from "./substitute-schedule.js";
 import type { SubstituteRecurrence, SubstituteSession } from "./substitute-post.js";
 
 const NOW = new Date("2026-07-30T10:00:00+09:00");
@@ -92,6 +96,38 @@ test("deriveSubstituteStatus marks expired posts after expiresAt", () => {
     now: NOW,
   });
   assert.equal(status, "EXPIRED");
+});
+
+test("resolveSubstituteUrgency compares next lesson to live KST date", () => {
+  const sessions = [
+    { date: "2026-08-04", startTime: "16:30" },
+    { date: "2026-08-11", startTime: "16:30" },
+  ];
+
+  assert.equal(
+    resolveSubstituteUrgency({
+      sessions,
+      nextLessonAt: "2026-08-04T16:30:00+09:00",
+      now: new Date("2026-08-04T10:00:00+09:00"),
+    }),
+    "same_day",
+  );
+  assert.equal(
+    resolveSubstituteUrgency({
+      sessions,
+      nextLessonAt: "2026-08-04T16:30:00+09:00",
+      now: new Date("2026-08-05T10:00:00+09:00"),
+    }),
+    "normal",
+  );
+  assert.equal(
+    resolveSubstituteUrgency({
+      sessions,
+      nextLessonAt: "2026-08-04T16:30:00+09:00",
+      now: new Date("2026-08-10T10:00:00+09:00"),
+    }),
+    "next_day",
+  );
 });
 
 test("deriveSubstituteSchedule dedupes duplicate sessions", () => {

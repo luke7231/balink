@@ -56,7 +56,7 @@ export function formatSubstituteStatus(status: string | null): string {
 }
 
 export function formatSubstituteUrgency(urgency: string | null): string | null {
-  if (!urgency) return null;
+  if (!urgency || urgency === "normal") return null;
   return SUBSTITUTE_URGENCY_LABELS[urgency] ?? urgency;
 }
 

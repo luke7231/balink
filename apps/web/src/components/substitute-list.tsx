@@ -8,6 +8,7 @@ import {
   type SubstituteSessionDateGroup,
   formatSubstituteStatus,
   formatSubstituteUrgency,
+  resolveSubstituteUrgency,
 } from "@black-swan/domain";
 import { Badge } from "@black-swan/ui/badge";
 import { CalendarIcon, MapPinIcon } from "@black-swan/ui";
@@ -102,7 +103,12 @@ export function SubstituteList({
   return (
     <div className="grid gap-4">
       {posts.map((post) => {
-        const urgencyLabel = formatSubstituteUrgency(post.urgency ?? null);
+        const urgencyLabel = formatSubstituteUrgency(
+          resolveSubstituteUrgency({
+            sessions: post.sessions,
+            nextLessonAt: post.nextLessonAt,
+          }),
+        );
         const schedule = resolveCardSchedule(post);
         const hasNormalizedLocation = Boolean(
           post.sido || post.sigungu || post.dongOrStation,

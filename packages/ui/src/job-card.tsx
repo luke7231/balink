@@ -57,28 +57,24 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
       >
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div
-            className="shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-rose-100 via-rose-50 to-zinc-100"
-            style={{ width: 80, height: 80 }}
+            className={`flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-rose-100 via-rose-50 to-zinc-100 ${
+              job.academyThumbnailType === "logo" || !job.academyThumbnailUrl ? "p-1.5" : ""
+            }`}
           >
             {job.academyThumbnailUrl ? (
               <img
                 src={job.academyThumbnailUrl}
                 alt=""
-                width={80}
-                height={80}
                 className={
                   job.academyThumbnailType === "interior"
-                    ? "block object-cover transition duration-300 group-hover:scale-105"
-                    : "block object-contain p-1.5"
+                    ? "h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    : "max-h-full max-w-full rounded-lg object-contain"
                 }
-                style={{ width: 80, height: 80 }}
               />
             ) : (
-              <div className="flex items-center justify-center" style={{ width: 80, height: 80 }}>
-                <span className="text-xl font-bold text-rose-300" aria-hidden="true">
-                  B
-                </span>
-              </div>
+              <span className="text-xl font-bold text-rose-300" aria-hidden="true">
+                B
+              </span>
             )}
           </div>
 

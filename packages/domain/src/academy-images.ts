@@ -56,13 +56,19 @@ export function pickAcademyThumbnail(
     return true;
   });
 
-  const interior = usable.find((item) => item.type === "interior");
-  if (interior?.url?.trim()) {
-    return { url: interior.url.trim(), type: "interior" };
+  // 목록 카드 썸네일은 로고 우선. 내부사진은 상세 갤러리용.
+  const logoFromGallery = usable.find((item) => item.type === "logo");
+  if (logoFromGallery?.url?.trim()) {
+    return { url: logoFromGallery.url.trim(), type: "logo" };
   }
 
   if (isUsableImageUrl(logoUrl)) {
     return { url: logoUrl.trim(), type: "logo" };
+  }
+
+  const interior = usable.find((item) => item.type === "interior");
+  if (interior?.url?.trim()) {
+    return { url: interior.url.trim(), type: "interior" };
   }
 
   const fallback = usable.find((item) => item.url?.trim());

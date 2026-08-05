@@ -48,7 +48,11 @@ export function deriveSubstituteSchedule(input: DeriveSubstituteScheduleInput): 
   const scheduleKind = resolveScheduleKind(explicitSessions, recurrence);
   const nextLessonAt = findNextLessonAt(sessions, now);
   const expiresAt = resolveExpiresAt(scheduleKind, sessions, recurrence, input.postedAt, now);
-  const urgency = deriveUrgency(input.title, nextLessonAt, scheduleKind, now);
+  const urgency = resolveSubstituteUrgency({
+    sessions,
+    nextLessonAt,
+    now,
+  });
   const compatibility = deriveCompatibilityFields(sessions);
 
   return {
@@ -60,6 +64,33 @@ export function deriveSubstituteSchedule(input: DeriveSubstituteScheduleInput): 
     urgency,
     ...compatibility,
   };
+}
+
+/**
+ * 오늘/내일 뱃지: 요청 시점 Asia/Seoul 기준으로 다음 수업일과 비교한다.
+ * DB에 저장된 urgency/nextLessonAt가 지나도, sessions가 있으면 실시간으로 다시 계산한다.
+ */
+export function resolveSubstituteUrgency(input: {
+  sessions?: Array<{ date?: string | null; startTime?: string | null }>;
+  nextLessonAt?: Date | string | null;
+  now?: Date;
+}): SubstituteUrgency {
+  const now = input.now ?? new Date();
+  const nextAt =
+    findNextLessonAtFromLooseSessions(input.sessions ?? [], now) ?? parseOptionalDate(input.nextLessonAt);
+
+  if (!nextAt || Number.isNaN(nextAt.getTime()) || nextAt.getTime() < now.getTime()) {
+    return "normal";
+  }
+
+  const today = todayKstDate(now);
+  const lessonDate = toKstDateString(nextAt);
+  if (lessonDate === today) return "same_day";
+
+  const tomorrow = toKstDateString(addDays(parseKstDate(today), 1));
+  if (lessonDate === tomorrow) return "next_day";
+
+  return "normal";
 }
 
 /** date가 있으면 KST 기준으로 day를 반드시 채운다 */
@@ -238,28 +269,35 @@ function resolveExpiresAt(
   return endOfKstDay(addDays(base, UNSCHEDULED_EXPIRE_DAYS));
 }
 
-function deriveUrgency(
-  title: string,
-  nextLessonAt: Date | null,
-  scheduleKind: SubstituteScheduleKind,
+function findNextLessonAtFromLooseSessions(
+  sessions: Array<{ date?: string | null; startTime?: string | null }>,
   now: Date,
-): SubstituteUrgency {
-  if (scheduleKind === "unscheduled") {
-    if (/급구|오늘|today/i.test(title)) return "same_day";
-    if (/내일|tomorrow/i.test(title)) return "next_day";
-    return "normal";
-  }
+): Date | null {
+  const upcoming = sessions
+    .map((session) =>
+      sessionToDateTime({
+        date: session.date ?? null,
+        day: null,
+        startTime: session.startTime ?? null,
+        endTime: null,
+        durationMinutes: null,
+        audienceTypes: [],
+        subjectTypes: [],
+        pay: null,
+        evidence: null,
+        confidence: "medium",
+        origin: "explicit",
+      }),
+    )
+    .filter((value): value is Date => value != null && value.getTime() >= now.getTime())
+    .sort((left, right) => left.getTime() - right.getTime());
+  return upcoming[0] ?? null;
+}
 
-  if (!nextLessonAt) return "normal";
-
-  const today = todayKstDate();
-  const lessonDate = toKstDateString(nextLessonAt);
-  if (lessonDate === today) return "same_day";
-
-  const tomorrow = toKstDateString(addDays(parseKstDate(today), 1));
-  if (lessonDate === tomorrow) return "next_day";
-
-  return "normal";
+function parseOptionalDate(value: Date | string | null | undefined): Date | null {
+  if (!value) return null;
+  const date = typeof value === "string" ? new Date(value) : value;
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function deriveCompatibilityFields(sessions: SubstituteSession[]): {
@@ -342,13 +380,13 @@ function getKstDayIndex(value: Date): number {
   return ENGLISH_DAY_TO_INDEX[weekday.slice(0, 3).toLowerCase()] ?? 0;
 }
 
-function todayKstDate(): string {
+function todayKstDate(now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date());
+  }).format(now);
 }
 
 function toKstDateString(value: Date | null): string | null {
