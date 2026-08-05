@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import type { Prisma, PrismaSourceName } from "@black-swan/db";
 import { SourcePostRepository } from "@black-swan/db";
 import type { ListingEnrichment, LocationSource, SourceName } from "@black-swan/domain";
-import { sanitizeLocationTextForStorage } from "@black-swan/domain";
+import { sanitizeLocationTextForStorage, sanitizeSchedule } from "@black-swan/domain";
 import { classifiedPayloadSchema, parseOrThrow } from "@black-swan/validation";
 import { mirrorAcademyImagesToS3, parseRawAcademyImages } from "./academy-images.js";
 
@@ -53,7 +53,12 @@ async function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
   const classification = item.classification;
   const enrichment = item.enrichment;
   const location = enrichment?.location ?? firstObject(classification.locations);
-  const schedule = asRecord(classification.schedule);
+  const title = stringValue(raw.title) || "Untitled job post";
+  const description = stringValue(raw.detailText);
+  const schedule = sanitizeSchedule(asRecord(classification.schedule) as never, {
+    title,
+    detailText: description,
+  });
   const pay = asRecord(classification.pay);
   const contact = asRecord(classification.contact);
   const requirements = asRecord(classification.requirements);
@@ -64,8 +69,6 @@ async function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
     item.sourcePostId,
     parseRawAcademyImages(raw.academyImages),
   );
-  const title = stringValue(raw.title) || "Untitled job post";
-  const description = stringValue(raw.detailText);
   const contentHash = hashContent([source, title, description, stringValue(raw.postedDate)].join("\n"));
 
   const confidenceJson = {
@@ -118,11 +121,12 @@ async function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
       sido: normalizedSido,
       sigungu: normalizedSigungu,
       dongOrStation: normalizedDong,
-      days: jsonArray(schedule.days),
-      timeSlots: jsonArray(schedule.timeSlots),
-      times: jsonArray(schedule.times),
-      classCount: numberValue(schedule.classCount),
-      durationMinutes: numberValue(schedule.durationMinutes),
+      days: schedule.days,
+      dayGroups: schedule.dayGroups as unknown as Prisma.InputJsonValue,
+      timeSlots: schedule.timeSlots,
+      times: schedule.times as unknown as Prisma.InputJsonValue,
+      classCount: schedule.classCount,
+      durationMinutes: schedule.durationMinutes,
       payType: stringValue(pay.type),
       payMinManwon: numberValue(pay.minManwon),
       payMaxManwon: numberValue(pay.maxManwon),

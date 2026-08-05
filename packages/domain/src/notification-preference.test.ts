@@ -159,7 +159,9 @@ test("empty days/timeSlots mean allow all", () => {
 
 test("clock and weekday helpers", () => {
   assert.equal(clockTimeToAlertSlot("10:30"), "morning");
-  assert.equal(clockTimeToAlertSlot("14:00"), "afternoon");
+  assert.equal(clockTimeToAlertSlot("12:00"), "afternoon");
+  assert.equal(clockTimeToAlertSlot("16:59"), "afternoon");
+  assert.equal(clockTimeToAlertSlot("17:00"), "evening");
   assert.equal(clockTimeToAlertSlot("19:00"), "evening");
   assert.equal(dateToKoreanWeekday("2026-08-24"), "월");
   assert.equal(dateToKoreanWeekday("2026-08-29"), "토");

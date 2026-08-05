@@ -49,6 +49,7 @@ type JobPostSummary {
   audienceTypes: [String!]!
   subjectTypes: [String!]!
   days: [String!]!
+  dayGroups: [[String!]!]!
   timeSlots: [String!]!
   times: [String!]!
   payText: String
@@ -102,6 +103,7 @@ type JobPost {
   audienceTypes: [String!]!
   subjectTypes: [String!]!
   days: [String!]!
+  dayGroups: [[String!]!]!
   timeSlots: [String!]!
   times: [String!]!
   classCount: Int

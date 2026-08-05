@@ -19,7 +19,7 @@ const args = parseArgs(process.argv.slice(2));
 const inputPath = args.input || path.join("data", `balletmania-working-${getTodayKstDate()}.json`);
 const outputPath = args.output || inputPath.replace(/\.json$/, "-classified.json");
 const llmMode = args.llm || "fallback";
-const llmModel = process.env.OPENAI_MODEL || "gpt-5.5";
+const llmModel = process.env.OPENAI_MODEL || "gpt-5.4";
 
 main().catch((error) => {
   console.error(error);

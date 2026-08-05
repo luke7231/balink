@@ -48,6 +48,7 @@ export function toJobPostSummary(job: JobPost): JobPostSummary {
     audienceTypes: jsonArray(job.audienceTypes),
     subjectTypes: jsonArray(job.subjectTypes),
     days: jsonArray(job.days),
+    dayGroups: parseDayGroups(job.dayGroups),
     timeSlots: jsonArray(job.timeSlots),
     times: jsonArray(job.times),
     payText: job.payText,
@@ -210,4 +211,15 @@ function parseTimeSlots(value: unknown): SubstituteTimeSlot[] {
       typeof item === "object" &&
       ("start" in (item as SubstituteTimeSlot) || "end" in (item as SubstituteTimeSlot) || "raw" in (item as SubstituteTimeSlot)),
   );
+}
+
+function parseDayGroups(value: unknown): string[][] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((group) =>
+      Array.isArray(group)
+        ? group.filter((day): day is string => typeof day === "string")
+        : [],
+    )
+    .filter((group) => group.length > 0);
 }

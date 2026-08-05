@@ -1,3 +1,5 @@
+import { matchesPostDays } from "./schedule.js";
+
 export type AlertTimeSlot = "morning" | "afternoon" | "evening";
 export type AlertJobType = "regular" | "substitute";
 
@@ -257,6 +259,7 @@ export function matchesNotificationRule(
     sido?: string | null;
     sigungu?: string | null;
     days: string[];
+    dayGroups?: string[][];
     timeSlots: string[];
   },
 ): boolean {
@@ -264,7 +267,11 @@ export function matchesNotificationRule(
   if (rule.jobType !== input.jobType) return false;
   if (!rule.sido || !rule.sigungu) return false;
   if (rule.sido !== input.sido || rule.sigungu !== input.sigungu) return false;
-  return matchesDays(input.days, rule) && matchesTimeSlots(input.timeSlots, rule);
+  const daysOk =
+    rule.days.length === 0
+      ? true
+      : matchesPostDays(rule.days, { days: input.days, dayGroups: input.dayGroups }, "and");
+  return daysOk && matchesTimeSlots(input.timeSlots, rule);
 }
 
 export function matchesNotificationPreference(
@@ -274,6 +281,7 @@ export function matchesNotificationPreference(
     sido?: string | null;
     sigungu?: string | null;
     days: string[];
+    dayGroups?: string[][];
     timeSlots: string[];
   },
 ): boolean {
@@ -290,7 +298,12 @@ export function matchesJobTypeAlert(
   return preference.conditions.some((condition) => matchesAlertCondition(condition, input));
 }
 
-/** 시계열 시각을 오전/오후/저녁으로 환산 (대타 매칭용) */
+/**
+ * 시계열 시각을 오전/오후/저녁으로 환산 (대타 매칭·크롤링 룰과 동일)
+ * - morning: 00:00~11:59
+ * - afternoon: 12:00~16:59
+ * - evening: 17:00~23:59
+ */
 export function clockTimeToAlertSlot(hhmm: string): AlertTimeSlot | null {
   const match = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim());
   if (!match) return null;

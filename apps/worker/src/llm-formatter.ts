@@ -14,7 +14,7 @@ import {
   resolveLocationTextForGeocode,
 } from "./location-llm.js";
 
-const llmModel = process.env.OPENAI_MODEL || "gpt-5.5";
+const llmModel = process.env.OPENAI_MODEL || "gpt-5.4";
 
 export interface FormatListingInput {
   raw: Record<string, unknown>;

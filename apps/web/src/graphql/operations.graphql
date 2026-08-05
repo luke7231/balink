@@ -22,6 +22,7 @@ query JobPosts($filter: JobPostFilterInput, $pagination: PaginationInput) {
       audienceTypes
       subjectTypes
       days
+      dayGroups
       timeSlots
       times
       payText
@@ -71,6 +72,7 @@ query JobPost($id: ID!) {
     audienceTypes
     subjectTypes
     days
+    dayGroups
     timeSlots
     times
     classCount

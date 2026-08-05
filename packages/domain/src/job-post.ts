@@ -38,6 +38,7 @@ export interface JobPostSummary {
   audienceTypes: string[];
   subjectTypes: string[];
   days: string[];
+  dayGroups: string[][];
   timeSlots: string[];
   times: string[];
   payText: string | null;

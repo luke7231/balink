@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import {
+  displayableTimeSlots,
+  formatDayGroups,
   formatJobType,
   formatLocation,
   formatPay,
@@ -18,6 +20,7 @@ export interface JobCardData {
   sigungu?: string | null;
   dongOrStation?: string | null;
   days: string[];
+  dayGroups?: string[][];
   timeSlots: string[];
   payText?: string | null;
   payMinManwon?: number | null;
@@ -42,7 +45,8 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
     job.representativePayText ?? null,
   );
   const locationLabel = formatLocation(job.sido ?? null, job.sigungu ?? null, job.dongOrStation ?? null);
-  const dayLabel = job.days.length ? job.days.join(" · ") : "요일 미상";
+  const dayLabel = formatDayGroups(job.dayGroups, job.days);
+  const slotBadges = displayableTimeSlots(job.timeSlots);
 
   return (
     <div className="group relative min-w-0 max-w-full rounded-3xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md">
@@ -81,7 +85,7 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="flex flex-wrap gap-2">
                 <Badge variant="rose">{formatJobType(job.jobType ?? null)}</Badge>
-                {job.timeSlots.slice(0, 1).map((slot) => (
+                {slotBadges.map((slot) => (
                   <Badge key={slot}>{formatTimeSlot(slot)}</Badge>
                 ))}
               </div>

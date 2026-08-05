@@ -10,3 +10,4 @@ export * from "./format.js";
 export * from "./substitute-post.js";
 export * from "./substitute-schedule.js";
 export * from "./notification-preference.js";
+export * from "./schedule.js";

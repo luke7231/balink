@@ -60,6 +60,8 @@ model JobPost {
   sigungu           String?
   dongOrStation     String?
   days              Json
+  /// string[][] — 대안 요일 묶음 예: [["수","금"],["월","수"]]
+  dayGroups         Json            @default("[]")
   timeSlots         Json
   times             Json
   classCount        Int?

@@ -56,6 +56,7 @@ export type JobPost = {
   contactMethods: Array<Scalars['String']['output']>;
   contactPhones: Array<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
+  dayGroups: Array<Array<Scalars['String']['output']>>;
   days: Array<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   displaySections: Array<DisplaySection>;
@@ -115,6 +116,7 @@ export type JobPostSummary = {
   academyThumbnailUrl?: Maybe<Scalars['String']['output']>;
   audienceTypes: Array<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
+  dayGroups: Array<Array<Scalars['String']['output']>>;
   days: Array<Scalars['String']['output']>;
   dongOrStation?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -573,6 +575,7 @@ export type JobPostResolvers<ContextType = GraphQLContext, ParentType extends Re
   contactMethods?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   contactPhones?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  dayGroups?: Resolver<Array<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   days?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   displaySections?: Resolver<Array<ResolversTypes['DisplaySection']>, ParentType, ContextType>;
@@ -625,6 +628,7 @@ export type JobPostSummaryResolvers<ContextType = GraphQLContext, ParentType ext
   academyThumbnailUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   audienceTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  dayGroups?: Resolver<Array<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   days?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   dongOrStation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

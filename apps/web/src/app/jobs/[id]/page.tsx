@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@black-swan/db";
 import {
+  displayableTimeSlots,
+  formatDayGroups,
   formatJobType,
   formatLocation,
   formatPay,
@@ -73,7 +75,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         <article className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex flex-wrap gap-2">
             <Badge variant="rose">{formatJobType(job.jobType ?? null)}</Badge>
-            {job.timeSlots.map((slot) => (
+            {displayableTimeSlots(job.timeSlots).map((slot) => (
               <Badge key={slot}>{formatTimeSlot(slot)}</Badge>
             ))}
           </div>
@@ -93,7 +95,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             </div>
             <div>
               <dt className="text-zinc-500">요일</dt>
-              <dd className="mt-1 font-medium text-zinc-900">{job.days.length ? job.days.join(", ") : "미상"}</dd>
+              <dd className="mt-1 font-medium text-zinc-900">
+                {formatDayGroups(job.dayGroups, job.days)}
+              </dd>
             </div>
             <div>
               <dt className="text-zinc-500">급여</dt>

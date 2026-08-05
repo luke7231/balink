@@ -6,6 +6,12 @@ const { Agent, fetch } = require("undici");
 const cheerio = require("cheerio");
 const dotenv = require("dotenv");
 const OpenAI = require("openai");
+const {
+  SCHEDULE_LLM_RULES,
+  sanitizeSchedule,
+  normalizeDayGroups,
+  flattenDayGroups,
+} = require("./lib/schedule-sanitize.cjs");
 
 dotenv.config();
 
@@ -16,7 +22,7 @@ const inputPath = args.input || path.join("data", "esangdance-employ-2026-06-11.
 const outputPath =
   args.output || path.join("data", "esangdance-employ-2026-06-11-classified.json");
 const llmMode = args.llm || "fallback";
-const llmModel = process.env.OPENAI_MODEL || "gpt-5.5";
+const llmModel = process.env.OPENAI_MODEL || "gpt-5.4";
 const timeoutMs = Number(args.timeoutMs || 45000);
 const retries = Number(args.retries || 3);
 
@@ -74,6 +80,10 @@ async function main() {
     };
 
     let classification = classify(raw);
+    classification.schedule = sanitizeSchedule(classification.schedule, {
+      title: raw.title,
+      detailText: raw.detailText,
+    });
     const llmReasons = classificationNeedsLlm(classification, raw);
 
     if (shouldUseLlm(llmMode, llmReasons)) {
@@ -83,6 +93,7 @@ async function main() {
           used: true,
           reason: llmReasons,
           model: llmModel,
+          raw,
         });
       } catch (error) {
         classification.llm = {
@@ -362,10 +373,9 @@ function classificationNeedsLlm(classification, raw) {
   return unique(reasons);
 }
 
-function shouldUseLlm(mode, reasons) {
+function shouldUseLlm(mode, _reasons) {
   if (mode === "off") return false;
-  if (mode === "all") return true;
-  return reasons.length > 0;
+  return mode === "all" || mode === "fallback";
 }
 
 async function callLlmFallback(openai, raw, ruleClassification, reasons) {
@@ -379,7 +389,8 @@ async function callLlmFallback(openai, raw, ruleClassification, reasons) {
           "원문에 없는 정보는 확정하지 말고 unknown 또는 null로 둔다.",
           "반드시 제공된 enum 값만 사용한다.",
           "근거가 부족하면 해당 필드 confidence를 low로 표시한다.",
-          "룰 기반 결과를 참고하되, 원문 근거가 있는 경우에만 수정 제안한다.",
+          "룰 기반 결과를 참고하되, schedule(요일·시간)과 급여는 원문을 직접 읽고 확정한다.",
+          SCHEDULE_LLM_RULES,
         ].join("\n"),
       },
       {
@@ -455,9 +466,24 @@ function mergeLlmClassification(ruleClassification, llmResult, meta) {
     appliedFields.push("jobType");
   }
 
-  if (isApplicableConfidence(confidence.schedule) && llmResult.schedule) {
-    const scheduleApplied = mergeSchedule(merged.schedule, llmResult.schedule);
-    if (scheduleApplied.length) appliedFields.push(...scheduleApplied.map((field) => `schedule.${field}`));
+  if (llmResult.schedule) {
+    merged.schedule = sanitizeSchedule(
+      {
+        ...merged.schedule,
+        ...llmResult.schedule,
+        dayGroups: llmResult.schedule.dayGroups ?? merged.schedule.dayGroups,
+      },
+      {
+        title: meta.raw?.title,
+        detailText: meta.raw?.detailText,
+      },
+    );
+    appliedFields.push(
+      "schedule.dayGroups",
+      "schedule.days",
+      "schedule.times",
+      "schedule.timeSlots",
+    );
   }
 
   if (isApplicableConfidence(confidence.pay) && llmResult.pay) {
@@ -485,38 +511,6 @@ function mergeLlmClassification(ruleClassification, llmResult, meta) {
   };
 
   return merged;
-}
-
-function mergeSchedule(ruleSchedule, llmSchedule) {
-  const applied = [];
-
-  if (isMeaningfulArray(llmSchedule.days, "unknown")) {
-    ruleSchedule.days = llmSchedule.days;
-    ruleSchedule.dayRaw = llmSchedule.dayRaw || ruleSchedule.dayRaw;
-    applied.push("days");
-  }
-  if (isMeaningfulArray(llmSchedule.timeSlots, "unknown")) {
-    ruleSchedule.timeSlots = llmSchedule.timeSlots;
-    applied.push("timeSlots");
-  }
-  if (Array.isArray(llmSchedule.times) && llmSchedule.times.length > 0) {
-    ruleSchedule.times = llmSchedule.times;
-    applied.push("times");
-  }
-  if (llmSchedule.classCount !== null && llmSchedule.classCount !== undefined) {
-    ruleSchedule.classCount = llmSchedule.classCount;
-    applied.push("classCount");
-  }
-  if (llmSchedule.durationMinutes !== null && llmSchedule.durationMinutes !== undefined) {
-    ruleSchedule.durationMinutes = llmSchedule.durationMinutes;
-    applied.push("durationMinutes");
-  }
-  if (llmSchedule.startDate) {
-    ruleSchedule.startDate = llmSchedule.startDate;
-    applied.push("startDate");
-  }
-
-  return applied;
 }
 
 function mergePay(rulePay, llmPay) {
@@ -577,11 +571,28 @@ function llmFallbackSchema() {
       schedule: {
         type: "object",
         additionalProperties: false,
-        required: ["days", "dayRaw", "timeSlots", "times", "classCount", "durationMinutes", "startDate"],
+        required: [
+          "days",
+          "dayGroups",
+          "dayRaw",
+          "timeSlots",
+          "times",
+          "classCount",
+          "durationMinutes",
+          "startDate",
+          "evidence",
+        ],
         properties: {
           days: {
             type: "array",
             items: { type: "string", enum: ["월", "화", "수", "목", "금", "토", "일"] },
+          },
+          dayGroups: {
+            type: "array",
+            items: {
+              type: "array",
+              items: { type: "string", enum: ["월", "화", "수", "목", "금", "토", "일"] },
+            },
           },
           dayRaw: { type: ["string", "null"] },
           timeSlots: {
@@ -604,6 +615,7 @@ function llmFallbackSchema() {
           classCount: { type: ["number", "null"] },
           durationMinutes: { type: ["number", "null"] },
           startDate: { type: ["string", "null"] },
+          evidence: { type: ["string", "null"] },
         },
       },
       pay: {
@@ -729,73 +741,88 @@ function extractDongOrStation(text) {
 }
 
 function classifySchedule(text) {
-  const dayEvidence = [];
-  const days = new Set();
   const compactText = text.replace(/\s+/g, "");
-
-  const dayPatterns = [
-    ["월", /월요일|(?<![가-힣0-9])월(?![가-힣])|월\s*[~,-]\s*금|월수|월금|월수금|월,\s*화,\s*토/],
-    ["화", /화요일|(?<![가-힣0-9])화(?![가-힣])|화목|화,\s*목|월,\s*화,\s*토/],
-    ["수", /수요일|(?<![가-힣0-9])수(?![가-힣])|월수|수금|월수금|수,\s*금/],
-    ["목", /목요일|(?<![가-힣0-9])목(?![가-힣])|화목|화,\s*목/],
-    ["금", /금요일|(?<![가-힣0-9])금(?![가-힣])|월금|수금|월수금|월\s*[~,-]\s*금|수,\s*금/],
-    ["토", /토요일|(?<![가-힣0-9])토(?![가-힣])|월,\s*화,\s*토/],
-    ["일", /일요일|(?<![가-힣0-9])일(?![가-힣])/],
-  ];
-
-  for (const [day, regex] of dayPatterns) {
-    if (regex.test(text)) days.add(day);
-  }
+  const dayGroups = [];
 
   const compactPatterns = [
     ["월수금", ["월", "수", "금"]],
-    ["월수", ["월", "수"]],
-    ["월금", ["월", "금"]],
     ["화목", ["화", "목"]],
     ["수금", ["수", "금"]],
+    ["월수", ["월", "수"]],
+    ["월금", ["월", "금"]],
   ];
 
   for (const [pattern, patternDays] of compactPatterns) {
     if (compactText.includes(pattern)) {
-      patternDays.forEach((day) => days.add(day));
+      dayGroups.push([...patternDays]);
     }
   }
 
-  if (/월\s*[~,-]\s*금|월~금/.test(text)) {
-    ["월", "화", "수", "목", "금"].forEach((day) => days.add(day));
+  // 슬래시로 나뉜 대안 묶음: 월수금/화목/토
+  for (const part of compactText.split(/[\/|]/)) {
+    for (const [pattern, patternDays] of compactPatterns) {
+      if (part.includes(pattern)) {
+        const key = patternDays.join(",");
+        if (!dayGroups.some((group) => group.join(",") === key)) dayGroups.push([...patternDays]);
+      }
+    }
+    if (/^토$/.test(part) || part.endsWith("토") && part.length <= 3) {
+      if (!dayGroups.some((group) => group.join(",") === "토")) dayGroups.push(["토"]);
+    }
   }
 
-  if (/일\s*중\s*하루|하루\s*정/.test(text)) {
-    days.delete("일");
+  if (!dayGroups.length && /월\s*[~,-]\s*금|월~금/.test(text)) {
+    dayGroups.push(["월", "화", "수", "목", "금"]);
   }
 
-  const timeMatches = [...text.matchAll(/([01]?\d|2[0-3])[:시]\s*([0-5]\d)?\s*(?:분)?\s*(?:~|-|부터)\s*([01]?\d|2[0-3])[:시]\s*([0-5]\d)?/g)];
+  if (!dayGroups.length) {
+    const days = new Set();
+    const dayPatterns = [
+      ["월", /월요일|(?<![가-힣0-9])월(?![가-힣])/],
+      ["화", /화요일|(?<![가-힣0-9])화(?![가-힣])/],
+      ["수", /수요일|(?<![가-힣0-9])수(?![가-힣])/],
+      ["목", /목요일|(?<![가-힣0-9])목(?![가-힣])/],
+      ["금", /금요일|(?<![가-힣0-9])금(?![가-힣])/],
+      ["토", /토요일|(?<![가-힣0-9])토(?![가-힣])/],
+      ["일", /일요일|(?<![가-힣0-9])일(?![가-힣])/],
+    ];
+    for (const [day, regex] of dayPatterns) {
+      if (regex.test(text)) days.add(day);
+    }
+    if (days.size) dayGroups.push([...days]);
+  }
+
+  const normalizedGroups = normalizeDayGroups(dayGroups);
+  const days = flattenDayGroups(normalizedGroups);
+
+  const timeMatches = [
+    ...text.matchAll(
+      /([01]?\d|2[0-3])[:시]?\s*([0-5]\d)?\s*(?:분)?\s*(?:~|-|부터)\s*([01]?\d|2[0-3])[:시]?\s*([0-5]\d)?/g,
+    ),
+  ];
   const times = timeMatches.map((match) => {
     const start = normalizeTime(match[1], match[2]);
     const end = normalizeTime(match[3], match[4]);
     return { start, end, raw: cleanText(match[0]) };
   });
 
-  const timeSlots = new Set();
-  if (/오전/.test(text) || times.some((time) => hourOf(time.start) < 12)) timeSlots.add("morning");
-  if (/오후/.test(text) || times.some((time) => hourOf(time.start) >= 12 && hourOf(time.start) < 18)) timeSlots.add("afternoon");
-  if (/저녁|밤/.test(text) || times.some((time) => hourOf(time.start) >= 18)) timeSlots.add("evening");
-  if (/협의|조절가능|가능한 시간대/.test(text)) timeSlots.add("negotiable");
-
   const classCount = extractClassCount(text);
   const durationMinutes = extractDurationMinutes(text);
 
-  if (days.size) dayEvidence.push(...[...days]);
-
-  return {
-    days: [...days],
-    dayRaw: dayEvidence.length ? dayEvidence.join(",") : null,
-    timeSlots: timeSlots.size ? [...timeSlots] : ["unknown"],
-    times,
-    classCount,
-    durationMinutes,
-    startDate: null,
-  };
+  return sanitizeSchedule(
+    {
+      days,
+      dayGroups: normalizedGroups,
+      dayRaw: days.length ? days.join(",") : null,
+      timeSlots: [],
+      times,
+      classCount,
+      durationMinutes,
+      startDate: null,
+      evidence: null,
+    },
+    { title: text, detailText: text },
+  );
 }
 
 function classifyPay(summaryPayText, detailText, classCount) {

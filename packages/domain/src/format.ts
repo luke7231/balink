@@ -20,6 +20,8 @@ export function formatTimeSlot(slot: string): string {
   return TIME_SLOT_LABELS[slot] ?? slot;
 }
 
+export { displayableTimeSlots, formatDayGroups } from "./schedule.js";
+
 export function formatPostedAt(value: Date | string | null): string {
   if (!value) return "날짜 미상";
   return new Intl.DateTimeFormat("ko-KR", {
