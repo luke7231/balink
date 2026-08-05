@@ -9,6 +9,7 @@ import {
   formatTimeSlot,
 } from "@black-swan/domain";
 import { Badge } from "./badge";
+import { CalendarIcon, MapPinIcon } from "./icons";
 
 export interface JobCardData {
   id: string;
@@ -82,14 +83,11 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="rose">{formatJobType(job.jobType ?? null)}</Badge>
-                {slotBadges.map((slot) => (
-                  <Badge key={slot}>{formatTimeSlot(slot)}</Badge>
-                ))}
-              </div>
-              <strong className="break-keep text-sm font-bold text-rose-700 sm:text-base">{payLabel}</strong>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="rose">{formatJobType(job.jobType ?? null)}</Badge>
+              {slotBadges.map((slot) => (
+                <Badge key={slot}>{formatTimeSlot(slot)}</Badge>
+              ))}
             </div>
 
             <h2 className="mt-2 line-clamp-2 text-base font-semibold leading-snug text-zinc-900 group-hover:text-rose-700 sm:text-lg">
@@ -97,17 +95,20 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
             </h2>
 
             <div className="mt-3 space-y-1.5 text-sm text-zinc-600">
-              <p className="flex min-w-0 items-center gap-2">
-                <span aria-hidden="true">📍</span>
+              <p className="flex min-w-0 items-center gap-1.5">
+                <MapPinIcon className="text-zinc-400" />
                 <span className="truncate">{locationLabel}</span>
               </p>
-              <p className="flex items-center gap-2">
-                <span aria-hidden="true">📅</span>
+              <p className="flex min-w-0 items-center gap-1.5">
+                <CalendarIcon className="text-zinc-400" />
                 <span className="truncate">{dayLabel}</span>
               </p>
             </div>
 
-            <p className="mt-3 text-xs text-zinc-400">{formatPostedAt(job.postedAt ?? null)}</p>
+            <div className="mt-3 flex items-end justify-between gap-3">
+              <strong className="break-keep text-sm font-bold text-rose-700 sm:text-base">{payLabel}</strong>
+              <p className="shrink-0 text-right text-xs text-zinc-400">{formatPostedAt(job.postedAt ?? null)}</p>
+            </div>
           </div>
         </div>
       </Link>

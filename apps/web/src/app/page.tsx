@@ -62,14 +62,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        <section className="mb-8 rounded-3xl bg-zinc-900 px-6 py-8 text-white">
-          <h2 className="text-2xl font-semibold leading-tight">
-            조건에 맞는 발레 공고를
-            <br />
-            한곳에서 확인하세요
-          </h2>
-        </section>
-
         <section aria-label="채용 공고 필터" className="mb-8 rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
             <Link

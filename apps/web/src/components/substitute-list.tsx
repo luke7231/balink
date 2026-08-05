@@ -4,10 +4,13 @@ import {
   formatLocation,
   formatPostedAt,
   formatRecurrenceSummary,
+  listSubstituteSessionCardGroups,
+  type SubstituteSessionDateGroup,
   formatSubstituteStatus,
   formatSubstituteUrgency,
 } from "@black-swan/domain";
 import { Badge } from "@black-swan/ui/badge";
+import { CalendarIcon, MapPinIcon } from "@black-swan/ui";
 
 export interface SubstituteCardData {
   id: string;
@@ -18,6 +21,7 @@ export interface SubstituteCardData {
   scheduleKind?: string | null;
   sessions?: Array<{
     date?: string | null;
+    day?: string | null;
     startTime?: string | null;
     endTime?: string | null;
     origin?: string | null;
@@ -31,7 +35,11 @@ export interface SubstituteCardData {
     evidence?: string | null;
   } | null;
   lessonDates: string[];
-  timeSlots: Array<{ start?: string | null; end?: string | null; raw?: string | null }>;
+  timeSlots: Array<{
+    start?: string | null;
+    end?: string | null;
+    raw?: string | null;
+  }>;
   locationText?: string | null;
   sido?: string | null;
   sigungu?: string | null;
@@ -50,28 +58,39 @@ interface SubstituteListProps {
   linkComponent?: typeof Link;
 }
 
-function formatNextSession(post: SubstituteCardData): string {
+type ScheduleBlock =
+  | { kind: "groups"; groups: SubstituteSessionDateGroup[]; overflow: number }
+  | { kind: "lines"; lines: string[] };
+
+function resolveCardSchedule(post: SubstituteCardData): ScheduleBlock {
   if (post.scheduleKind === "recurring") {
-    return formatRecurrenceSummary(post.recurrence ?? null) || "반복 일정";
+    const summary = formatRecurrenceSummary(post.recurrence ?? null);
+    return { kind: "lines", lines: summary ? [summary] : ["반복 일정"] };
   }
 
   if (post.scheduleKind === "unscheduled" || post.lessonDates.length === 0) {
-    return "일정 협의";
+    return { kind: "lines", lines: ["일정 협의"] };
   }
 
-  const explicitSession = post.sessions?.find((session) => session.origin !== "recurrence" && session.date);
-  if (explicitSession?.date) {
-    const time =
-      explicitSession.startTime && explicitSession.endTime
-        ? `${explicitSession.startTime}~${explicitSession.endTime}`
-        : explicitSession.startTime || "";
-    return [explicitSession.date, time].filter(Boolean).join(" ");
+  const { groups, overflow } = listSubstituteSessionCardGroups(
+    post.sessions ?? [],
+  );
+  if (groups.length > 0) {
+    return { kind: "groups", groups, overflow };
   }
 
-  return formatLessonDates(post.lessonDates);
+  const fallback = formatLessonDates(post.lessonDates);
+  return {
+    kind: "lines",
+    lines: fallback ? fallback.split(" · ") : ["일정 협의"],
+  };
 }
 
-export function SubstituteList({ posts, getHref, linkComponent: LinkComponent = Link }: SubstituteListProps) {
+export function SubstituteList({
+  posts,
+  getHref,
+  linkComponent: LinkComponent = Link,
+}: SubstituteListProps) {
   if (posts.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-zinc-200 bg-white px-6 py-16 text-center text-sm text-zinc-500">
@@ -84,55 +103,107 @@ export function SubstituteList({ posts, getHref, linkComponent: LinkComponent = 
     <div className="grid gap-4">
       {posts.map((post) => {
         const urgencyLabel = formatSubstituteUrgency(post.urgency ?? null);
-        const scheduleLabel = formatNextSession(post);
-        const hasNormalizedLocation = Boolean(post.sido || post.sigungu || post.dongOrStation);
+        const schedule = resolveCardSchedule(post);
+        const hasNormalizedLocation = Boolean(
+          post.sido || post.sigungu || post.dongOrStation,
+        );
         const locationLabel = hasNormalizedLocation
-          ? formatLocation(post.sido ?? null, post.sigungu ?? null, post.dongOrStation ?? null)
+          ? formatLocation(
+              post.sido ?? null,
+              post.sigungu ?? null,
+              post.dongOrStation ?? null,
+            )
           : post.locationText || "지역 미상";
-        const payLabel = post.representativePayText || post.payText || "급여 협의";
-        const timeLabel =
-          post.timeSlots
-            .map((slot) => slot.raw || [slot.start, slot.end].filter(Boolean).join("~"))
-            .filter(Boolean)
-            .join(", ") || "시간 미상";
+        const payLabel =
+          post.representativePayText || post.payText || "급여 협의";
 
         return (
           <LinkComponent
             key={post.id}
             href={getHref(post)}
-            className="group block overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"
+            className="group block min-w-0 max-w-full rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md sm:p-5"
           >
-            <div className="border-b border-rose-100 bg-rose-50/70 px-5 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    {urgencyLabel ? <Badge variant="rose">{urgencyLabel}</Badge> : null}
-                    <Badge>{formatSubstituteStatus(post.status)}</Badge>
-                  </div>
-                  <p className="text-lg font-bold tracking-tight text-zinc-950">{scheduleLabel}</p>
-                  {timeLabel !== "시간 미상" && !scheduleLabel.includes(timeLabel) ? (
-                    <p className="mt-1 text-sm text-zinc-600">{timeLabel}</p>
-                  ) : null}
-                </div>
-                <span className="shrink-0 rounded-full bg-white px-3 py-1.5 text-sm font-bold text-rose-700 shadow-sm">
-                  {payLabel}
-                </span>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {urgencyLabel ? (
+                <Badge variant="rose">{urgencyLabel}</Badge>
+              ) : null}
+              <Badge>{formatSubstituteStatus(post.status)}</Badge>
             </div>
 
-            <div className="p-5">
-              <p className="flex items-center gap-2 text-sm font-semibold text-zinc-800">
-                <span aria-hidden="true">📍</span>
-                {locationLabel}
-              </p>
+            <h2 className="mt-2 line-clamp-2 text-base font-semibold leading-snug text-zinc-900 group-hover:text-rose-700 sm:text-lg">
+              {post.title}
+            </h2>
 
-              <h2 className="mt-4 text-base font-semibold leading-snug text-zinc-900 group-hover:text-rose-700">
-                {post.title}
-              </h2>
+            <div className="mt-3 grid grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start gap-3">
+              <div className="min-w-0 text-sm text-zinc-600">
+                <div className="grid grid-cols-[14px_minmax(0,1fr)] items-start gap-x-1.5">
+                  <MapPinIcon className="mt-0.5 text-zinc-400" />
+                  <div className="min-w-0">
+                    <p className="truncate">{locationLabel}</p>
+                    {post.academyName ? (
+                      <p className="mt-1 truncate text-zinc-500">
+                        {post.academyName}
+                      </p>
+                    ) : null}
+                    <strong className="mt-1 block break-keep text-sm font-bold text-rose-700 sm:text-base">
+                      {payLabel}
+                    </strong>
+                  </div>
+                </div>
+              </div>
 
-              <div className="mt-3 flex flex-wrap gap-3 text-xs text-zinc-500">
-                {post.academyName ? <span>{post.academyName}</span> : null}
-                <span>{formatPostedAt(post.postedAt ?? null)}</span>
+              <div className="min-w-0 self-end">
+                <div className="ml-auto inline-grid grid-cols-[14px_minmax(0,auto)] gap-x-1.5 gap-y-1 text-left text-sm leading-snug text-zinc-700">
+                  {schedule.kind === "groups" ? (
+                    <>
+                      {schedule.groups.map((group, groupIndex) => (
+                        <div key={group.date} className="contents">
+                          {groupIndex === 0 ? (
+                            <CalendarIcon className="mt-0.5 text-zinc-400" />
+                          ) : (
+                            <span aria-hidden="true" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium">{group.dateLabel}</p>
+                            {group.times.length > 0 ? (
+                              <ul className="mt-0.5 space-y-0.5 pl-2 text-zinc-600">
+                                {group.times.map((time) => (
+                                  <li key={`${group.date}-${time}`}>
+                                    · {time}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </div>
+                        </div>
+                      ))}
+                      {schedule.overflow > 0 ? (
+                        <>
+                          <span aria-hidden="true" />
+                          <p className="text-zinc-500">
+                            외 {schedule.overflow}개
+                          </p>
+                        </>
+                      ) : null}
+                    </>
+                  ) : (
+                    schedule.lines.map((line, index) => (
+                      <div key={`${line}-${index}`} className="contents">
+                        {index === 0 ? (
+                          <CalendarIcon className="mt-0.5 text-zinc-400" />
+                        ) : (
+                          <span aria-hidden="true" />
+                        )}
+                        <span className="wrap-break-word font-medium">
+                          {line}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <p className="mt-2 text-right text-xs text-zinc-400">
+                  {formatPostedAt(post.postedAt ?? null)}
+                </p>
               </div>
             </div>
           </LinkComponent>

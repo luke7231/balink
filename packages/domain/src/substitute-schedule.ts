@@ -9,6 +9,7 @@ import type {
   SubstituteTimeSlot,
   SubstituteUrgency,
 } from "./substitute-post.js";
+import { dateToKoreanWeekday } from "./notification-preference.js";
 
 const KST_OFFSET = "+09:00";
 const UNSCHEDULED_EXPIRE_DAYS = 7;
@@ -38,10 +39,12 @@ const ENGLISH_DAY_TO_INDEX: Record<string, number> = {
 
 export function deriveSubstituteSchedule(input: DeriveSubstituteScheduleInput): DerivedSubstituteSchedule {
   const now = input.now ?? new Date();
-  const explicitSessions = input.sessions.filter((session) => session.origin !== "recurrence" || session.date);
+  const explicitSessions = input.sessions
+    .filter((session) => session.origin !== "recurrence" || session.date)
+    .map(enrichSessionWeekday);
   const recurrence = input.recurrence ? normalizeRecurrence(input.recurrence, input.postedAt) : null;
   const expandedSessions = recurrence ? expandRecurrence(recurrence, input.postedAt) : [];
-  const sessions = dedupeSessions([...explicitSessions, ...expandedSessions]);
+  const sessions = dedupeSessions([...explicitSessions, ...expandedSessions]).map(enrichSessionWeekday);
   const scheduleKind = resolveScheduleKind(explicitSessions, recurrence);
   const nextLessonAt = findNextLessonAt(sessions, now);
   const expiresAt = resolveExpiresAt(scheduleKind, sessions, recurrence, input.postedAt, now);
@@ -57,6 +60,14 @@ export function deriveSubstituteSchedule(input: DeriveSubstituteScheduleInput): 
     urgency,
     ...compatibility,
   };
+}
+
+/** date가 있으면 KST 기준으로 day를 반드시 채운다 */
+export function enrichSessionWeekday(session: SubstituteSession): SubstituteSession {
+  if (session.day?.trim()) return session;
+  if (!session.date) return session;
+  const day = dateToKoreanWeekday(session.date);
+  return day ? { ...session, day } : session;
 }
 
 export function deriveSubstituteStatus(input: DeriveSubstituteStatusInput): SubstitutePostStatus {

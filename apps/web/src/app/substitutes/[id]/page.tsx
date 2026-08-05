@@ -5,6 +5,8 @@ import {
   formatLocation,
   formatPostedAt,
   formatRecurrenceSummary,
+  formatSubstituteSessionLabel,
+  formatSubstituteSessionsCardLabel,
   formatSubstituteStatus,
   formatSubstituteUrgency,
 } from "@black-swan/domain";
@@ -15,20 +17,6 @@ export const dynamic = "force-dynamic";
 
 interface SubstituteDetailPageProps {
   params: Promise<{ id: string }>;
-}
-
-function formatSessionLabel(session: {
-  date?: string | null;
-  day?: string | null;
-  startTime?: string | null;
-  endTime?: string | null;
-}): string {
-  const date = [session.date, session.day].filter(Boolean).join(" ");
-  const time =
-    session.startTime && session.endTime
-      ? `${session.startTime}~${session.endTime}`
-      : session.startTime || session.endTime || "";
-  return [date, time].filter(Boolean).join(" ");
 }
 
 function phoneHref(phone: string): string {
@@ -46,11 +34,10 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
   const scheduleSummary =
     post.scheduleKind === "recurring"
       ? formatRecurrenceSummary(post.recurrence ?? null) || "반복 일정"
-      : explicitSessions[0]
-        ? formatSessionLabel(explicitSessions[0])
       : post.scheduleKind === "unscheduled" || post.lessonDates.length === 0
         ? "일정 협의"
-        : formatLessonDates(post.lessonDates);
+        : formatSubstituteSessionsCardLabel(explicitSessions) ||
+          formatLessonDates(post.lessonDates);
   const hasNormalizedLocation = Boolean(post.sido || post.sigungu || post.dongOrStation);
   const locationLabel = hasNormalizedLocation
     ? formatLocation(post.sido ?? null, post.sigungu ?? null, post.dongOrStation ?? null)
@@ -155,7 +142,7 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
               <ul className="mt-3 space-y-3">
                 {explicitSessions.map((session, index) => (
                   <li key={`${session.date}-${session.startTime}-${index}`} className="rounded-2xl bg-zinc-50 p-4 text-sm">
-                    <div className="font-medium text-zinc-900">{formatSessionLabel(session)}</div>
+                    <div className="font-medium text-zinc-900">{formatSubstituteSessionLabel(session)}</div>
                     <div className="mt-2 text-zinc-600">
                       대상: {session.audienceTypes.join(", ") || "미상"} · 장르: {session.subjectTypes.join(", ") || "미상"}
                     </div>

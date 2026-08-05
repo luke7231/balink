@@ -37,6 +37,8 @@ test("deriveSubstituteSchedule uses sorted max date for dated expiresAt", () => 
   assert.equal(derived.scheduleKind, "dated");
   assert.equal(derived.expiresAt.toISOString(), new Date("2026-08-11T23:59:59+09:00").toISOString());
   assert.equal(derived.nextLessonAt?.toISOString(), new Date("2026-08-04T16:30:00+09:00").toISOString());
+  assert.equal(derived.sessions[0]?.day, "화");
+  assert.equal(derived.sessions[1]?.day, "화");
 });
 
 test("deriveSubstituteSchedule prevents permanent OPEN for unscheduled posts", () => {

@@ -6,6 +6,7 @@ import type {
   SubstituteSessionPay,
 } from "@black-swan/domain";
 import {
+  dateToKoreanWeekday,
   defaultRepresentativePay,
   formatRepresentativePayDisplay,
 } from "@black-swan/domain";
@@ -80,6 +81,7 @@ export async function formatSubstitutePost(input: FormatSubstituteInput): Promis
           "입력은 제목, 정제된 본문, 게시일(KST)뿐이다.",
           "원문에 없는 학원명, 급여, 수업 조건, 날짜, 시간을 만들지 않는다.",
           "게시일과 수업일을 구분한다. 오늘/내일, 8/4·11, 8월 한 달 화·목을 KST 절대 날짜로 해석한다.",
+          "session.date가 있으면 session.day(월~일)를 반드시 채운다. 원문에 요일이 없어도 Asia/Seoul 기준으로 계산한다.",
           "날짜와 시간의 대응 관계를 유지하고 같은 제목·본문에서 중복 추출하지 않는다.",
           "representativePay는 일정만큼 중요하다. 본문에 급여·페이·대강료로 읽히는 표현이 있으면 unspecified로 두지 않는다.",
           REPRESENTATIVE_PAY_LLM_RULES,
@@ -308,9 +310,11 @@ function parseSessions(value: unknown): SubstituteSession[] {
   if (!Array.isArray(value)) return [];
   return value.map((item) => {
     const record = asRecord(item);
+    const date = stringValue(record.date);
+    const day = stringValue(record.day) || (date ? dateToKoreanWeekday(date) : null);
     return {
-      date: stringValue(record.date),
-      day: stringValue(record.day),
+      date,
+      day,
       startTime: normalizeTime(stringValue(record.startTime)),
       endTime: normalizeTime(stringValue(record.endTime)),
       durationMinutes: numberValue(record.durationMinutes),

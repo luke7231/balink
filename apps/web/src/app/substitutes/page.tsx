@@ -110,14 +110,6 @@ export default async function SubstitutesPage({ searchParams }: SubstitutesPageP
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        <section className="mb-8 rounded-3xl bg-zinc-900 px-6 py-8 text-white">
-          <h2 className="text-2xl font-semibold leading-tight">
-            급구 대타 공고를
-            <br />
-            빠르게 확인하세요
-          </h2>
-        </section>
-
         <section aria-label="대타 공고 필터" className="mb-8 rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
             {dateOptions.map((option) => {
