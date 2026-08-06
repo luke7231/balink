@@ -133,7 +133,7 @@ async function runSourcePipeline(source: SourceName, date: string, llmMode: LlmM
   });
 
   const classifiedPayload = JSON.parse(await fs.readFile(classifiedPath, "utf8")) as { total?: number };
-  const importResult = await importClassifiedFile(classifiedPath);
+  const importResult = await importClassifiedFile(classifiedPath, { fanOutInbox: true });
 
   return {
     logs,

@@ -138,6 +138,7 @@ export async function runSubstituteScraper(
           raw,
           formatted,
           contentHash,
+          fanOutInbox: true,
         });
         normalized += 1;
       } catch (error) {

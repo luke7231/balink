@@ -168,7 +168,13 @@ export class SourcePostRepository {
         },
       });
 
-      return { sourcePostId: sourcePost.id, jobPostId: jobPost.id };
+      // source 키(link) 기준 신규 — 같은 내용·다른 URL이면 새 JobPost + created:true 가능
+      return {
+        sourcePostId: sourcePost.id,
+        jobPostId: jobPost.id,
+        jobPost,
+        created: !existingLink,
+      };
     });
   }
 }
@@ -425,7 +431,17 @@ export class SubstitutePostRepository {
       lastSeenAt: input.lastSeenAt,
     };
 
-    return prisma.substitutePost.upsert({
+    const existing = await prisma.substitutePost.findUnique({
+      where: {
+        source_sourcePostId: {
+          source: input.source,
+          sourcePostId: input.sourcePostId,
+        },
+      },
+      select: { id: true },
+    });
+
+    const post = await prisma.substitutePost.upsert({
       where: {
         source_sourcePostId: {
           source: input.source,
@@ -439,6 +455,8 @@ export class SubstitutePostRepository {
         ...data,
       },
     });
+
+    return { post, created: !existing };
   }
 
   async updateStatus(id: string, status: "OPEN" | "EXPIRED" | "DELETED") {
@@ -466,5 +484,33 @@ export class SubstitutePostRepository {
 
   async countOpenPosts() {
     return prisma.substitutePost.count({ where: { status: "OPEN" } });
+  }
+}
+
+export type MatchNotificationInsert = {
+  userId: string;
+  type: "job_match" | "substitute_match";
+  title: string;
+  body: string;
+  href: string;
+  jobPostId?: string | null;
+  substitutePostId?: string | null;
+};
+
+export class UserNotificationRepository {
+  async createManyForMatch(rows: MatchNotificationInsert[]) {
+    if (rows.length === 0) return { count: 0 };
+    return prisma.userNotification.createMany({
+      data: rows.map((row) => ({
+        userId: row.userId,
+        type: row.type,
+        title: row.title,
+        body: row.body,
+        href: row.href,
+        jobPostId: row.jobPostId ?? null,
+        substitutePostId: row.substitutePostId ?? null,
+      })),
+      skipDuplicates: true,
+    });
   }
 }

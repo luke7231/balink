@@ -6,11 +6,17 @@ import type { ListingEnrichment, LocationSource, SourceName } from "@black-swan/
 import { sanitizeLocationTextForStorage, sanitizeSchedule } from "@black-swan/domain";
 import { classifiedPayloadSchema, parseOrThrow } from "@black-swan/validation";
 import { mirrorAcademyImagesToS3, parseRawAcademyImages } from "./academy-images.js";
+import { fanOutJobMatch, shouldFanOutInbox } from "./notification-fanout.js";
 
 const sourcePostRepository = new SourcePostRepository();
 
 interface ImportResult {
   imported: number;
+}
+
+export interface ImportClassifiedOptions {
+  /** true일 때만 신규 JobPost 알림함 fan-out. 백필/재처리는 false(기본). */
+  fanOutInbox?: boolean;
 }
 
 interface ClassifiedListingInput {
@@ -22,22 +28,29 @@ interface ClassifiedListingInput {
   enrichment?: ListingEnrichment;
 }
 
-export async function importClassifiedFile(filePath: string): Promise<ImportResult> {
+export async function importClassifiedFile(
+  filePath: string,
+  options: ImportClassifiedOptions = {},
+): Promise<ImportResult> {
   const rawPayload = JSON.parse(await fs.readFile(filePath, "utf8"));
   const payload = parseOrThrow(classifiedPayloadSchema, rawPayload, "Invalid classified payload");
   let imported = 0;
 
   for (const item of payload.listings) {
-    await importClassifiedItem(payload.source, item as ClassifiedListingInput);
+    await importClassifiedItem(payload.source, item as ClassifiedListingInput, options);
     imported += 1;
   }
 
   return { imported };
 }
 
-async function importClassifiedItem(source: SourceName, item: ClassifiedListingInput): Promise<void> {
+async function importClassifiedItem(
+  source: SourceName,
+  item: ClassifiedListingInput,
+  options: ImportClassifiedOptions = {},
+): Promise<void> {
   const normalized = await normalizeItem(source, item);
-  await sourcePostRepository.importClassifiedItem({
+  const result = await sourcePostRepository.importClassifiedItem({
     source,
     sourcePostId: item.sourcePostId,
     url: item.url,
@@ -46,6 +59,17 @@ async function importClassifiedItem(source: SourceName, item: ClassifiedListingI
     classification: item.classification,
     normalized,
   });
+
+  if (!shouldFanOutInbox({ created: result.created, fanOutInbox: options.fanOutInbox })) {
+    return;
+  }
+
+  try {
+    await fanOutJobMatch(result.jobPost);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[import-classified] fanOutInbox failed jobPostId=${result.jobPostId}: ${message}`);
+  }
 }
 
 async function normalizeItem(source: SourceName, item: ClassifiedListingInput) {

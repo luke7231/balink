@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  JOB_MATCH_NOTIFICATION_TITLE,
+  SUBSTITUTE_MATCH_NOTIFICATION_TITLE,
   clockTimeToAlertSlot,
   dateToKoreanWeekday,
+  formatJobMatchNotificationBody,
+  formatLessonDateLabel,
+  formatSubstituteMatchNotificationBody,
   matchesDays,
   matchesNotificationPreference,
   matchesNotificationRule,
@@ -165,4 +170,26 @@ test("clock and weekday helpers", () => {
   assert.equal(clockTimeToAlertSlot("19:00"), "evening");
   assert.equal(dateToKoreanWeekday("2026-08-24"), "월");
   assert.equal(dateToKoreanWeekday("2026-08-29"), "토");
+});
+
+test("inbox notification titles and body formatting", () => {
+  assert.equal(JOB_MATCH_NOTIFICATION_TITLE, "📢 관심 조건에 딱 맞는 공고가 올라왔어요");
+  assert.equal(SUBSTITUTE_MATCH_NOTIFICATION_TITLE, "⚡ 관심 조건에 딱 맞는 대타가 올라왔어요");
+  assert.equal(formatLessonDateLabel("2026-03-12"), "3/12(목)");
+  assert.equal(
+    formatJobMatchNotificationBody({
+      sigungu: "성북구",
+      days: ["월", "수", "금"],
+      timeSlots: ["evening"],
+    }),
+    "성북구 · 월수금 · 저녁",
+  );
+  assert.equal(
+    formatSubstituteMatchNotificationBody({
+      sigungu: "성북구",
+      lessonDates: ["2026-03-12"],
+      timeSlots: ["evening"],
+    }),
+    "성북구 · 3/12(목) · 저녁",
+  );
 });

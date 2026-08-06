@@ -431,3 +431,106 @@ export function createAlertConditionId(): string {
 
 /** @deprecated */
 export const MAX_ALERT_CONDITIONS = MAX_NOTIFICATION_RULES;
+
+export const JOB_MATCH_NOTIFICATION_TITLE = "📢 관심 조건에 딱 맞는 공고가 올라왔어요";
+export const SUBSTITUTE_MATCH_NOTIFICATION_TITLE = "⚡ 관심 조건에 딱 맞는 대타가 올라왔어요";
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+}
+
+function asDayGroups(value: unknown): string[][] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((group) => asStringArray(group))
+    .filter((group) => group.length > 0);
+}
+
+function joinNotificationBodyParts(parts: Array<string | null | undefined>): string {
+  return parts.map((part) => part?.trim()).filter((part): part is string => Boolean(part)).join(" · ");
+}
+
+function formatDaysCompact(days: string[]): string | null {
+  if (days.length === 0) return null;
+  return days.join("");
+}
+
+function formatTimeSlotsCompact(timeSlots: string[]): string | null {
+  const labels = timeSlots
+    .map((slot) => TIME_SLOT_LABELS[slot] ?? null)
+    .filter((label): label is string => Boolean(label));
+  if (labels.length === 0) return null;
+  return [...new Set(labels)].join("·");
+}
+
+/** YYYY-MM-DD → 3/12(목) */
+export function formatLessonDateLabel(dateText: string): string | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateText.trim());
+  if (!match) return null;
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!Number.isFinite(month) || !Number.isFinite(day)) return null;
+  const weekday = dateToKoreanWeekday(dateText);
+  return weekday ? `${month}/${day}(${weekday})` : `${month}/${day}`;
+}
+
+export function formatJobMatchNotificationBody(input: {
+  sigungu?: string | null;
+  days?: unknown;
+  timeSlots?: unknown;
+}): string {
+  return joinNotificationBodyParts([
+    input.sigungu?.trim() || null,
+    formatDaysCompact(asStringArray(input.days)),
+    formatTimeSlotsCompact(asStringArray(input.timeSlots)),
+  ]);
+}
+
+export function formatSubstituteMatchNotificationBody(input: {
+  sigungu?: string | null;
+  lessonDates?: unknown;
+  timeSlots?: unknown;
+}): string {
+  const dates = asStringArray(input.lessonDates)
+    .map(formatLessonDateLabel)
+    .filter((label): label is string => Boolean(label));
+  return joinNotificationBodyParts([
+    input.sigungu?.trim() || null,
+    dates.length > 0 ? dates.join(", ") : null,
+    formatTimeSlotsCompact(asStringArray(input.timeSlots)),
+  ]);
+}
+
+export function toJobMatchPreferenceInput(job: {
+  sido?: string | null;
+  sigungu?: string | null;
+  days?: unknown;
+  dayGroups?: unknown;
+  timeSlots?: unknown;
+}) {
+  return {
+    jobType: "regular" as const,
+    sido: job.sido,
+    sigungu: job.sigungu,
+    days: asStringArray(job.days),
+    dayGroups: asDayGroups(job.dayGroups),
+    timeSlots: asStringArray(job.timeSlots),
+  };
+}
+
+export function toSubstituteMatchPreferenceInput(post: {
+  sido?: string | null;
+  sigungu?: string | null;
+  lessonDates?: unknown;
+  timeSlots?: unknown;
+}) {
+  const lessonDates = asStringArray(post.lessonDates);
+  return {
+    jobType: "substitute" as const,
+    sido: post.sido,
+    sigungu: post.sigungu,
+    days: lessonDatesToKoreanDays(lessonDates),
+    timeSlots: asStringArray(post.timeSlots),
+  };
+}

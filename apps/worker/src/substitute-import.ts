@@ -9,6 +9,7 @@ import {
 } from "@black-swan/domain";
 import { SubstitutePostRepository } from "@black-swan/db";
 import type { FormattedSubstitutePost } from "./substitute-formatter.js";
+import { fanOutSubstituteMatch, shouldFanOutInbox } from "./notification-fanout.js";
 
 const substitutePostRepository = new SubstitutePostRepository();
 
@@ -33,6 +34,8 @@ export interface PersistSubstituteInput {
   raw: SubstituteRawRecord;
   formatted: FormattedSubstitutePost;
   contentHash: string;
+  /** true일 때만 신규 대타 알림함 fan-out. 백필/재처리는 false(기본). */
+  fanOutInbox?: boolean;
 }
 
 export function hashSubstituteContent(title: string, detailText: string | null): string {
@@ -59,7 +62,7 @@ export async function persistNormalizedSubstitute(input: PersistSubstituteInput)
     ...(input.raw.contactEmails.length ? ["email"] : []),
   ];
 
-  return substitutePostRepository.upsert({
+  const { post, created } = await substitutePostRepository.upsert({
     source: input.source,
     sourcePostId: input.sourcePostId,
     sourceUrl: input.sourceUrl,
@@ -119,6 +122,17 @@ export async function persistNormalizedSubstitute(input: PersistSubstituteInput)
     normalizedAt: new Date(input.collectedAt),
     lastSeenAt: new Date(input.collectedAt),
   });
+
+  if (shouldFanOutInbox({ created, fanOutInbox: input.fanOutInbox })) {
+    try {
+      await fanOutSubstituteMatch(post);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[substitute-import] fanOutInbox failed substitutePostId=${post.id}: ${message}`);
+    }
+  }
+
+  return post;
 }
 
 function stringValue(value: unknown): string | null {
