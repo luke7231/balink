@@ -144,24 +144,7 @@ export function NotificationPreferenceForm({
 
   return (
     <div className="space-y-5">
-      {!singleMode ? (
-        <label className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3.5 shadow-sm">
-          <div>
-            <p className="text-sm font-semibold text-zinc-900">알림 받기</p>
-            <p className="mt-0.5 text-xs text-zinc-500">꺼 두면 새 공고 알림이 오지 않습니다.</p>
-          </div>
-          <Toggle
-            checked={preference.enabled}
-            onChange={(enabled) => setPreference((prev) => ({ ...prev, enabled }))}
-          />
-        </label>
-      ) : null}
-
-      <div
-        className={`space-y-4 ${
-          preference.enabled || singleMode ? "" : "pointer-events-none opacity-45"
-        }`}
-      >
+      <div className="space-y-4">
         {!singleMode ? (
           <div>
             <h2 className="text-base font-semibold text-zinc-900">알림 규칙</h2>
@@ -201,6 +184,7 @@ export function NotificationPreferenceForm({
                       }
                     : {
                         ...preference,
+                        enabled: true,
                         rules: preference.rules.filter((item) => item.id !== rule.id),
                       };
                 save(next);
@@ -248,7 +232,7 @@ export function NotificationPreferenceForm({
         <button
           type="button"
           disabled={pending}
-          onClick={() => save(preference)}
+          onClick={() => save({ ...preference, enabled: true })}
           className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-60"
         >
           {pending ? "저장 중..." : "저장하기"}
@@ -560,8 +544,6 @@ function Toggle({
 }
 
 function buildSummary(preference: NotificationPreference): string {
-  if (!preference.enabled) return "알림이 꺼져 있습니다.";
-
   const enabledRules = preference.rules.filter((rule) => rule.enabled);
   if (enabledRules.length === 0) return "켜져 있는 규칙이 없습니다.";
 

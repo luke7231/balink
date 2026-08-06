@@ -22,14 +22,29 @@ export function NotificationRulesOverview({
   const blank = isBlankNotificationPreference(preference);
   const canAdd = preference.rules.length < MAX_NOTIFICATION_RULES;
 
-  function toggleMaster(enabled: boolean) {
-    const next = { ...preference, enabled };
+  function isRuleOn(ruleId: string) {
+    const rule = preference.rules.find((item) => item.id === ruleId);
+    if (!rule) return false;
+    // 예전 마스터 off 상태는 개별 토글도 꺼진 것으로 보이게
+    return preference.enabled && rule.enabled;
+  }
+
+  function toggleRule(ruleId: string, enabled: boolean) {
+    const prev = preference;
+    const next: NotificationPreference = {
+      ...preference,
+      // 조건별 on/off만 쓰고, 마스터는 항상 열어 둔다
+      enabled: true,
+      rules: preference.rules.map((rule) =>
+        rule.id === ruleId ? { ...rule, enabled } : rule,
+      ),
+    };
     setPreference(next);
     setError(null);
     startTransition(async () => {
       const result = await saveNotificationPreferenceAction(next);
       if (!result.ok) {
-        setPreference(preference);
+        setPreference(prev);
         setError(result.error);
       }
     });
@@ -37,21 +52,11 @@ export function NotificationRulesOverview({
 
   return (
     <section id="alert-rules" className="scroll-mt-20 md:mb-0">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3 className="text-base font-semibold text-zinc-900">알림 조건</h3>
-          <p className="mt-0.5 text-xs text-zinc-500">
-            조건을 먼저 확인한 뒤, 각각 수정할 수 있습니다.
-          </p>
-        </div>
-        <label className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1.5 shadow-sm">
-          <span className="text-xs font-medium text-zinc-600">알림 받기</span>
-          <Toggle
-            checked={preference.enabled}
-            disabled={pending || blank}
-            onChange={toggleMaster}
-          />
-        </label>
+      <div className="mb-3">
+        <h3 className="text-base font-semibold text-zinc-900">알림 조건</h3>
+        <p className="mt-0.5 text-xs text-zinc-500">
+          조건마다 알림을 켜고 끌 수 있습니다.
+        </p>
       </div>
 
       {blank ? (
@@ -69,50 +74,54 @@ export function NotificationRulesOverview({
         </div>
       ) : (
         <ul className="space-y-3">
-          {preference.rules.map((rule) => (
-            <li key={rule.id}>
-              <div
-                className={`rounded-2xl border px-4 py-4 shadow-sm ${
-                  rule.enabled && preference.enabled
-                    ? "border-zinc-200 bg-white"
-                    : "border-zinc-200 bg-zinc-50"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-zinc-900">
-                        {formatNotificationRuleTitle(rule)}
-                      </p>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                          rule.jobType === "substitute"
-                            ? "bg-amber-50 text-amber-800"
-                            : "bg-rose-50 text-rose-800"
-                        }`}
-                      >
-                        {rule.jobType === "substitute" ? "대타" : "정규 채용"}
-                      </span>
-                      {!rule.enabled || !preference.enabled ? (
-                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">
-                          꺼짐
+          {preference.rules.map((rule) => {
+            const on = isRuleOn(rule.id);
+            return (
+              <li key={rule.id}>
+                <div
+                  className={`rounded-2xl border px-4 py-4 shadow-sm ${
+                    on ? "border-zinc-200 bg-white" : "border-zinc-200 bg-zinc-50"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-zinc-900">
+                          {formatNotificationRuleTitle(rule)}
+                        </p>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                            rule.jobType === "substitute"
+                              ? "bg-amber-50 text-amber-800"
+                              : "bg-rose-50 text-rose-800"
+                          }`}
+                        >
+                          {rule.jobType === "substitute" ? "대타" : "정규 채용"}
                         </span>
-                      ) : null}
+                      </div>
+                      <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
+                        {formatNotificationRuleSummary(rule)}
+                      </p>
                     </div>
-                    <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
-                      {formatNotificationRuleSummary(rule)}
-                    </p>
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      <Toggle
+                        checked={on}
+                        disabled={pending}
+                        onChange={(enabled) => toggleRule(rule.id, enabled)}
+                        ariaLabel={`${formatNotificationRuleTitle(rule)} 알림 받기`}
+                      />
+                      <Link
+                        href={`/notifications/settings?ruleId=${encodeURIComponent(rule.id)}`}
+                        className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-rose-200 hover:text-rose-700"
+                      >
+                        수정
+                      </Link>
+                    </div>
                   </div>
-                  <Link
-                    href={`/notifications/settings?ruleId=${encodeURIComponent(rule.id)}`}
-                    className="shrink-0 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-rose-200 hover:text-rose-700"
-                  >
-                    수정
-                  </Link>
                 </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
 
@@ -134,16 +143,19 @@ function Toggle({
   checked,
   onChange,
   disabled,
+  ariaLabel,
 }: {
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
+  ariaLabel?: string;
 }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={ariaLabel ?? "알림 받기"}
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative h-6 w-10 shrink-0 rounded-full transition disabled:opacity-50 ${
