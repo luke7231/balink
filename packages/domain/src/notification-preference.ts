@@ -29,19 +29,27 @@ export interface NotificationPreference {
   rules: NotificationRule[];
 }
 
+/** 리스트 제목용 — 예: "성북구 월수금", "성북구 목" */
+export function formatNotificationRuleTitle(rule: NotificationRule): string {
+  const region = rule.sigungu.trim()
+    ? rule.sigungu.trim()
+    : formatSidoForDisplay(rule.sido)?.trim() || "지역 미선택";
+  if (rule.days.length === 0) return region;
+  return `${region} ${rule.days.join("")}`;
+}
+
 export function formatNotificationRuleSummary(rule: NotificationRule): string {
-  const kind = rule.jobType === "regular" ? "정규" : "대타";
   const region =
     rule.sido && rule.sigungu
       ? `${formatSidoForDisplay(rule.sido)} ${rule.sigungu}`
       : "지역 미선택";
   const dayText =
-    rule.days.length === 0 ? "요일 상관없음" : `${rule.days.join("·")} 모두`;
+    rule.days.length === 0 ? "요일 상관없음" : rule.days.join("·");
   const timeText =
     rule.timeSlots.length === 0
       ? "시간 상관없음"
       : rule.timeSlots.map((slot) => TIME_SLOT_LABELS[slot] ?? slot).join("·");
-  return `${region} · ${kind} · ${dayText} · ${timeText}`;
+  return `${region} · ${dayText} · ${timeText}`;
 }
 
 /** 아직 지역을 고르지 않은 기본 빈 규칙만 있는지 */

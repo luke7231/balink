@@ -9,6 +9,7 @@ import {
   createNotificationRuleId,
   defaultNotificationRule,
   formatNotificationRuleSummary,
+  formatNotificationRuleTitle,
   formatSidoForDisplay,
   formatTimeSlot,
   type AlertJobType,
@@ -298,7 +299,9 @@ function RuleCard({
     >
       {!hideHeader ? (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-zinc-900">규칙 {index + 1}</p>
+          <p className="text-sm font-semibold text-zinc-900">
+            {formatNotificationRuleTitle(rule)}
+          </p>
           <div className="flex items-center gap-2">
             {canRemove ? (
               <button
@@ -314,7 +317,9 @@ function RuleCard({
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-zinc-900">조건 {index + 1}</p>
+          <p className="text-sm font-semibold text-zinc-900">
+            {formatNotificationRuleTitle(rule)}
+          </p>
           <div className="flex items-center gap-2">
             <button
               type="button"

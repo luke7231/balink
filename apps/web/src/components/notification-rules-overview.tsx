@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import {
   MAX_NOTIFICATION_RULES,
   formatNotificationRuleSummary,
+  formatNotificationRuleTitle,
   isBlankNotificationPreference,
   type NotificationPreference,
 } from "@black-swan/domain";
@@ -68,7 +69,7 @@ export function NotificationRulesOverview({
         </div>
       ) : (
         <ul className="space-y-3">
-          {preference.rules.map((rule, index) => (
+          {preference.rules.map((rule) => (
             <li key={rule.id}>
               <div
                 className={`rounded-2xl border px-4 py-4 shadow-sm ${
@@ -80,7 +81,9 @@ export function NotificationRulesOverview({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-zinc-900">조건 {index + 1}</p>
+                      <p className="text-sm font-semibold text-zinc-900">
+                        {formatNotificationRuleTitle(rule)}
+                      </p>
                       <span
                         className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                           rule.jobType === "substitute"

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@black-swan/db";
 import { parseNotificationPreference } from "@black-swan/domain";
@@ -45,41 +44,22 @@ export default async function NotificationsPage() {
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-lg px-4 py-8 md:max-w-5xl">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">알림</h2>
-            <p className="mt-1 text-sm text-zinc-500">
-              {unreadCount > 0
-                ? `읽지 않은 알림 ${unreadCount}개`
-                : "조건에 맞는 새 공고를 모아 보여 줍니다."}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {unreadCount > 0 ? (
-              <form action={markAllNotificationsReadAction}>
-                <button
-                  type="submit"
-                  className="rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-rose-200 hover:text-rose-700"
-                >
-                  모두 읽음
-                </button>
-              </form>
-            ) : null}
-            <Link
-              href="#alert-rules"
-              className="rounded-full bg-zinc-900 px-3 py-2 text-xs font-semibold text-white hover:bg-zinc-800 md:hidden"
-            >
-              알림 조건
-            </Link>
-          </div>
-        </div>
-
         <div className="grid gap-8 md:grid-cols-2 md:items-start">
           <NotificationRulesOverview initialPreference={notificationPreference} />
 
           <section>
             <div className="mb-3 flex items-end justify-between gap-3">
               <h3 className="text-base font-semibold text-zinc-900">받은 알림</h3>
+              {unreadCount > 0 ? (
+                <form action={markAllNotificationsReadAction}>
+                  <button
+                    type="submit"
+                    className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-rose-200 hover:text-rose-700"
+                  >
+                    모두 읽음
+                  </button>
+                </form>
+              ) : null}
             </div>
 
             {notifications.length === 0 ? (
