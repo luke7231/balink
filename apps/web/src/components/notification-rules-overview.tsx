@@ -73,15 +73,27 @@ export function NotificationRulesOverview({
 
   return (
     <section id="alert-rules" className="mb-6 scroll-mt-20" aria-label="알림 조건">
-      <div className="mb-3 flex items-end justify-between gap-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-base font-semibold text-zinc-900">알림 조건</h3>
         {!blank ? (
-          <Link
-            href="/notifications/rules"
-            className="shrink-0 text-xs font-semibold text-zinc-600 hover:text-zinc-900"
-          >
-            전체 보기
-          </Link>
+          <div className="flex shrink-0 items-center gap-3">
+            <p className="flex items-center gap-2.5 text-[11px] text-zinc-500">
+              <span className="inline-flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-500" aria-hidden />
+                정규
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />
+                대타
+              </span>
+            </p>
+            <Link
+              href="/notifications/rules"
+              className="text-xs font-semibold text-zinc-600 hover:text-zinc-900"
+            >
+              전체 보기
+            </Link>
+          </div>
         ) : null}
       </div>
 
@@ -113,6 +125,7 @@ export function NotificationRulesOverview({
               >
                 <Link
                   href={`/notifications/settings?ruleId=${encodeURIComponent(rule.id)}`}
+                  aria-label={`${rule.jobType === "substitute" ? "대타" : "정규"} · ${title}${on ? "" : " · 꺼짐"}`}
                   className="inline-flex items-center gap-1.5 py-1"
                 >
                   <span
