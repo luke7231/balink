@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   MAX_NOTIFICATION_RULES,
+  defaultNotificationRule,
   formatNotificationRuleTitle,
   getNotificationRuleSummaryParts,
   isBlankNotificationPreference,
   type NotificationPreference,
+  type NotificationRule,
 } from "@black-swan/domain";
+import { Modal } from "@black-swan/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
 
 export function NotificationRulesList({
@@ -16,7 +20,9 @@ export function NotificationRulesList({
 }: {
   initialPreference: NotificationPreference;
 }) {
+  const router = useRouter();
   const [preference, setPreference] = useState(initialPreference);
+  const [deleteTarget, setDeleteTarget] = useState<NotificationRule | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const blank = isBlankNotificationPreference(preference);
@@ -45,6 +51,46 @@ export function NotificationRulesList({
         setPreference(prev);
         setError(result.error);
       }
+    });
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget) return;
+    const prev = preference;
+    const remaining = preference.rules.filter((rule) => rule.id !== deleteTarget.id);
+    const next: NotificationPreference =
+      remaining.length === 0
+        ? {
+            enabled: false,
+            rules: [
+              defaultNotificationRule({
+                id: deleteTarget.id,
+                enabled: false,
+                jobType: "regular",
+                sido: "",
+                sigungu: "",
+                days: [],
+                timeSlots: [],
+              }),
+            ],
+          }
+        : {
+            ...preference,
+            enabled: true,
+            rules: remaining,
+          };
+
+    setPreference(next);
+    setDeleteTarget(null);
+    setError(null);
+    startTransition(async () => {
+      const result = await saveNotificationPreferenceAction(next);
+      if (!result.ok) {
+        setPreference(prev);
+        setError(result.error);
+        return;
+      }
+      router.refresh();
     });
   }
 
@@ -111,12 +157,22 @@ export function NotificationRulesList({
                       onChange={(enabled) => toggleRule(rule.id, enabled)}
                       ariaLabel={`${formatNotificationRuleTitle(rule)} 알림 받기`}
                     />
-                    <Link
-                      href={`/notifications/settings?ruleId=${encodeURIComponent(rule.id)}`}
-                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-rose-200 hover:text-rose-700"
-                    >
-                      수정
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        href={`/notifications/settings?ruleId=${encodeURIComponent(rule.id)}`}
+                        className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-rose-200 hover:text-rose-700"
+                      >
+                        수정
+                      </Link>
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => setDeleteTarget(rule)}
+                        className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-500 hover:border-rose-200 hover:text-rose-700 disabled:opacity-50"
+                      >
+                        삭제
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -139,6 +195,44 @@ export function NotificationRulesList({
       )}
 
       {error ? <p className="text-sm text-rose-700">{error}</p> : null}
+
+      <Modal
+        open={Boolean(deleteTarget)}
+        title="조건 삭제"
+        onClose={() => {
+          if (!pending) setDeleteTarget(null);
+        }}
+        closeOnBackdrop={!pending}
+        footer={
+          <>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => setDeleteTarget(null)}
+              className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 hover:border-zinc-300 disabled:opacity-50"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={confirmDelete}
+              className="rounded-full bg-rose-700 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-800 disabled:opacity-50"
+            >
+              {pending ? "삭제 중..." : "삭제"}
+            </button>
+          </>
+        }
+      >
+        {deleteTarget ? (
+          <>
+            <span className="font-semibold text-zinc-800">
+              {formatNotificationRuleTitle(deleteTarget)}
+            </span>
+            조건을 삭제할까요? 삭제하면 이 조건으로는 더 이상 알림이 오지 않습니다.
+          </>
+        ) : null}
+      </Modal>
     </div>
   );
 }
