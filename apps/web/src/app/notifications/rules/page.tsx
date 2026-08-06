@@ -38,11 +38,6 @@ export default async function NotificationRulesPage() {
           ← 알림함
         </Link>
 
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-zinc-900">알림 조건</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          조건마다 알림을 켜고 끄거나, 수정할 수 있습니다.
-        </p>
-
         <div className="mt-6">
           <NotificationRulesList initialPreference={preference} />
         </div>
