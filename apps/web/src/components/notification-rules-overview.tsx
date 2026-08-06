@@ -35,7 +35,7 @@ export function NotificationRulesOverview({
   }
 
   return (
-    <section id="alert-rules" className="mb-8 scroll-mt-20">
+    <section id="alert-rules" className="scroll-mt-20 md:mb-0">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold text-zinc-900">알림 조건</h3>
