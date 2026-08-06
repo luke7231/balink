@@ -23,7 +23,7 @@ export function NotificationSettingsPanel({
         initialPreference={initialPreference}
         districtGroups={districtGroups}
         editRuleId={editRuleId}
-        redirectOnSave="/notifications"
+        redirectOnSave="/notifications/rules"
       />
     </div>
   );

@@ -33,7 +33,7 @@ export default async function NotificationSettingsPage({
   const requestedRuleId = typeof params.ruleId === "string" ? params.ruleId : undefined;
 
   if (!wantsNew && !requestedRuleId) {
-    redirect("/notifications#alert-rules");
+    redirect("/notifications/rules");
   }
 
   const [health, interestRegions, notificationRow] = await Promise.all([
@@ -67,7 +67,7 @@ export default async function NotificationSettingsPage({
         ),
       };
     } else if (notificationPreference.rules.length >= MAX_NOTIFICATION_RULES) {
-      redirect("/notifications#alert-rules");
+      redirect("/notifications/rules");
     } else {
       const newRule = defaultNotificationRule({
         id: createNotificationRuleId(),
@@ -83,7 +83,7 @@ export default async function NotificationSettingsPage({
   }
 
   if (!editRuleId || !notificationPreference.rules.some((rule) => rule.id === editRuleId)) {
-    redirect("/notifications#alert-rules");
+    redirect("/notifications/rules");
   }
 
   return (
@@ -91,7 +91,7 @@ export default async function NotificationSettingsPage({
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-lg px-4 py-8">
-        <Link href="/notifications#alert-rules" className="text-sm text-zinc-500 hover:text-zinc-800">
+        <Link href="/notifications/rules" className="text-sm text-zinc-500 hover:text-zinc-800">
           ← 알림 조건
         </Link>
 

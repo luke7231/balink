@@ -10,6 +10,7 @@ import {
   defaultNotificationRule,
   formatNotificationRuleSummary,
   formatNotificationRuleTitle,
+  getNotificationRuleSummaryParts,
   formatSidoForDisplay,
   formatTimeSlot,
   type AlertJobType,
@@ -221,9 +222,16 @@ export function NotificationPreferenceForm({
         ) : editingRule ? (
           <div className="rounded-2xl border border-rose-100 bg-rose-50/50 px-4 py-3">
             <p className="text-xs font-semibold text-rose-800">미리보기</p>
-            <p className="mt-1 text-sm leading-relaxed text-zinc-800">
-              {formatNotificationRuleSummary(editingRule)}
-            </p>
+            <ul className="mt-2 space-y-1 text-sm text-zinc-800">
+              {getNotificationRuleSummaryParts(editingRule).map((part) => (
+                <li key={part} className="flex gap-2 leading-snug">
+                  <span className="text-zinc-400" aria-hidden>
+                    ·
+                  </span>
+                  <span>{part}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
       </div>

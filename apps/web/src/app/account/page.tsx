@@ -50,7 +50,7 @@ export default async function AccountPage() {
             <span aria-hidden>→</span>
           </Link>
           <Link
-            href="/notifications/settings"
+            href="/notifications/rules"
             className="flex items-center justify-between rounded-2xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-800 hover:border-rose-200 hover:text-rose-700"
           >
             알림 조건 설정

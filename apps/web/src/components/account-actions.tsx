@@ -129,6 +129,7 @@ export async function saveNotificationPreferenceAction(
 
   revalidatePath("/account");
   revalidatePath("/notifications");
+  revalidatePath("/notifications/rules");
   revalidatePath("/notifications/settings");
   return { ok: true };
 }

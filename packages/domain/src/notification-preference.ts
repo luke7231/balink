@@ -38,7 +38,7 @@ export function formatNotificationRuleTitle(rule: NotificationRule): string {
   return `${region} ${rule.days.join("")}`;
 }
 
-export function formatNotificationRuleSummary(rule: NotificationRule): string {
+export function getNotificationRuleSummaryParts(rule: NotificationRule): string[] {
   const region =
     rule.sido && rule.sigungu
       ? `${formatSidoForDisplay(rule.sido)} ${rule.sigungu}`
@@ -49,7 +49,11 @@ export function formatNotificationRuleSummary(rule: NotificationRule): string {
     rule.timeSlots.length === 0
       ? "시간 상관없음"
       : rule.timeSlots.map((slot) => TIME_SLOT_LABELS[slot] ?? slot).join("·");
-  return `${region} · ${dayText} · ${timeText}`;
+  return [region, dayText, timeText];
+}
+
+export function formatNotificationRuleSummary(rule: NotificationRule): string {
+  return getNotificationRuleSummaryParts(rule).join(" · ");
 }
 
 /** 아직 지역을 고르지 않은 기본 빈 규칙만 있는지 */
