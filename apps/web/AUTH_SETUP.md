@@ -18,7 +18,7 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
    - Vercel 프로덕션: `https://black-swan-web.vercel.app/api/auth/callback/kakao`
    - Vercel 프리뷰(필요 시): `https://<deployment>.vercel.app/api/auth/callback/kakao`
    - 커스텀 도메인: `https://<your-domain>/api/auth/callback/kakao`
-5. 동의 항목: 프로필 사진, 이메일(선택 동의). 닉네임은 앱에서 랜덤 부여하므로 불필요
+5. 동의 항목: 프로필 사진(선택). 닉네임·이메일은 앱에서 요청하지 않음(닉네임은 랜덤 부여)
 
 ## Vercel 배포
 
