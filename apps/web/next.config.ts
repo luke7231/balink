@@ -2,8 +2,11 @@ import { loadEnvConfig } from "@next/env";
 import type { NextConfig } from "next";
 import { resolve } from "node:path";
 
-// Monorepo: shared secrets live in the repo root `.env`.
-loadEnvConfig(resolve(__dirname, "../.."));
+// Local monorepo: shared secrets live in the repo root `.env`.
+// On Vercel, platform env vars are already injected — skip to avoid NFT tracing the whole repo.
+if (!process.env.VERCEL) {
+  loadEnvConfig(resolve(__dirname, "../.."));
+}
 
 const remotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [
   { protocol: "http", hostname: "k.kakaocdn.net" },
@@ -25,6 +28,7 @@ if (publicBaseUrl) {
 }
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: resolve(__dirname, "../.."),
   transpilePackages: ["@black-swan/ui", "@black-swan/domain", "@black-swan/db"],
   images: {
     remotePatterns,

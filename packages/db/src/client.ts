@@ -4,10 +4,16 @@ import { config as loadEnv } from "dotenv";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-for (const envPath of [resolve(process.cwd(), ".env"), resolve(process.cwd(), "../../.env")]) {
-  if (existsSync(envPath)) {
-    loadEnv({ path: envPath });
-    break;
+// Local/dev: load repo `.env`. On Vercel, platform env is already injected.
+if (!process.env.VERCEL) {
+  for (const envPath of [
+    resolve(/*turbopackIgnore: true*/ process.cwd(), ".env"),
+    resolve(/*turbopackIgnore: true*/ process.cwd(), "../../.env"),
+  ]) {
+    if (existsSync(envPath)) {
+      loadEnv({ path: envPath });
+      break;
+    }
   }
 }
 

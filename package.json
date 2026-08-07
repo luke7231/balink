@@ -9,6 +9,7 @@
   "scripts": {
     "codegen": "graphql-codegen --config codegen.ts",
     "build": "pnpm --filter @black-swan/domain build && pnpm --filter @black-swan/validation build && pnpm --filter @black-swan/db build && pnpm codegen && pnpm --filter @black-swan/worker build && pnpm --filter @black-swan/api build && pnpm --filter @black-swan/web build",
+    "build:web": "pnpm --filter @black-swan/domain build && pnpm --filter @black-swan/db build && pnpm codegen && pnpm --filter @black-swan/web build",
     "dev": "pnpm --parallel --filter @black-swan/api --filter @black-swan/web dev",
     "dev:api": "pnpm --filter @black-swan/api dev",
     "dev:worker": "pnpm --filter @black-swan/worker dev",

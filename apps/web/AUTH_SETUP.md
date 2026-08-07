@@ -15,8 +15,20 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
 3. **카카오 로그인 > 보안** → Client Secret 활성화 → `AUTH_KAKAO_SECRET`
 4. **카카오 로그인 > Redirect URI**
    - 로컬: `http://localhost:3100/api/auth/callback/kakao`
-   - 운영: `https://<your-domain>/api/auth/callback/kakao`
+   - Vercel 프로덕션: `https://black-swan-web.vercel.app/api/auth/callback/kakao`
+   - Vercel 프리뷰(필요 시): `https://<deployment>.vercel.app/api/auth/callback/kakao`
+   - 커스텀 도메인: `https://<your-domain>/api/auth/callback/kakao`
 5. 동의 항목: 닉네임, 프로필 사진, (가능하면) 이메일
+
+## Vercel 배포
+
+- 프로젝트: `black-swan-web` (Root Directory `apps/web`)
+- `AUTH_URL`: `https://black-swan-web.vercel.app` (프로덕션 오리진)
+- 채용/대타 목록용 `API_URL`: 공개 GraphQL 전체 URL (예: `https://<api-host>/graphql`)
+  - 로컬 `.env`에 없으면 Vercel에도 등록되지 않습니다.
+  - 등록 예: `printf '%s' 'https://YOUR_API/graphql' | vercel env add API_URL production`
+  - Preview/Development에도 동일 값 등록 후 재배포
+- API `CORS_ORIGIN` 기본값은 `*`이라 Vercel 오리진 추가가 필수는 아닙니다. 제한해 둔 경우 Vercel 웹 오리진을 허용하세요.
 
 ## Apple (심사 대비)
 

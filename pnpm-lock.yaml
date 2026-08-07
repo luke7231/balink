@@ -69,6 +69,12 @@ importers:
       '@black-swan/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@graphql-typed-document-node/core':
+        specifier: ^3.2.0
+        version: 3.2.0(graphql@16.14.2)
+      '@next/env':
+        specifier: 16.2.12
+        version: 16.2.12
       graphql:
         specifier: ^16.12.0
         version: 16.14.2
