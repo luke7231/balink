@@ -84,7 +84,7 @@ export function NotificationRulesOverview({
               </span>
               <span className="inline-flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />
-                대타
+                대강
               </span>
             </p>
             <Link
@@ -125,7 +125,7 @@ export function NotificationRulesOverview({
               >
                 <Link
                   href={`/notifications/settings?ruleId=${encodeURIComponent(rule.id)}`}
-                  aria-label={`${rule.jobType === "substitute" ? "대타" : "정규"} · ${title}${on ? "" : " · 꺼짐"}`}
+                  aria-label={`${rule.jobType === "substitute" ? "대강" : "정규"} · ${title}${on ? "" : " · 꺼짐"}`}
                   className="inline-flex items-center gap-1.5 py-1"
                 >
                   <span

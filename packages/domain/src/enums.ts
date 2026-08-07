@@ -9,7 +9,7 @@ export const SOURCE_LABELS: Record<SourceName, string> = {
 
 export const JOB_TYPE_LABELS: Record<string, string> = {
   regular: "정규",
-  substitute: "대타",
+  substitute: "대강",
 };
 
 export const SUBSTITUTE_STATUS_LABELS: Record<string, string> = {

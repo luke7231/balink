@@ -23,7 +23,7 @@ export function notificationTypeLabel(type: string): string {
     case "job_match":
       return "채용";
     case "substitute_match":
-      return "대타";
+      return "대강";
     case "system":
       return "공지";
     default:

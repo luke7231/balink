@@ -12,7 +12,7 @@ const tabs = [
   },
   {
     href: "/substitutes",
-    label: "대타",
+    label: "대강",
     match: (pathname: string) => pathname === "/substitutes",
     icon: CalendarIcon,
   },

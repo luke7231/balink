@@ -150,7 +150,7 @@ export function NotificationPreferenceForm({
           <div>
             <h2 className="text-base font-semibold text-zinc-900">알림 규칙</h2>
             <p className="mt-1 text-xs text-zinc-500">
-              규칙마다 지역·정규/대타·요일·시간대를 따로 정합니다. 하나라도 맞으면 알림이 옵니다.
+              규칙마다 지역·정규/대강·요일·시간대를 따로 정합니다. 하나라도 맞으면 알림이 옵니다.
             </p>
           </div>
         ) : null}
@@ -332,7 +332,7 @@ function RuleCard({
             {(
               [
                 { key: "regular" as AlertJobType, label: "정규 채용" },
-                { key: "substitute" as AlertJobType, label: "대타" },
+                { key: "substitute" as AlertJobType, label: "대강" },
               ] as const
             ).map((item) => {
               const selected = rule.jobType === item.key;

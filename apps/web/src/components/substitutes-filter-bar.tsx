@@ -53,9 +53,9 @@ export function SubstitutesFilterBar({
 
   return (
     <FilterChipBar
-      ariaLabel="대타 공고 필터"
+      ariaLabel="대강 공고 필터"
       activeCount={activeCount}
-      sheetTitle="대타 필터"
+      sheetTitle="대강 필터"
       chips={chips}
       sheetContent={
         <form

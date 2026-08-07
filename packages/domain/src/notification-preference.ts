@@ -77,7 +77,7 @@ export interface AlertCondition {
   timeSlots: AlertTimeSlot[];
 }
 
-/** @deprecated 레거시 정규/대타 묶음 */
+/** @deprecated 레거시 정규/대강 묶음 */
 export interface JobTypeAlertPreference {
   enabled: boolean;
   conditions: AlertCondition[];
@@ -341,7 +341,7 @@ export function matchesJobTypeAlert(
 }
 
 /**
- * 시계열 시각을 오전/오후/저녁으로 환산 (대타 매칭·크롤링 룰과 동일)
+ * 시계열 시각을 오전/오후/저녁으로 환산 (대강 매칭·크롤링 룰과 동일)
  * - morning: 00:00~11:59
  * - afternoon: 12:00~16:59
  * - evening: 17:00~23:59
@@ -433,7 +433,7 @@ export function createAlertConditionId(): string {
 export const MAX_ALERT_CONDITIONS = MAX_NOTIFICATION_RULES;
 
 export const JOB_MATCH_NOTIFICATION_TITLE = "📢 관심 조건에 딱 맞는 공고가 올라왔어요";
-export const SUBSTITUTE_MATCH_NOTIFICATION_TITLE = "⚡ 관심 조건에 딱 맞는 대타가 올라왔어요";
+export const SUBSTITUTE_MATCH_NOTIFICATION_TITLE = "⚡ 관심 조건에 딱 맞는 대강이 올라왔어요";
 
 function asStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];

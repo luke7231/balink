@@ -133,7 +133,7 @@ export function NotificationRulesList({
                               : "bg-rose-50 text-rose-800"
                           }`}
                         >
-                          {rule.jobType === "substitute" ? "대타" : "정규 채용"}
+                          {rule.jobType === "substitute" ? "대강" : "정규 채용"}
                         </span>
                       </div>
                       <ul className="mt-2 space-y-1 text-sm text-zinc-600">

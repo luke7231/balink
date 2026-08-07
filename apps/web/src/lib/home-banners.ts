@@ -19,7 +19,7 @@ export const HOME_BANNERS: HomeBannerItem[] = [
   },
   {
     id: "substitute",
-    title: "급하게 찾는 대타",
+    title: "급하게 찾는 대강",
     subtitle: "오늘·내일 수업 공고를 바로 확인",
     href: "/substitutes",
     imageSrc: "/banners/banner-02.jpg",

@@ -95,7 +95,7 @@ export function SubstituteList({
   if (posts.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-zinc-200 bg-white px-6 py-16 text-center text-sm text-zinc-500">
-        표시할 대타 글이 없습니다.
+        표시할 대강 글이 없습니다.
       </div>
     );
   }

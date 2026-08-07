@@ -58,7 +58,7 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
       <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-5">
           <Link href="/substitutes" className="text-sm font-medium text-rose-600 hover:text-rose-700">
-            ← 대타 게시판
+            ← 대강 게시판
           </Link>
         </div>
       </header>

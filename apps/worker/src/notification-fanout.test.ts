@@ -41,7 +41,7 @@ test("job match notification copy and preference input", () => {
 });
 
 test("substitute match notification copy and preference input", () => {
-  assert.equal(SUBSTITUTE_MATCH_NOTIFICATION_TITLE, "⚡ 관심 조건에 딱 맞는 대타가 올라왔어요");
+  assert.equal(SUBSTITUTE_MATCH_NOTIFICATION_TITLE, "⚡ 관심 조건에 딱 맞는 대강이 올라왔어요");
   assert.equal(
     formatSubstituteMatchNotificationBody({
       sigungu: "성북구",
