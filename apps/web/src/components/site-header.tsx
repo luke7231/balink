@@ -19,7 +19,7 @@ export async function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps)
         <div>
           <p className="text-sm font-medium text-rose-600">Black Swan</p>
           <h1 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl">
-            발레 강사 구인 알림
+            서진아 사랑해
           </h1>
         </div>
 
