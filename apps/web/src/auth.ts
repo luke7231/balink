@@ -9,7 +9,10 @@ import { finalizeNewUserProfile } from "@/lib/user-profile";
 const providers: Provider[] = [
   Kakao({
     allowDangerousEmailAccountLinking: true,
+    // Must include `url`: Auth.js deep-merge replaces the default string endpoint
+    // when only `params` are provided, which then throws Invalid URL on sign-in.
     authorization: {
+      url: "https://kauth.kakao.com/oauth/authorize",
       params: {
         scope: "profile_nickname profile_image account_email",
       },
