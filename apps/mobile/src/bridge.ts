@@ -27,7 +27,8 @@ export type WebToNativeMessage =
   | { type: "GET_PUSH_PERMISSION" }
   | { type: "REQUEST_PUSH_PERMISSION" }
   | { type: "OPEN_NOTIFICATION_SETTINGS" }
-  | { type: "HAPTIC"; style: HapticStyle };
+  | { type: "HAPTIC"; style: HapticStyle }
+  | { type: "NATIVE_NAV"; path: string };
 
 export type NativeToWebMessage =
   | ({ type: "PUSH_PERMISSION_STATUS" } & PushPermissionPayload)
@@ -50,6 +51,13 @@ export function parseWebMessage(value: string): WebToNativeMessage | null {
       case "HAPTIC": {
         if (!message.style || !HAPTIC_STYLES.has(message.style as HapticStyle)) return null;
         return { type: "HAPTIC", style: message.style as HapticStyle };
+      }
+      case "NATIVE_NAV": {
+        const path = typeof (message as { path?: unknown }).path === "string"
+          ? (message as { path: string }).path
+          : "";
+        if (!path.startsWith("/") || path.startsWith("//")) return null;
+        return { type: "NATIVE_NAV", path };
       }
       default:
         return null;
