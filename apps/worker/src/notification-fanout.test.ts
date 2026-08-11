@@ -8,7 +8,7 @@ import {
   matchesNotificationPreference,
   toJobMatchPreferenceInput,
   toSubstituteMatchPreferenceInput,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import { shouldFanOutInbox } from "./notification-fanout.js";
 
 test("shouldFanOutInbox requires created and fanOutInbox true", () => {

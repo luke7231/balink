@@ -1,9 +1,9 @@
-import { PushOutboxRepository, prisma } from "@black-swan/db";
+import { PushOutboxRepository, prisma } from "@balink/db";
 import { runPushDispatchTick } from "./push-dispatcher.js";
 
 const userId = readArgument("--user-id");
 if (!userId) {
-  console.error("사용법: pnpm --filter @black-swan/worker push:test -- --user-id <USER_ID>");
+  console.error("사용법: pnpm --filter @balink/worker push:test -- --user-id <USER_ID>");
   process.exitCode = 1;
 } else {
   try {
@@ -36,7 +36,7 @@ async function sendTestPush(targetUserId: string) {
     data: {
       userId: targetUserId,
       type: "system",
-      title: "🩰 블랙스완 테스트 알림",
+      title: "🩰 발링크 테스트 알림",
       body: "실제 단말 푸시 연결이 정상입니다.",
       href: "/notifications",
     },

@@ -38,7 +38,7 @@ const initialAlerts: AlertItem[] = [
   {
     id: 4,
     type: "system",
-    title: "블랙스완 공지",
+    title: "발링크 공지",
     body: "새로운 출처가 추가됐어요. 이제 댄스잡에서도 공고를 확인할 수 있어요.",
     time: "어제",
     isRead: true,
@@ -62,7 +62,7 @@ const initialAlerts: AlertItem[] = [
   {
     id: 7,
     type: "system",
-    title: "블랙스완 업데이트",
+    title: "발링크 업데이트",
     body: "알림 조건을 더욱 세밀하게 설정할 수 있게 됐어요. 마이 → 알림 설정에서 확인하세요.",
     time: "3일 전",
     isRead: true,

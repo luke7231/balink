@@ -1,8 +1,8 @@
-import type { DisplaySection, NormalizedLocation, RepresentativePay } from "@black-swan/domain";
-import { defaultRepresentativePay } from "@black-swan/domain";
+import type { DisplaySection, NormalizedLocation, RepresentativePay } from "@balink/domain";
+import { defaultRepresentativePay } from "@balink/domain";
 import OpenAI from "openai";
 import { geocodeLocation } from "./location-geocoder.js";
-import type { ListingEnrichment } from "@black-swan/domain";
+import type { ListingEnrichment } from "@balink/domain";
 import {
   buildRepresentativePayJsonSchema,
   normalizeRepresentativePayFromSources,

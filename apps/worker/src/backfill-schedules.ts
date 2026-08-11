@@ -1,7 +1,7 @@
 import { pathToFileURL } from "node:url";
 import OpenAI from "openai";
-import { prisma, type Prisma } from "@black-swan/db";
-import { SCHEDULE_LLM_RULES, sanitizeSchedule, type JobSchedule } from "@black-swan/domain";
+import { prisma, type Prisma } from "@balink/db";
+import { SCHEDULE_LLM_RULES, sanitizeSchedule, type JobSchedule } from "@balink/domain";
 
 const llmModel = process.env.OPENAI_MODEL || "gpt-5.4";
 

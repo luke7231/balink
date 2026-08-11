@@ -1,5 +1,5 @@
 {
-  "name": "@black-swan/ui",
+  "name": "@balink/ui",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -17,7 +17,7 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
-    "@black-swan/domain": "workspace:*"
+    "@balink/domain": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19",

@@ -1,4 +1,4 @@
-import { prisma } from "@black-swan/db";
+import { prisma } from "@balink/db";
 import { DEFAULT_AVATAR_PATH, saveRemoteProfileImage } from "@/lib/profile-image";
 import { allocateUniqueNickname } from "@/lib/random-nickname";
 

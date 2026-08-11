@@ -101,7 +101,7 @@ const commentMap: Record<number, Comment[]> = {
     { id: 15, author: "김발레", badge: "강사", text: "저도요 빨리 만들어주세요 ㅎㅎ", timeAgo: "5시간 전", isLiked: false, likes: 0, replyTo: "한백조" },
     { id: 16, author: "박튀튀", badge: "강사", text: "정말 좋은 글이에요. 좋아요 누르고 갑니다 💙", timeAgo: "3시간 전", isLiked: false, likes: 0 },
     { id: 17, author: "정발레", badge: "강사", text: "이 커뮤니티 자체가 너무 따뜻해서 좋아요!", timeAgo: "2시간 전", isLiked: true, likes: 4 },
-    { id: 18, author: "최포인트", badge: "원장", text: "블랙스완 앱 덕분에 좋은 연결이 생기네요 😊", timeAgo: "1시간 전", isLiked: false, likes: 2 },
+    { id: 18, author: "최포인트", badge: "원장", text: "발링크 앱 덕분에 좋은 연결이 생기네요 😊", timeAgo: "1시간 전", isLiked: false, likes: 2 },
     { id: 19, author: "한백조", badge: "강사", text: "오픈채팅 링크 올렸어요! 검색창에 '발레강사대타_서초강남' 으로 검색하면 돼요!", timeAgo: "30분 전", isLiked: true, likes: 12 },
     { id: 20, author: "이아라", badge: "강사", text: "완전 감사합니다!!! 바로 들어갔어요 🎉", timeAgo: "28분 전", isLiked: false, likes: 1, replyTo: "한백조" },
     { id: 21, author: "김발레", badge: "강사", text: "저도 입장완료! 다들 만나요 😄", timeAgo: "25분 전", isLiked: false, likes: 1, replyTo: "한백조" },

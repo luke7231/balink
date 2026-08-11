@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { formatSidoForDisplay } from "@black-swan/domain";
+import { formatSidoForDisplay } from "@balink/domain";
 import {
   addInterestRegionAction,
   removeInterestRegionAction,

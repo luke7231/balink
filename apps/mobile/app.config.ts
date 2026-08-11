@@ -2,7 +2,7 @@ import type { ExpoConfig, ConfigContext } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "블랙스완",
+  name: "발링크",
   slug: "black-swan",
   owner: "luke7299",
   version: "0.1.0",

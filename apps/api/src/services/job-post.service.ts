@@ -9,8 +9,8 @@ import {
   type JobRegionGroup,
   type PaginatedResult,
   type PaginationInput,
-} from "@black-swan/domain";
-import { JobPostRepository } from "@black-swan/db";
+} from "@balink/domain";
+import { JobPostRepository } from "@balink/db";
 
 export class JobPostService {
   constructor(

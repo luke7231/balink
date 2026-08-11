@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { extractLocationHints, validateAdminDistrict } from "@black-swan/domain";
+import { extractLocationHints, validateAdminDistrict } from "@balink/domain";
 import { geocodeLocation } from "./location-geocoder.js";
 
 test("validateAdminDistrict accepts known Seoul districts", () => {

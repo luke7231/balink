@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "블랙스완 | 서진아 사랑해",
+  title: "발링크",
   description: "발레매니아, 이상댄스 등 외부 구인 공고를 모아 보여주는 발레 강사 전용 플랫폼",
 };
 

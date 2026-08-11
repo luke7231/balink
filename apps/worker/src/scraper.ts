@@ -1,8 +1,8 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import type { Prisma } from "@black-swan/db";
-import { ScraperRunRepository } from "@black-swan/db";
-import type { LlmMode, SourceName } from "@black-swan/domain";
+import type { Prisma } from "@balink/db";
+import { ScraperRunRepository } from "@balink/db";
+import type { LlmMode, SourceName } from "@balink/domain";
 import { runCommand, type CommandResult } from "./command.js";
 import { config } from "./config.js";
 import { filterNewListings } from "./incremental-listings.js";

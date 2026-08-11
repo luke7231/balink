@@ -10,8 +10,8 @@ import {
   isBlankNotificationPreference,
   type NotificationPreference,
   type NotificationRule,
-} from "@black-swan/domain";
-import { Modal } from "@black-swan/ui/modal";
+} from "@balink/domain";
+import { Modal } from "@balink/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
 
 export function NotificationRulesOverview({

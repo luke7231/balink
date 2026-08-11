@@ -36,7 +36,7 @@ type NativeMessage =
 declare global {
   interface Window {
     ReactNativeWebView?: { postMessage(message: string): void };
-    blackSwanPush?: {
+    balinkPush?: {
       requestPermission(): void;
       openSettings(): void;
       refreshPermission(): void;
@@ -64,7 +64,7 @@ export function MobileBridge() {
   const publishState = useCallback((patch: Partial<PushState>) => {
     stateRef.current = { ...stateRef.current, ...patch };
     window.dispatchEvent(
-      new CustomEvent<PushState>("black-swan:push-state", {
+      new CustomEvent<PushState>("balink:push-state", {
         detail: stateRef.current,
       }),
     );
@@ -142,7 +142,7 @@ export function MobileBridge() {
     };
 
     window.addEventListener("message", handleMessage);
-    window.blackSwanPush = {
+    window.balinkPush = {
       requestPermission: () => postNative({ type: "REQUEST_PUSH_PERMISSION" }),
       openSettings: () => postNative({ type: "OPEN_NOTIFICATION_SETTINGS" }),
       refreshPermission: () => postNative({ type: "GET_PUSH_PERMISSION" }),
@@ -163,7 +163,7 @@ export function MobileBridge() {
 
     return () => {
       window.removeEventListener("message", handleMessage);
-      delete window.blackSwanPush;
+      delete window.balinkPush;
     };
   }, [publishState, syncInstallation]);
 

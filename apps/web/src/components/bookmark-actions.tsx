@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@black-swan/db";
+import { prisma } from "@balink/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";

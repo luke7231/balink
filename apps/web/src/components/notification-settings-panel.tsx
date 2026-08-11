@@ -1,6 +1,6 @@
 "use client";
 
-import type { NotificationPreference } from "@black-swan/domain";
+import type { NotificationPreference } from "@balink/domain";
 import { NotificationPreferenceForm } from "@/components/notification-preference-form";
 
 type DistrictGroup = {

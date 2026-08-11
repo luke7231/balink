@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@black-swan/db";
+import { prisma } from "@balink/db";
 import {
   displayableTimeSlots,
   formatDayGroups,
@@ -10,8 +10,8 @@ import {
   formatPostedAt,
   formatSource,
   formatTimeSlot,
-} from "@black-swan/domain";
-import { Badge } from "@black-swan/ui/badge";
+} from "@balink/domain";
+import { Badge } from "@balink/ui/badge";
 import { auth } from "@/auth";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { OriginalDescription } from "@/components/original-description";

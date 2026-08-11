@@ -1,5 +1,5 @@
-import type { ScraperRunSummary } from "@black-swan/domain";
-import { ScraperRunRepository } from "@black-swan/db";
+import type { ScraperRunSummary } from "@balink/domain";
+import { ScraperRunRepository } from "@balink/db";
 
 export class ScraperRunService {
   constructor(private readonly scraperRunRepository: ScraperRunRepository) {}

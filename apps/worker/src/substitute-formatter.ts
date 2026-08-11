@@ -4,12 +4,12 @@ import type {
   SubstituteRecurrence,
   SubstituteSession,
   SubstituteSessionPay,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import {
   dateToKoreanWeekday,
   defaultRepresentativePay,
   formatRepresentativePayDisplay,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import OpenAI from "openai";
 import { geocodeLocation } from "./location-geocoder.js";
 import {

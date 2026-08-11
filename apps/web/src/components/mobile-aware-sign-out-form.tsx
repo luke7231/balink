@@ -13,7 +13,7 @@ export function MobileAwareSignOutForm({ className }: { className?: string }) {
       onSubmit={(event) => {
         if (submittingRef.current) return;
         const form = event.currentTarget;
-        const detach = window.blackSwanPush?.detach;
+        const detach = window.balinkPush?.detach;
         if (!detach) return;
 
         event.preventDefault();

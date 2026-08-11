@@ -3,7 +3,7 @@ import {
   UserNotificationRepository,
   prisma,
   type MatchNotificationInsert,
-} from "@black-swan/db";
+} from "@balink/db";
 import {
   JOB_MATCH_NOTIFICATION_TITLE,
   SUBSTITUTE_MATCH_NOTIFICATION_TITLE,
@@ -13,7 +13,7 @@ import {
   parseNotificationPreference,
   toJobMatchPreferenceInput,
   toSubstituteMatchPreferenceInput,
-} from "@black-swan/domain";
+} from "@balink/domain";
 
 const userNotificationRepository = new UserNotificationRepository();
 const pushOutboxRepository = new PushOutboxRepository();

@@ -8,7 +8,7 @@ import {
   defaultRepresentativePay,
   finalizeRepresentativePay,
   sanitizeRepresentativePay,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import { normalizeRepresentativePayFromSources } from "./representative-pay-llm.js";
 
 test("finalizeRepresentativePay rejects implausible hourly pay from LLM", () => {

@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@black-swan/db";
+import { prisma } from "@balink/db";
 import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Kakao from "next-auth/providers/kakao";

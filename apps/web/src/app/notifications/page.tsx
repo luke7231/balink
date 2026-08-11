@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { prisma } from "@black-swan/db";
+import { prisma } from "@balink/db";
 import {
   formatNotificationRuleTitle,
   parseNotificationPreference,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import { auth } from "@/auth";
 import { markAllNotificationsReadAction } from "@/components/notification-actions";
 import { NotificationItem } from "@/components/notification-item";

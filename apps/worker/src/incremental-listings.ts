@@ -1,5 +1,5 @@
-import type { SourceName } from "@black-swan/domain";
-import { SourcePostRepository } from "@black-swan/db";
+import type { SourceName } from "@balink/domain";
+import { SourcePostRepository } from "@balink/db";
 
 const sourcePostRepository = new SourcePostRepository();
 

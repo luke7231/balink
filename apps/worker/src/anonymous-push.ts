@@ -1,5 +1,5 @@
-import { PushOutboxRepository, prisma } from "@black-swan/db";
-import { formatSubstituteMatchNotificationBody } from "@black-swan/domain";
+import { PushOutboxRepository, prisma } from "@balink/db";
+import { formatSubstituteMatchNotificationBody } from "@balink/domain";
 import { config } from "./config.js";
 
 const outboxRepository = new PushOutboxRepository();

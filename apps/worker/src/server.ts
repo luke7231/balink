@@ -1,7 +1,7 @@
 import http from "node:http";
 import { URL } from "node:url";
-import { DatabaseHealthRepository, ScraperRunRepository, prisma } from "@black-swan/db";
-import { parseLlmMode, parseOrThrow, parseSourceName, workerRunRequestSchema } from "@black-swan/validation";
+import { DatabaseHealthRepository, ScraperRunRepository, prisma } from "@balink/db";
+import { parseLlmMode, parseOrThrow, parseSourceName, workerRunRequestSchema } from "@balink/validation";
 import { config } from "./config.js";
 import { startScheduler } from "./scheduler.js";
 import { runScraper } from "./scraper.js";

@@ -29,7 +29,7 @@ if (publicBaseUrl) {
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: resolve(__dirname, "../.."),
-  transpilePackages: ["@black-swan/ui", "@black-swan/domain", "@black-swan/db"],
+  transpilePackages: ["@balink/ui", "@balink/domain", "@balink/db"],
   images: {
     remotePatterns,
   },

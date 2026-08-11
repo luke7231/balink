@@ -3,7 +3,7 @@ import {
   JobPostRepository,
   ScraperRunRepository,
   SubstitutePostRepository,
-} from "@black-swan/db";
+} from "@balink/db";
 import { config } from "../config.js";
 import { HealthService } from "./health.service.js";
 import { JobPostService } from "./job-post.service.js";

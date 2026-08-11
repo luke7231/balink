@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma } from "@black-swan/db";
+import { prisma } from "@balink/db";
 import {
   MAX_NOTIFICATION_RULES,
   createNotificationRuleId,
@@ -9,7 +9,7 @@ import {
   isBlankNotificationPreference,
   listAdminDistrictGroups,
   parseNotificationPreference,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import { auth } from "@/auth";
 import { NotificationSettingsPanel } from "@/components/notification-settings-panel";
 import { PushPermissionCallout } from "@/components/push-permission-callout";

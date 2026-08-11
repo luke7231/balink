@@ -1,6 +1,6 @@
 import iconv from "iconv-lite";
 import { load } from "cheerio";
-import { isAcademyPlaceholderImageUrl, type RawAcademyImages } from "@black-swan/domain";
+import { isAcademyPlaceholderImageUrl, type RawAcademyImages } from "@balink/domain";
 
 const BASE_URL = "https://www.balletmania.com";
 
@@ -52,7 +52,7 @@ export async function fetchBalletmaniaAcademyImages(
   const response = await fetch(url, {
     headers: {
       cookie,
-      "user-agent": "Mozilla/5.0 compatible; black-swan-ballet-crawler/0.1",
+      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
   });
 
@@ -77,7 +77,7 @@ export async function loginBalletmania(): Promise<string> {
     method: "POST",
     headers: {
       "content-type": "application/x-www-form-urlencoded",
-      "user-agent": "Mozilla/5.0 compatible; black-swan-ballet-crawler/0.1",
+      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
     body: params,
     redirect: "manual",

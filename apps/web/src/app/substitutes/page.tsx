@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { resolveSubstituteUrgency } from "@black-swan/domain";
+import { resolveSubstituteUrgency } from "@balink/domain";
 import { SiteHeader } from "@/components/site-header";
 import { SubstituteList } from "@/components/substitute-list";
 import { SubstitutesFilterBar } from "@/components/substitutes-filter-bar";

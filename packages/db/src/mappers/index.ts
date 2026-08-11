@@ -21,7 +21,7 @@ import {
   type SubstituteUrgency,
   isAcademyPlaceholderImageUrl,
   pickAcademyThumbnail,
-} from "@black-swan/domain";
+} from "@balink/domain";
 
 type JobPostWithSources = JobPost & {
   jobPostSources: (JobPostSource & {
@@ -102,7 +102,7 @@ export function toScraperRunSummary(run: import("@prisma/client").ScraperRun) {
     source: run.source as SourceName | null,
     targetDate: run.targetDate,
     llmMode: run.llmMode,
-    status: run.status as import("@black-swan/domain").ScraperRunStatus,
+    status: run.status as import("@balink/domain").ScraperRunStatus,
     startedAt: run.startedAt,
     finishedAt: run.finishedAt,
     collected: run.collected,

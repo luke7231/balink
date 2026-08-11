@@ -22,7 +22,7 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
 
 ## Vercel 배포
 
-- 프로젝트: `black-swan-web` (Root Directory `apps/web`)
+- 프로젝트: `balink-web` (Root Directory `apps/web`)
 - `AUTH_URL`: `https://black-swan-web.vercel.app` (프로덕션 오리진)
 - 채용/대강 목록용 `API_URL`: 공개 GraphQL 전체 URL (예: `https://<api-host>/graphql`)
   - 로컬 `.env`에 없으면 Vercel에도 등록되지 않습니다.

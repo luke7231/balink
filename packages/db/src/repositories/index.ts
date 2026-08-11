@@ -1,4 +1,4 @@
-import type { JobPostFilterInput, SourceName } from "@black-swan/domain";
+import type { JobPostFilterInput, SourceName } from "@balink/domain";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../client.js";
 import { toJobPostDetail, toJobPostSourceLink, toJobPostSummary, toScraperRunSummary, toSubstitutePostDetail, toSubstitutePostSummary } from "../mappers/index.js";
@@ -264,9 +264,9 @@ export interface UpsertSubstitutePostInput {
   author: string | null;
   authorMemberNo: string | null;
   postedAt: Date | null;
-  sessions: import("@black-swan/domain").SubstituteSession[];
-  recurrence: import("@black-swan/domain").SubstituteRecurrence | null;
-  scheduleKind: import("@black-swan/domain").SubstituteScheduleKind;
+  sessions: import("@balink/domain").SubstituteSession[];
+  recurrence: import("@balink/domain").SubstituteRecurrence | null;
+  scheduleKind: import("@balink/domain").SubstituteScheduleKind;
   lessonDates: string[];
   timeSlots: Array<{ start: string | null; end: string | null; raw: string | null }>;
   audienceTypes: string[];
@@ -276,7 +276,7 @@ export interface UpsertSubstitutePostInput {
   sigungu: string | null;
   dongOrStation: string | null;
   payText: string | null;
-  representativePay: import("@black-swan/domain").RepresentativePay | null;
+  representativePay: import("@balink/domain").RepresentativePay | null;
   representativePayText: string | null;
   academyName: string | null;
   requirements: string[];
@@ -300,7 +300,7 @@ export interface UpsertSubstitutePostInput {
 }
 
 export class SubstitutePostRepository {
-  buildWhere(filter: import("@black-swan/domain").SubstitutePostFilterInput | null | undefined): Prisma.SubstitutePostWhereInput {
+  buildWhere(filter: import("@balink/domain").SubstitutePostFilterInput | null | undefined): Prisma.SubstitutePostWhereInput {
     return {
       ...(filter?.status ? { status: filter.status } : { status: "OPEN" }),
       ...(filter?.sido ? { sido: filter.sido } : {}),

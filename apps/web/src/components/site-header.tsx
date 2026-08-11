@@ -17,9 +17,9 @@ export async function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps)
     <header className="border-b border-rose-100/80 bg-white/80 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-5">
         <div>
-          <p className="text-sm font-medium text-rose-600">Black Swan</p>
+          <p className="text-sm font-medium text-rose-600">balink</p>
           <h1 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl">
-            서진아 사랑해
+            발링크
           </h1>
         </div>
 

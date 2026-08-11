@@ -68,7 +68,7 @@ export default async function AccountPage() {
         <section className="mt-4 rounded-3xl border border-rose-200 bg-rose-50/60 p-6">
           <h2 className="text-base font-semibold text-rose-900">계정 삭제</h2>
           <p className="mt-2 text-sm leading-relaxed text-rose-800/90">
-            블랙스완 회원 정보가 삭제되고, 카카오 연결도 해제(unlink)를 시도합니다.
+            발링크 회원 정보가 삭제되고, 카카오 연결도 해제(unlink)를 시도합니다.
             삭제 후에는 같은 카카오로 다시 가입할 수 있습니다.
           </p>
 
@@ -95,7 +95,7 @@ export default async function AccountPage() {
               </a>{" "}
               로그인
             </p>
-            <p>2. 연결된 서비스 관리 → 블랙스완(앱 이름) → 연결 끊기</p>
+            <p>2. 연결된 서비스 관리 → 발링크(앱 이름) → 연결 끊기</p>
             <p>또는 카카오톡 → 설정 → 카카오계정 → 연결된 서비스</p>
           </div>
         </section>

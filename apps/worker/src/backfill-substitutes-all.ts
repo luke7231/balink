@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
-import { prisma } from "@black-swan/db";
-import { SUBSTITUTE_NORMALIZATION_VERSION } from "@black-swan/domain";
+import { prisma } from "@balink/db";
+import { SUBSTITUTE_NORMALIZATION_VERSION } from "@balink/domain";
 import {
   hashSubstituteContent,
   persistNormalizedSubstitute,

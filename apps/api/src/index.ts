@@ -1,6 +1,6 @@
 import "./config.js";
 import { createServer } from "node:http";
-import { prisma } from "@black-swan/db";
+import { prisma } from "@balink/db";
 import { createYoga } from "graphql-yoga";
 import { config } from "./config.js";
 import { createGraphQLContext } from "./context/types.js";
@@ -23,7 +23,7 @@ const yoga = createYoga({
 const server = createServer(yoga);
 
 server.listen(config.port, () => {
-  console.log(`Black Swan GraphQL API listening on http://localhost:${config.port}/graphql`);
+  console.log(`balink GraphQL API listening on http://localhost:${config.port}/graphql`);
 });
 
 async function shutdown(): Promise<void> {

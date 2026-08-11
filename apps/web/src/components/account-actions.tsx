@@ -1,12 +1,12 @@
 "use server";
 
-import { prisma } from "@black-swan/db";
+import { prisma } from "@balink/db";
 import {
   MAX_NOTIFICATION_RULES,
   parseNotificationPreference,
   validateAdminDistrict,
   type NotificationPreference,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";

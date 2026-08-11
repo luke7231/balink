@@ -220,7 +220,7 @@ async function login() {
     redirect: "manual",
     headers: {
       "content-type": "application/x-www-form-urlencoded",
-      "user-agent": "Mozilla/5.0 compatible; black-swan-ballet-crawler/0.1",
+      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
     body: params,
   });
@@ -261,7 +261,7 @@ async function fetchDetail(url, cookie) {
   const response = await fetchWithRetry(url, {
     headers: {
       cookie,
-      "user-agent": "Mozilla/5.0 compatible; black-swan-ballet-crawler/0.1",
+      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
   });
 

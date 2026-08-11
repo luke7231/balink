@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
-import { prisma, type Prisma } from "@black-swan/db";
-import type { SourceName } from "@black-swan/domain";
+import { prisma, type Prisma } from "@balink/db";
+import type { SourceName } from "@balink/domain";
 import { mirrorAcademyImagesToS3, parseRawAcademyImages } from "./academy-images.js";
 import {
   fetchBalletmaniaAcademyImages,

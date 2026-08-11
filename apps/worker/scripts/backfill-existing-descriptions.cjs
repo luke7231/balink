@@ -19,7 +19,7 @@ main()
 async function main() {
   validateSources(sources);
 
-  const { prisma } = await import("@black-swan/db");
+  const { prisma } = await import("@balink/db");
   const rows = await prisma.sourcePost.findMany({
     where: { source: { in: sources } },
     orderBy: [{ source: "asc" }, { postedAt: "asc" }],
@@ -48,7 +48,7 @@ async function main() {
     return;
   }
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "black-swan-description-backfill-"));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "balink-description-backfill-"));
   const summary = { updated: 0, skipped: 0 };
 
   try {
@@ -193,7 +193,7 @@ function parseArgs(argv) {
     else if (arg === "--dry-run") parsed.dryRun = true;
     else if (arg === "--help" || arg === "-h") {
       console.log([
-        "Usage: pnpm --filter @black-swan/worker backfill:existing-descriptions",
+        "Usage: pnpm --filter @balink/worker backfill:existing-descriptions",
         "",
         "Options:",
         "  --source balletmania|esangdance  Backfill one source only",

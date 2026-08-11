@@ -436,7 +436,7 @@ export function MyPage() {
         </div>
 
         <p style={{ textAlign: "center", fontSize: 11, fontWeight: 400, color: "#ccc", paddingTop: 4 }}>
-          블랙스완 v1.0.0
+          발링크 v1.0.0
         </p>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma } from "@black-swan/db";
-import { parseNotificationPreference } from "@black-swan/domain";
+import { prisma } from "@balink/db";
+import { parseNotificationPreference } from "@balink/domain";
 import { auth } from "@/auth";
 import { NotificationRulesList } from "@/components/notification-rules-list";
 import { SiteHeader } from "@/components/site-header";

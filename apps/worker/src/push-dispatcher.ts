@@ -1,7 +1,7 @@
 import {
   PushDeviceRepository,
   PushOutboxRepository,
-} from "@black-swan/db";
+} from "@balink/db";
 import Expo, {
   type ExpoPushMessage,
   type ExpoPushReceipt,

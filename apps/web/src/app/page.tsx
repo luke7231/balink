@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { JobList } from "@black-swan/ui/job-list";
+import { JobList } from "@balink/ui/job-list";
 import { auth } from "@/auth";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { HomeBanner } from "@/components/home-banner";

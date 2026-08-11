@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { LlmMode, SourceName } from "@black-swan/domain";
+import type { LlmMode, SourceName } from "@balink/domain";
 
 export const sourceNameSchema = z.enum(["balletmania", "esangdance"]);
 export const scraperRunStatusSchema = z.enum(["running", "success", "failed"]);

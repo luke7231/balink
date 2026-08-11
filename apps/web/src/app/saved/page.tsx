@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma, toJobPostSummary } from "@black-swan/db";
-import { JobList } from "@black-swan/ui/job-list";
+import { prisma, toJobPostSummary } from "@balink/db";
+import { JobList } from "@balink/ui/job-list";
 import { auth } from "@/auth";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { SiteHeader } from "@/components/site-header";

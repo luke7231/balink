@@ -1,5 +1,5 @@
-import { SubstitutePostRepository } from "@black-swan/db";
-import { deriveSubstituteStatus } from "@black-swan/domain";
+import { SubstitutePostRepository } from "@balink/db";
+import { deriveSubstituteStatus } from "@balink/domain";
 import { detectWorkingDetailState, fetchEucKrHtml, loginBalletmania } from "./balletmania-working.js";
 
 const substitutePostRepository = new SubstitutePostRepository();

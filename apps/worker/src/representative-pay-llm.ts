@@ -1,5 +1,5 @@
-import type { RepresentativePay } from "@black-swan/domain";
-import { finalizeRepresentativePay, resolveRepresentativePayConflict } from "@black-swan/domain";
+import type { RepresentativePay } from "@balink/domain";
+import { finalizeRepresentativePay, resolveRepresentativePayConflict } from "@balink/domain";
 
 export const REPRESENTATIVE_PAY_LLM_RULES = [
   "representativePay.evidence에는 급여 판단에 쓴 원문 구절을 그대로 적는다.",

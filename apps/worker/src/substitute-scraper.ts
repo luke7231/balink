@@ -1,7 +1,7 @@
-import type { Prisma } from "@black-swan/db";
-import { ScraperRunRepository, SubstitutePostRepository } from "@black-swan/db";
-import { SUBSTITUTE_NORMALIZATION_VERSION } from "@black-swan/domain";
-import type { LlmMode } from "@black-swan/domain";
+import type { Prisma } from "@balink/db";
+import { ScraperRunRepository, SubstitutePostRepository } from "@balink/db";
+import { SUBSTITUTE_NORMALIZATION_VERSION } from "@balink/domain";
+import type { LlmMode } from "@balink/domain";
 import { config } from "./config.js";
 import {
   buildWorkingListUrl,

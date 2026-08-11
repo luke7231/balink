@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import type { ListingEnrichment } from "@black-swan/domain";
+import type { ListingEnrichment } from "@balink/domain";
 import { enrichListing } from "./llm-formatter.js";
 
 export interface ClassifiedListing {

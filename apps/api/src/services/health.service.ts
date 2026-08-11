@@ -1,5 +1,5 @@
-import type { HealthStatus } from "@black-swan/domain";
-import { DatabaseHealthRepository, JobPostRepository, SubstitutePostRepository } from "@black-swan/db";
+import type { HealthStatus } from "@balink/domain";
+import { DatabaseHealthRepository, JobPostRepository, SubstitutePostRepository } from "@balink/db";
 import type { ScraperRunService } from "./scraper-run.service.js";
 
 export class HealthService {

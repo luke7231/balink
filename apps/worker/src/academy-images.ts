@@ -3,7 +3,7 @@ import {
   type RawAcademyImages,
   type SourceName,
   type StoredAcademyImages,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import { fetch } from "undici";
 import {
   buildAcademyImageObjectKey,
@@ -99,7 +99,7 @@ async function uploadRemoteImage(
   sourceUrl: string,
 ): Promise<string> {
   const response = await fetch(sourceUrl, {
-    headers: { "user-agent": "Mozilla/5.0 compatible; black-swan-academy-images/0.1" },
+    headers: { "user-agent": "Mozilla/5.0 compatible; balink-academy-images/0.1" },
   });
 
   if (!response.ok) {

@@ -39,7 +39,7 @@ export function PushPermissionCallout({
   );
 
   useEffect(() => {
-    window.blackSwanPush?.refreshPermission();
+    window.balinkPush?.refreshPermission();
   }, []);
 
   if (!state.isMobileApp) return null;
@@ -118,12 +118,12 @@ export function PushPermissionCallout({
 }
 
 function subscribeToPushState(onStoreChange: () => void) {
-  window.addEventListener("black-swan:push-state", onStoreChange);
-  return () => window.removeEventListener("black-swan:push-state", onStoreChange);
+  window.addEventListener("balink:push-state", onStoreChange);
+  return () => window.removeEventListener("balink:push-state", onStoreChange);
 }
 
 function getPushStateSnapshot(): PushState {
-  return window.blackSwanPush?.getState() ?? INITIAL_STATE;
+  return window.balinkPush?.getState() ?? INITIAL_STATE;
 }
 
 function getServerPushStateSnapshot(): PushState {
@@ -137,8 +137,8 @@ function permissionAction(state: PushState) {
     <button
       type="button"
       onClick={() => {
-        if (action === "request") window.blackSwanPush?.requestPermission();
-        else window.blackSwanPush?.openSettings();
+        if (action === "request") window.balinkPush?.requestPermission();
+        else window.balinkPush?.openSettings();
       }}
       className="rounded-full bg-amber-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-amber-800"
     >

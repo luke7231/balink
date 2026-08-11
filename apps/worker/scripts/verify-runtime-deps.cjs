@@ -9,7 +9,7 @@ const workerRoot = path.join(scriptDir, "..");
 const workerRequire = createRequire(path.join(workerRoot, "package.json"));
 
 const scriptDeps = ["cheerio", "dotenv", "expo-server-sdk", "iconv-lite", "openai", "undici"];
-const workspaceDeps = ["@black-swan/db", "@black-swan/domain", "@black-swan/validation"];
+const workspaceDeps = ["@balink/db", "@balink/domain", "@balink/validation"];
 
 process.chdir(scriptDir);
 

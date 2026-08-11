@@ -6,8 +6,8 @@ import {
   type SubstitutePostDetail,
   type SubstitutePostFilterInput,
   type SubstitutePostSummary,
-} from "@black-swan/domain";
-import { SubstitutePostRepository } from "@black-swan/db";
+} from "@balink/domain";
+import { SubstitutePostRepository } from "@balink/db";
 
 export class SubstitutePostService {
   constructor(

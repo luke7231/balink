@@ -147,7 +147,7 @@ async function fetchUtf8Html(url, options) {
         dispatcher: fetchDispatcher,
         signal: AbortSignal.timeout(options.timeoutMs),
         headers: {
-          "user-agent": "Mozilla/5.0 compatible; black-swan-ballet-crawler/0.1",
+          "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
           "accept": "text/html,application/xhtml+xml",
         },
       });

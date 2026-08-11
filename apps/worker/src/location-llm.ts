@@ -1,4 +1,4 @@
-import { extractLocationHints, formatAdminLocationDisplay, validateAdminDistrict } from "@black-swan/domain";
+import { extractLocationHints, formatAdminLocationDisplay, validateAdminDistrict } from "@balink/domain";
 
 export const LOCATION_LLM_RULES = [
   "지역 판단 규칙:",

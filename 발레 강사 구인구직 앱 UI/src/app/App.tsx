@@ -229,7 +229,7 @@ export default function App() {
                   letterSpacing: -0.8,
                 }}
               >
-                블랙스완
+                발링크
               </span>
               <div
                 style={{

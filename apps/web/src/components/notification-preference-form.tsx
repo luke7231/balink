@@ -16,7 +16,7 @@ import {
   type AlertJobType,
   type NotificationPreference,
   type NotificationRule,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
 
 type DistrictGroup = {

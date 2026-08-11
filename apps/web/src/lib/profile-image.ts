@@ -77,7 +77,7 @@ export async function saveRemoteProfileImage(userId: string, sourceUrl: string):
   try {
     const response = await fetch(sourceUrl, {
       headers: {
-        "User-Agent": "BlackSwanProfileBot/1.0",
+        "User-Agent": "BalinkProfileBot/1.0",
         Accept: "image/*",
       },
       redirect: "follow",

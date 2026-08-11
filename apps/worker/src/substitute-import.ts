@@ -1,13 +1,13 @@
 import { createHash } from "node:crypto";
-import type { SourceName } from "@black-swan/domain";
+import type { SourceName } from "@balink/domain";
 import {
   SUBSTITUTE_NORMALIZATION_VERSION,
   deriveSubstituteSchedule,
   deriveSubstituteStatus,
   formatRepresentativePayDisplay,
   sanitizeLocationTextForStorage,
-} from "@black-swan/domain";
-import { SubstitutePostRepository } from "@black-swan/db";
+} from "@balink/domain";
+import { SubstitutePostRepository } from "@balink/db";
 import { enqueueAnonymousUrgentPush } from "./anonymous-push.js";
 import type { FormattedSubstitutePost } from "./substitute-formatter.js";
 import { fanOutSubstituteMatch, shouldFanOutInbox } from "./notification-fanout.js";

@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
-import type { Prisma, PrismaSourceName } from "@black-swan/db";
-import { SourcePostRepository } from "@black-swan/db";
-import type { ListingEnrichment, LocationSource, SourceName } from "@black-swan/domain";
-import { sanitizeLocationTextForStorage, sanitizeSchedule } from "@black-swan/domain";
-import { classifiedPayloadSchema, parseOrThrow } from "@black-swan/validation";
+import type { Prisma, PrismaSourceName } from "@balink/db";
+import { SourcePostRepository } from "@balink/db";
+import type { ListingEnrichment, LocationSource, SourceName } from "@balink/domain";
+import { sanitizeLocationTextForStorage, sanitizeSchedule } from "@balink/domain";
+import { classifiedPayloadSchema, parseOrThrow } from "@balink/validation";
 import { mirrorAcademyImagesToS3, parseRawAcademyImages } from "./academy-images.js";
 import { fanOutJobMatch, shouldFanOutInbox } from "./notification-fanout.js";
 

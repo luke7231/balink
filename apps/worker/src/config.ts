@@ -1,5 +1,5 @@
 import "dotenv/config";
-import type { LlmMode, SourceName } from "@black-swan/domain";
+import type { LlmMode, SourceName } from "@balink/domain";
 
 export type { LlmMode, SourceName };
 
@@ -10,7 +10,7 @@ export const config = {
   scheduleEnabled: process.env.SCRAPER_SCHEDULE_ENABLED === "true",
   scheduleIntervalMinutes: parsePositiveNumber(process.env.SCRAPER_INTERVAL_MINUTES, 5),
   scheduleSources: parseSources(process.env.SCRAPER_SOURCES || "balletmania,esangdance"),
-  scraperWorkDir: process.env.SCRAPER_WORK_DIR || "/tmp/black-swan-scraper",
+  scraperWorkDir: process.env.SCRAPER_WORK_DIR || "/tmp/balink-scraper",
   expoAccessToken: process.env.EXPO_ACCESS_TOKEN || "",
   pushDispatchEnabled: process.env.PUSH_DISPATCH_ENABLED === "true",
   pushDispatchIntervalSeconds: parsePositiveNumber(

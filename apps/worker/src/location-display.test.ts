@@ -5,7 +5,7 @@ import {
   formatLocation,
   isAcademyOnlyLocationText,
   sanitizeLocationTextForStorage,
-} from "@black-swan/domain";
+} from "@balink/domain";
 
 test("formatAdminLocationDisplay uses shortened metro labels", () => {
   assert.equal(formatAdminLocationDisplay("서울특별시", "성북구"), "서울 성북구");
@@ -19,9 +19,9 @@ test("formatLocation never shows academy names", () => {
 });
 
 test("sanitizeLocationTextForStorage drops academy-only raw text", () => {
-  assert.equal(sanitizeLocationTextForStorage("블랙스완 발레학원", null, null, null), null);
+  assert.equal(sanitizeLocationTextForStorage("발링크 발레학원", null, null, null), null);
   assert.equal(
-    sanitizeLocationTextForStorage("블랙스완 발레학원", "경기도", "용인시", "구갈동"),
+    sanitizeLocationTextForStorage("발링크 발레학원", "경기도", "용인시", "구갈동"),
     "경기도 용인시 구갈동",
   );
 });

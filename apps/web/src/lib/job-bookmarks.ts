@@ -1,4 +1,4 @@
-import { prisma } from "@black-swan/db";
+import { prisma } from "@balink/db";
 
 export async function getBookmarkedJobIdSet(
   userId: string | undefined,

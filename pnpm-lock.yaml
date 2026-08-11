@@ -23,13 +23,13 @@ importers:
 
   apps/api:
     dependencies:
-      '@black-swan/db':
+      '@balink/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@black-swan/domain':
+      '@balink/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@black-swan/validation':
+      '@balink/validation':
         specifier: workspace:*
         version: link:../../packages/validation
       dotenv:
@@ -109,13 +109,13 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.1098.0
         version: 3.1098.0
-      '@black-swan/db':
+      '@balink/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@black-swan/domain':
+      '@balink/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@black-swan/ui':
+      '@balink/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@graphql-typed-document-node/core':
@@ -173,13 +173,13 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.888.0
         version: 3.1098.0
-      '@black-swan/db':
+      '@balink/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@black-swan/domain':
+      '@balink/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@black-swan/validation':
+      '@balink/validation':
         specifier: workspace:*
         version: link:../../packages/validation
       cheerio:
@@ -210,7 +210,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@black-swan/domain':
+      '@balink/domain':
         specifier: workspace:*
         version: link:../domain
       '@prisma/adapter-pg':
@@ -250,7 +250,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@black-swan/domain':
+      '@balink/domain':
         specifier: workspace:*
         version: link:../domain
       react:
@@ -272,7 +272,7 @@ importers:
 
   packages/validation:
     dependencies:
-      '@black-swan/domain':
+      '@balink/domain':
         specifier: workspace:*
         version: link:../domain
       zod:
@@ -1004,7 +1004,7 @@ packages:
 
   '@expo/bunyan@4.0.1':
     resolution: {integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==}
-    engines: {node: '>=0.10.0'}
+    engines: {'0': node >=0.10.0}
 
   '@expo/cli@57.0.14':
     resolution: {integrity: sha512-yu3sie3cDPDXBTUMvivqguW+lT8jnLIF8Q6e75MRaq7BoAzihor0KrJwtXAtC4ep5eOYYC1otEvtOuctG1xf8Q==}
@@ -10973,7 +10973,7 @@ snapshots:
       '@next/eslint-plugin-next': 16.2.12
       eslint: 9.39.5(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5(jiti@2.7.0))
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5(jiti@2.7.0))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.5(jiti@2.7.0))
       eslint-plugin-react: 7.37.5(eslint@9.39.5(jiti@2.7.0))
@@ -10996,7 +10996,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5(jiti@2.7.0)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3(supports-color@8.1.1)
@@ -11011,14 +11011,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.14.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0)):
+  eslint-module-utils@2.14.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5(jiti@2.7.0)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3)
       eslint: 9.39.5(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5(jiti@2.7.0))
     transitivePeerDependencies:
       - supports-color
 
@@ -11033,7 +11033,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.5(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0))
+      eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5(jiti@2.7.0))
       hasown: 2.0.4
       is-core-module: 2.16.2
       is-glob: 4.0.3

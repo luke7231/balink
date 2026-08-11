@@ -1,5 +1,5 @@
 {
-  "name": "@black-swan/validation",
+  "name": "@balink/validation",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@black-swan/domain": "workspace:*",
+    "@balink/domain": "workspace:*",
     "zod": "^3.25.76"
   },
   "devDependencies": {

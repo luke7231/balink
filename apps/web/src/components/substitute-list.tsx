@@ -9,9 +9,9 @@ import {
   formatSubstituteStatus,
   formatSubstituteUrgency,
   resolveSubstituteUrgency,
-} from "@black-swan/domain";
-import { Badge } from "@black-swan/ui/badge";
-import { CalendarIcon, MapPinIcon } from "@black-swan/ui";
+} from "@balink/domain";
+import { Badge } from "@balink/ui/badge";
+import { CalendarIcon, MapPinIcon } from "@balink/ui";
 
 export interface SubstituteCardData {
   id: string;

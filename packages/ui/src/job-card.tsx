@@ -7,7 +7,7 @@ import {
   formatPay,
   formatPostedAt,
   formatTimeSlot,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import { Badge } from "./badge";
 import { CalendarIcon, MapPinIcon } from "./icons";
 

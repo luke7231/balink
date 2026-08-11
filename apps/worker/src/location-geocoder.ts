@@ -1,10 +1,10 @@
-import type { NormalizedLocation } from "@black-swan/domain";
+import type { NormalizedLocation } from "@balink/domain";
 import {
   extractLocationHints,
   formatAdminLocationDisplay,
   parseAddressTokens,
   validateAdminDistrict,
-} from "@black-swan/domain";
+} from "@balink/domain";
 import { fetch } from "undici";
 
 export interface GeocodeLocationInput {

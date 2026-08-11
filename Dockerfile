@@ -31,11 +31,11 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps ./apps
 COPY --from=deps /app/packages ./packages
 COPY . .
-RUN pnpm --filter @black-swan/domain build \
-  && pnpm --filter @black-swan/validation build \
-  && pnpm --filter @black-swan/db build \
+RUN pnpm --filter @balink/domain build \
+  && pnpm --filter @balink/validation build \
+  && pnpm --filter @balink/db build \
   && pnpm codegen \
-  && pnpm --filter @black-swan/api build
+  && pnpm --filter @balink/api build
 
 FROM base AS runner
 
@@ -60,4 +60,4 @@ COPY --from=build /app/packages/validation/dist ./packages/validation/dist
 COPY scripts ./scripts
 
 EXPOSE 3000
-CMD ["pnpm", "--filter", "@black-swan/api", "start:prod"]
+CMD ["pnpm", "--filter", "@balink/api", "start:prod"]

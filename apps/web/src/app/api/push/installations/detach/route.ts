@@ -1,4 +1,4 @@
-import { PushDeviceRepository } from "@black-swan/db";
+import { PushDeviceRepository } from "@balink/db";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import {

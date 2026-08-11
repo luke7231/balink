@@ -1,6 +1,6 @@
 import { DateTimeResolver, JSONResolver } from "graphql-scalars";
-import type { JobPostDetail } from "@black-swan/domain";
-import { jobPostFilterSchema, paginationSchema, parseOrThrow, substitutePostFilterSchema } from "@black-swan/validation";
+import type { JobPostDetail } from "@balink/domain";
+import { jobPostFilterSchema, paginationSchema, parseOrThrow, substitutePostFilterSchema } from "@balink/validation";
 import type { GraphQLContext } from "../../context/types.js";
 
 export const resolvers = {
@@ -9,7 +9,7 @@ export const resolvers = {
 
   Query: {
     health: (_: unknown, __: unknown, { services }: GraphQLContext) => {
-      return services.health.getStatus("black-swan-api");
+      return services.health.getStatus("balink-api");
     },
 
     jobPost: (_: unknown, args: { id: string }, { services }: GraphQLContext) => {

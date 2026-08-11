@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
-import { sanitizeLocationTextForStorage } from "@black-swan/domain";
-import { prisma, type Prisma } from "@black-swan/db";
+import { sanitizeLocationTextForStorage } from "@balink/domain";
+import { prisma, type Prisma } from "@balink/db";
 import { enrichListing } from "./llm-formatter.js";
 
 interface BackfillOptions {

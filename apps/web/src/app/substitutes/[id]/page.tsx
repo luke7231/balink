@@ -10,8 +10,8 @@ import {
   formatSubstituteStatus,
   formatSubstituteUrgency,
   resolveSubstituteUrgency,
-} from "@black-swan/domain";
-import { Badge } from "@black-swan/ui/badge";
+} from "@balink/domain";
+import { Badge } from "@balink/ui/badge";
 import { fetchSubstitutePost } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";

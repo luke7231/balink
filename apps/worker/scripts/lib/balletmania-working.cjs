@@ -22,7 +22,7 @@ async function fetchEucKrHtml(url, cookie) {
   const response = await fetch(url, {
     headers: {
       ...(cookie ? { cookie } : {}),
-      "user-agent": "Mozilla/5.0 compatible; black-swan-ballet-crawler/0.1",
+      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
       accept: "text/html,application/xhtml+xml",
     },
   });
@@ -47,7 +47,7 @@ async function loginBalletmania() {
     method: "POST",
     headers: {
       "content-type": "application/x-www-form-urlencoded",
-      "user-agent": "Mozilla/5.0 compatible; black-swan-ballet-crawler/0.1",
+      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
     body: params,
     redirect: "manual",

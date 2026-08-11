@@ -35,7 +35,7 @@ export default async function LoginPage({
               <SwanMark />
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-rose-600">Black Swan</p>
+              <p className="text-sm font-medium text-rose-600">balink</p>
               <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
                 흩어진 발레 공고를
                 <br />
