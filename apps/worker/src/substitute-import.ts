@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { SourceName } from "@balink/domain";
 import {
   SUBSTITUTE_NORMALIZATION_VERSION,
+  canonicalizeAdminRegion,
   deriveSubstituteSchedule,
   deriveSubstituteStatus,
   formatRepresentativePayDisplay,
@@ -62,6 +63,11 @@ export async function persistNormalizedSubstitute(input: PersistSubstituteInput)
     ...(input.raw.contactPhones.length ? ["phone"] : []),
     ...(input.raw.contactEmails.length ? ["email"] : []),
   ];
+  const location = canonicalizeAdminRegion({
+    sido: input.formatted.location.sido,
+    sigungu: input.formatted.location.sigungu,
+    dongOrStation: input.formatted.location.dongOrStation,
+  });
 
   const { post, created } = await substitutePostRepository.upsert({
     source: input.source,
@@ -82,13 +88,13 @@ export async function persistNormalizedSubstitute(input: PersistSubstituteInput)
     subjectTypes: derived.subjectTypes.length ? derived.subjectTypes : ["unknown"],
     locationText: sanitizeLocationTextForStorage(
       input.formatted.location.locationText,
-      input.formatted.location.sido,
-      input.formatted.location.sigungu,
-      input.formatted.location.dongOrStation,
+      location.sido,
+      location.sigungu,
+      location.dongOrStation,
     ),
-    sido: input.formatted.location.sido,
-    sigungu: input.formatted.location.sigungu,
-    dongOrStation: input.formatted.location.dongOrStation,
+    sido: location.sido,
+    sigungu: location.sigungu,
+    dongOrStation: location.dongOrStation,
     payText: input.formatted.representativePay.displayText,
     representativePay: input.formatted.representativePay,
     representativePayText: formatRepresentativePayDisplay(input.formatted.representativePay),

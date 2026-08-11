@@ -16,6 +16,7 @@
     "backfill:formatted": "pnpm run build && node dist/backfill-formatted.js",
     "backfill:schedules": "pnpm run build && node dist/backfill-schedules.js",
     "backfill:organizations": "pnpm run build && node dist/backfill-organizations.js",
+    "backfill:region-aliases": "pnpm run build && node dist/backfill-region-aliases.js",
     "collect:balletmania-working": "node scripts/collect-balletmania-working-list.cjs",
     "classify:balletmania-working": "node scripts/classify-balletmania-working-details.cjs",
     "backfill:substitutes": "pnpm run build && node dist/backfill-substitutes.js",

@@ -368,4 +368,116 @@ function inferSidoForSigunguCity(cityName: string): string | null {
   return null;
 }
 
+function resolveCityTokenAsSigungu(
+  token: string | null | undefined,
+): { sido: string; sigungu: string } | null {
+  if (!token?.trim()) return null;
+  const trimmed = token.trim();
+  const candidates = [trimmed];
+  if (!/(시|군|구)$/.test(trimmed)) {
+    candidates.push(`${trimmed}시`, `${trimmed}군`, `${trimmed}구`);
+  }
+
+  for (const candidate of candidates) {
+    const sido = inferSidoForSigunguCity(candidate);
+    if (sido) return { sido, sigungu: candidate };
+  }
+
+  for (const [sido, cities] of Object.entries(SIGUNGU_BY_SIDO)) {
+    const match = cities.find(
+      (city) => city === trimmed || city.replace(/(시|군|구)$/, "") === trimmed,
+    );
+    if (match) return { sido, sigungu: match };
+  }
+
+  return null;
+}
+
+/**
+ * Legacy short aliases (서울/경기/인천) and city-as-sido mistakes (부천)
+ * into canonical admin district names used for storage/filters.
+ */
+export function canonicalizeAdminRegion(input: {
+  sido?: string | null;
+  sigungu?: string | null;
+  dongOrStation?: string | null;
+}): {
+  sido: string | null;
+  sigungu: string | null;
+  dongOrStation: string | null;
+  changed: boolean;
+} {
+  const originalSido = input.sido?.trim() || null;
+  const originalSigungu = input.sigungu?.trim() || null;
+  const originalDong =
+    input.dongOrStation?.trim() && input.dongOrStation.trim() !== "지역"
+      ? input.dongOrStation.trim()
+      : null;
+
+  let sido = originalSido;
+  let sigungu = originalSigungu;
+  let dongOrStation = originalDong;
+
+  if (sido && !normalizeSido(sido)) {
+    const cityAsSido = resolveCityTokenAsSigungu(sido);
+    if (cityAsSido) {
+      if (sigungu && !isValidAdminDistrict(cityAsSido.sido, sigungu)) {
+        if (!dongOrStation && /(역|동|읍|면|리)/.test(sigungu)) {
+          dongOrStation = sigungu;
+        }
+        sigungu = cityAsSido.sigungu;
+      } else if (!sigungu) {
+        sigungu = cityAsSido.sigungu;
+      } else {
+        sigungu = normalizeSigungu(cityAsSido.sido, sigungu) ?? cityAsSido.sigungu;
+      }
+      sido = cityAsSido.sido;
+    }
+  }
+
+  const normalizedSido = normalizeSido(sido);
+  if (!normalizedSido) {
+    // Academy names / junk tokens that were stored as sido (e.g. KBEC발레아카데미)
+    if (originalSido) {
+      return {
+        sido: null,
+        sigungu: null,
+        dongOrStation: originalDong,
+        changed: true,
+      };
+    }
+    return {
+      sido: null,
+      sigungu: originalSigungu,
+      dongOrStation: originalDong,
+      changed: false,
+    };
+  }
+
+  let normalizedSigungu = sigungu;
+  if (sigungu && !isValidAdminDistrict(normalizedSido, sigungu)) {
+    const candidate = normalizeSigungu(normalizedSido, sigungu);
+    if (candidate && isValidAdminDistrict(normalizedSido, candidate)) {
+      normalizedSigungu = candidate;
+    } else {
+      if (!dongOrStation && /(역|동|읍|면|리)/.test(sigungu)) {
+        dongOrStation = sigungu;
+      }
+      normalizedSigungu = null;
+    }
+  }
+
+  const changed =
+    normalizedSido !== originalSido ||
+    normalizedSigungu !== originalSigungu ||
+    dongOrStation !== originalDong;
+
+  return {
+    sido: normalizedSido,
+    sigungu: normalizedSigungu,
+    dongOrStation,
+    changed,
+  };
+}
+
 export const KNOWN_SIDO = [...new Set(Object.values(SIDO_ALIASES))];

@@ -3,7 +3,11 @@ import fs from "node:fs/promises";
 import type { Prisma, PrismaSourceName } from "@balink/db";
 import { SourcePostRepository } from "@balink/db";
 import type { ListingEnrichment, LocationSource, SourceName } from "@balink/domain";
-import { sanitizeLocationTextForStorage, sanitizeSchedule } from "@balink/domain";
+import {
+  canonicalizeAdminRegion,
+  sanitizeLocationTextForStorage,
+  sanitizeSchedule,
+} from "@balink/domain";
 import { classifiedPayloadSchema, parseOrThrow } from "@balink/validation";
 import { mirrorAcademyImagesToS3, parseRawAcademyImages } from "./academy-images.js";
 import { fanOutJobMatch, shouldFanOutInbox } from "./notification-fanout.js";
@@ -134,9 +138,14 @@ async function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
     enrichment,
   };
 
-  const normalizedSido = stringValue(location.sido);
-  const normalizedSigungu = stringValue(location.sigungu);
-  const normalizedDong = stringValue(location.dongOrStation);
+  const canonicalLocation = canonicalizeAdminRegion({
+    sido: stringValue(location.sido),
+    sigungu: stringValue(location.sigungu),
+    dongOrStation: stringValue(location.dongOrStation),
+  });
+  const normalizedSido = canonicalLocation.sido;
+  const normalizedSigungu = canonicalLocation.sigungu;
+  const normalizedDong = canonicalLocation.dongOrStation;
 
   return {
     title,
