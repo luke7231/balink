@@ -1,16 +1,10 @@
-import Link from "next/link";
 import { Suspense } from "react";
-import { JobList } from "@balink/ui/job-list";
-import { auth } from "@/auth";
-import { BookmarkButton } from "@/components/bookmark-button";
 import { HomeBanner } from "@/components/home-banner";
+import { HomeJobList, HomeJobListFallback } from "@/components/home-job-list";
 import { JobsFilterBar } from "@/components/jobs-filter-bar";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth, fetchJobPosts, fetchJobRegions } from "@/lib/graphql/queries";
 import { HOME_BANNERS } from "@/lib/home-banners";
-import { getBookmarkedJobIdSet } from "@/lib/job-bookmarks";
-
-export const dynamic = "force-dynamic";
 
 interface HomePageProps {
   searchParams: Promise<{
@@ -35,16 +29,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     ...(selectedSigungu ? { sigungu: selectedSigungu } : {}),
   };
 
-  const session = await auth();
   const [health, jobs, regions] = await Promise.all([
     fetchHealth(),
     fetchJobPosts(1, 40, Object.keys(filter).length ? filter : null),
     fetchJobRegions(),
   ]);
-  const bookmarkedIds = await getBookmarkedJobIdSet(
-    session?.user?.id,
-    jobs.items.map((job) => job.id),
-  );
 
   const regionOptions = regions.map((region) => ({
     sido: region.sido,
@@ -76,18 +65,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </p>
         </div>
 
-        <JobList
-          jobs={jobs.items}
-          getHref={(job) => `/jobs/${job.id}`}
-          linkComponent={Link}
-          renderAction={(job) => (
-            <BookmarkButton
-              jobPostId={job.id}
-              initialBookmarked={bookmarkedIds.has(job.id)}
-              variant="icon"
-            />
-          )}
-        />
+        <Suspense fallback={<HomeJobListFallback jobs={jobs.items} />}>
+          <HomeJobList jobs={jobs.items} />
+        </Suspense>
       </main>
     </div>
   );

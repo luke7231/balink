@@ -5,8 +5,8 @@
   --background: #ffffff;
   --foreground: #171717;
   --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --motion-duration: 560ms;
-  --motion-stagger: 72ms;
+  --motion-duration: 240ms;
+  --motion-stagger: 36ms;
 }
 
 @theme inline {
@@ -24,7 +24,7 @@ body {
 @keyframes balink-fade-up {
   from {
     opacity: 0;
-    transform: translateY(22px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -44,7 +44,7 @@ body {
 @keyframes balink-soft-scale {
   from {
     opacity: 0;
-    transform: scale(0.92) translateY(12px);
+    transform: scale(0.96) translateY(6px);
   }
   to {
     opacity: 1;
@@ -72,7 +72,7 @@ body {
 }
 
 .motion-soft-scale {
-  animation: balink-soft-scale 680ms var(--motion-ease-out) both;
+  animation: balink-soft-scale 280ms var(--motion-ease-out) both;
   animation-delay: calc(var(--motion-index, 0) * var(--motion-stagger));
 }
 

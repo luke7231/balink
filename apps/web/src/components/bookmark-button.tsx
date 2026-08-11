@@ -42,11 +42,18 @@ export function BookmarkButton({
   const [pending, startTransition] = useTransition();
 
   function onToggle() {
+    const previous = bookmarked;
+    const next = !previous;
     setError(null);
+    setBookmarked(next);
+    window.balinkHaptics?.play(next ? "success" : "selection");
+
     startTransition(async () => {
       const result = await toggleJobBookmarkAction(jobPostId);
       if (!result.ok) {
+        setBookmarked(previous);
         setError(result.error);
+        window.balinkHaptics?.play("error");
         return;
       }
       setBookmarked(result.bookmarked);
@@ -57,7 +64,7 @@ export function BookmarkButton({
     return (
       <button
         type="button"
-        disabled={pending}
+        aria-busy={pending}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -65,7 +72,7 @@ export function BookmarkButton({
         }}
         aria-label={bookmarked ? "저장 해제" : "공고 저장"}
         aria-pressed={bookmarked}
-        className={`rounded-full border p-2 shadow-sm transition disabled:opacity-60 ${
+        className={`rounded-full border p-2 shadow-sm transition ${
           bookmarked
             ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
             : "border-zinc-200 bg-white text-zinc-500 hover:border-rose-200 hover:text-rose-700"
@@ -80,9 +87,9 @@ export function BookmarkButton({
     <div className="flex flex-col items-end gap-1">
       <button
         type="button"
-        disabled={pending}
+        aria-busy={pending}
         onClick={onToggle}
-        className={`rounded-full px-4 py-2 text-sm font-semibold transition disabled:opacity-60 ${
+        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
           bookmarked
             ? "border border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100"
             : "border border-zinc-200 bg-white text-zinc-700 hover:border-rose-200 hover:text-rose-700"

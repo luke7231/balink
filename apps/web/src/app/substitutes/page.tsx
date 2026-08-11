@@ -6,8 +6,6 @@ import { SubstituteList } from "@/components/substitute-list";
 import { SubstitutesFilterBar } from "@/components/substitutes-filter-bar";
 import { fetchHealth, fetchSubstitutePosts } from "@/lib/graphql/queries";
 
-export const dynamic = "force-dynamic";
-
 type DateFilter = "all" | "today" | "tomorrow" | "week";
 
 interface SubstitutesPageProps {

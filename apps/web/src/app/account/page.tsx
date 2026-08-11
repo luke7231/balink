@@ -1,14 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
-import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { deleteAccountAction } from "@/components/account-actions";
+import { LoginScreen } from "@/components/login-screen";
 import { DEFAULT_AVATAR_PATH } from "@/lib/profile-image";
 
 export default async function AccountPage() {
   const session = await auth();
+
   if (!session?.user?.id) {
-    redirect("/login");
+    // Same tab root — no stack push. Show the real login UI immediately.
+    return <LoginScreen showBrowseLink={false} />;
   }
 
   const user = session.user;
@@ -16,11 +18,7 @@ export default async function AccountPage() {
   return (
     <main className="flex min-h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,#fff9fa,#ffffff_42%)]">
       <div className="mx-auto w-full max-w-lg px-6 py-8">
-        <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-800">
-          ← 홈으로
-        </Link>
-
-        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h1 className="text-xl font-bold tracking-tight text-zinc-900">내 계정</h1>
           <p className="mt-1 text-sm text-zinc-500">프로필과 바로가기</p>
 
@@ -80,24 +78,6 @@ export default async function AccountPage() {
               계정 삭제하기
             </button>
           </form>
-
-          <div className="mt-5 space-y-2 text-xs leading-relaxed text-rose-900/70">
-            <p className="font-medium text-rose-900/90">카카오에서 직접 끊는 방법</p>
-            <p>
-              1.{" "}
-              <a
-                href="https://accounts.kakao.com"
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-              >
-                카카오계정
-              </a>{" "}
-              로그인
-            </p>
-            <p>2. 연결된 서비스 관리 → 발링크(앱 이름) → 연결 끊기</p>
-            <p>또는 카카오톡 → 설정 → 카카오계정 → 연결된 서비스</p>
-          </div>
         </section>
       </div>
     </main>

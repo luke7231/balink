@@ -23,7 +23,7 @@ export async function fetchJobPosts(
   const data = await graphqlRequest<JobPostsQuery>(
     JobPostsDocument,
     { pagination: { page, limit }, filter: filter ?? null },
-    { revalidate: 0 },
+    { revalidate: 30 },
   );
   return data.jobPosts;
 }
@@ -43,10 +43,14 @@ export async function fetchSubstitutePosts(
   limit = 20,
   filter?: { status?: "OPEN" | "EXPIRED" | "DELETED" | null },
 ): Promise<SubstitutePostsQuery["substitutePosts"]> {
-  const data = await graphqlRequest<SubstitutePostsQuery>(SubstitutePostsDocument, {
-    pagination: { page, limit },
-    filter,
-  });
+  const data = await graphqlRequest<SubstitutePostsQuery>(
+    SubstitutePostsDocument,
+    {
+      pagination: { page, limit },
+      filter,
+    },
+    { revalidate: 30 },
+  );
   return data.substitutePosts;
 }
 
