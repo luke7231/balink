@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, isAppleLoginEnabled } from "@/auth";
@@ -31,11 +32,15 @@ export default async function LoginPage({
 
         <div className="flex flex-1 flex-col items-center justify-center gap-8 pb-10">
           <div className="flex flex-col items-center gap-5 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-950 text-white">
-              <SwanMark />
-            </div>
+            <Image
+              src="/brand/logo-horizontal.png"
+              alt="balink"
+              width={200}
+              height={72}
+              priority
+              className="h-10 w-auto"
+            />
             <div className="space-y-2">
-              <p className="text-sm font-medium text-rose-600">balink</p>
               <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
                 흩어진 발레 공고를
                 <br />
@@ -89,22 +94,6 @@ export default async function LoginPage({
         </div>
       </div>
     </main>
-  );
-}
-
-function SwanMark() {
-  return (
-    <svg width="34" height="34" viewBox="0 0 38 38" fill="none" aria-hidden>
-      <ellipse cx="20" cy="26" rx="9" ry="6" fill="white" opacity="0.95" />
-      <path
-        d="M18 26 Q16 20 15 14 Q14.5 10 17 9 Q19.5 8 20 11 Q20.5 14 19 18 Q18.2 21 18 26Z"
-        fill="white"
-        opacity="0.95"
-      />
-      <ellipse cx="17.5" cy="8.5" rx="3" ry="2.5" fill="white" />
-      <path d="M14.5 8.5 L12 8 L14 9 Z" fill="white" opacity="0.7" />
-      <path d="M22 23 Q28 18 30 20 Q28 24 22 26Z" fill="white" opacity="0.7" />
-    </svg>
   );
 }
 
