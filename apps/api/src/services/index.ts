@@ -1,24 +1,28 @@
 import {
   DatabaseHealthRepository,
   JobPostRepository,
+  OrganizationRepository,
   ScraperRunRepository,
   SubstitutePostRepository,
 } from "@balink/db";
 import { config } from "../config.js";
 import { HealthService } from "./health.service.js";
 import { JobPostService } from "./job-post.service.js";
+import { OrganizationService } from "./organization.service.js";
 import { ScraperRunService } from "./scraper-run.service.js";
 import { SubstitutePostService } from "./substitute-post.service.js";
 
 export interface AppServices {
   health: HealthService;
   jobPost: JobPostService;
+  organization: OrganizationService;
   substitutePost: SubstitutePostService;
   scraperRun: ScraperRunService;
 }
 
 export function createServices(): AppServices {
   const jobPostRepository = new JobPostRepository();
+  const organizationRepository = new OrganizationRepository();
   const substitutePostRepository = new SubstitutePostRepository();
   const scraperRunRepository = new ScraperRunRepository();
   const databaseHealthRepository = new DatabaseHealthRepository();
@@ -33,10 +37,11 @@ export function createServices(): AppServices {
     defaultPageSize: config.defaultPageSize,
     maxPageSize: config.maxPageSize,
   });
+  const organization = new OrganizationService(organizationRepository);
   const substitutePost = new SubstitutePostService(substitutePostRepository, {
     defaultPageSize: config.defaultPageSize,
     maxPageSize: config.maxPageSize,
   });
 
-  return { health, jobPost, substitutePost, scraperRun };
+  return { health, jobPost, organization, substitutePost, scraperRun };
 }

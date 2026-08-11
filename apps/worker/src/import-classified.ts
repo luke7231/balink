@@ -7,6 +7,7 @@ import { sanitizeLocationTextForStorage, sanitizeSchedule } from "@balink/domain
 import { classifiedPayloadSchema, parseOrThrow } from "@balink/validation";
 import { mirrorAcademyImagesToS3, parseRawAcademyImages } from "./academy-images.js";
 import { fanOutJobMatch, shouldFanOutInbox } from "./notification-fanout.js";
+import { buildOrganizationCandidate } from "./organization-matching.js";
 
 const sourcePostRepository = new SourcePostRepository();
 
@@ -50,6 +51,24 @@ async function importClassifiedItem(
   options: ImportClassifiedOptions = {},
 ): Promise<void> {
   const normalized = await normalizeItem(source, item);
+  const organizationCandidate = buildOrganizationCandidate({
+    source,
+    company: stringValue(item.raw.company),
+    companyType: stringValue(item.raw.companyType),
+    displaySections: item.enrichment?.displaySections ?? null,
+    sido: normalized.jobPostData.sido ?? null,
+    sigungu: normalized.jobPostData.sigungu ?? null,
+    dongOrStation: normalized.jobPostData.dongOrStation ?? null,
+    phones: item.enrichment
+      ? normalized.jobPostData.contactPhones
+      : asRecord(item.classification.contact).phones,
+    emails: item.enrichment
+      ? normalized.jobPostData.contactEmails
+      : asRecord(item.classification.contact).emails,
+    logoUrl: normalized.jobPostData.academyLogoUrl ?? null,
+    gallery: normalized.jobPostData.academyGalleryJson,
+    academyImages: item.raw.academyImages,
+  });
   const result = await sourcePostRepository.importClassifiedItem({
     source,
     sourcePostId: item.sourcePostId,
@@ -57,6 +76,7 @@ async function importClassifiedItem(
     collectedAt: item.collectedAt,
     raw: item.raw,
     classification: item.classification,
+    organizationCandidate,
     normalized,
   });
 

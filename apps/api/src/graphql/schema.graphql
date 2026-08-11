@@ -18,11 +18,18 @@ enum SubstitutePostStatus {
   DELETED
 }
 
+enum OrganizationType {
+  ACADEMY
+  DISPATCH_AGENCY
+  UNKNOWN
+}
+
 type Query {
   health: Health!
   jobPost(id: ID!): JobPost
   jobPosts(filter: JobPostFilterInput, pagination: PaginationInput): JobPostConnection!
   jobRegions: [JobRegionGroup!]!
+  organization(id: ID!): Organization
   substitutePost(id: ID!): SubstitutePost
   substitutePosts(filter: SubstitutePostFilterInput, pagination: PaginationInput): SubstitutePostConnection!
   scraperRuns(limit: Int = 20): [ScraperRun!]!
@@ -86,6 +93,37 @@ type AcademyGalleryImage {
   sourceUrl: String
 }
 
+type OrganizationSummary {
+  id: ID!
+  name: String!
+  type: OrganizationType!
+  sido: String
+  sigungu: String
+  dongOrStation: String
+  logoUrl: String
+  externalProfileUrl: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Organization {
+  id: ID!
+  name: String!
+  type: OrganizationType!
+  sido: String
+  sigungu: String
+  dongOrStation: String
+  logoUrl: String
+  externalProfileUrl: String
+  phones: [String!]!
+  emails: [String!]!
+  gallery: [AcademyGalleryImage!]!
+  jobPosts: [JobPostSummary!]!
+  jobPostCount: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type JobPost {
   id: ID!
   title: String!
@@ -121,6 +159,7 @@ type JobPost {
   locationSource: String
   academyLogoUrl: String
   academyGallery: [AcademyGalleryImage!]!
+  organization: OrganizationSummary
   contactMethods: [String!]!
   contactEmails: [String!]!
   contactPhones: [String!]!

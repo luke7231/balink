@@ -50,6 +50,36 @@ enum PushReceiptStatus {
   error
 }
 
+enum OrganizationType {
+  ACADEMY
+  DISPATCH_AGENCY
+  UNKNOWN
+}
+
+model Organization {
+  id                String           @id @default(cuid())
+  name              String
+  normalizedName    String
+  type              OrganizationType @default(UNKNOWN)
+  /// 보수적 중복 방지 키. 예: "normalizedName|sido|sigungu" 또는 외부 프로필/연락처 기반 키
+  matchKey          String           @unique
+  sido              String?
+  sigungu           String?
+  dongOrStation     String?
+  phonesJson        Json             @default("[]")
+  emailsJson        Json             @default("[]")
+  logoUrl           String?
+  galleryJson       Json             @default("[]")
+  externalProfileUrl String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  jobPosts          JobPost[]
+
+  @@index([normalizedName])
+  @@index([sido, sigungu])
+  @@index([type])
+}
+
 model SourcePost {
   id                 String          @id @default(cuid())
   source             SourceName
@@ -107,6 +137,7 @@ model JobPost {
   locationSource    String?
   academyLogoUrl    String?
   academyGalleryJson Json?
+  organizationId    String?
   contactMethods    Json
   contactEmails     Json
   contactPhones     Json
@@ -116,12 +147,14 @@ model JobPost {
   contentHash       String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+  organization      Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   jobPostSources    JobPostSource[]
   bookmarks         JobBookmark[]
 
   @@index([postedAt])
   @@index([sourcePrimary])
   @@index([contentHash])
+  @@index([organizationId])
 }
 
 model JobPostSource {

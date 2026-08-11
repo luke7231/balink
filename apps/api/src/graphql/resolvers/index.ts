@@ -32,6 +32,10 @@ export const resolvers = {
       return services.jobPost.listRegions();
     },
 
+    organization: (_: unknown, args: { id: string }, { services }: GraphQLContext) => {
+      return services.organization.findById(args.id);
+    },
+
     scraperRuns: (_: unknown, args: { limit?: number | null }, { services }: GraphQLContext) => {
       return services.scraperRun.listRecent(args.limit ?? 20);
     },

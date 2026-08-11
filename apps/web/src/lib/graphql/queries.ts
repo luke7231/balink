@@ -3,6 +3,7 @@ import {
   JobPostDocument,
   JobPostsDocument,
   JobRegionsDocument,
+  OrganizationDocument,
   SubstitutePostDocument,
   SubstitutePostsDocument,
   type HealthQuery,
@@ -10,6 +11,7 @@ import {
   type JobPostQuery,
   type JobPostsQuery,
   type JobRegionsQuery,
+  type OrganizationQuery,
   type SubstitutePostQuery,
   type SubstitutePostsQuery,
 } from "@/generated/graphql";
@@ -36,6 +38,11 @@ export async function fetchJobRegions(): Promise<JobRegionsQuery["jobRegions"]> 
 export async function fetchJobPost(id: string): Promise<JobPostQuery["jobPost"]> {
   const data = await graphqlRequest<JobPostQuery>(JobPostDocument, { id }, { revalidate: 30 });
   return data.jobPost;
+}
+
+export async function fetchOrganization(id: string): Promise<OrganizationQuery["organization"]> {
+  const data = await graphqlRequest<OrganizationQuery>(OrganizationDocument, { id }, { revalidate: 30 });
+  return data.organization;
 }
 
 export async function fetchSubstitutePosts(

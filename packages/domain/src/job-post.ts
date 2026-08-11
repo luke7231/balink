@@ -1,6 +1,7 @@
 import type { SourceName } from "./enums.js";
 import type { AcademyGalleryImage, AcademyGalleryImageType } from "./academy-images.js";
 import type { DisplaySection, LocationSource, RepresentativePay } from "./formatted-post.js";
+import type { OrganizationSummary } from "./organization.js";
 
 export interface JobPostFilterInput {
   sido?: string | null;
@@ -70,6 +71,7 @@ export interface JobPostDetail extends JobPostSummary {
   locationSource: LocationSource | null;
   academyLogoUrl: string | null;
   academyGallery: AcademyGalleryImage[];
+  organization: OrganizationSummary | null;
 }
 
 export interface JobRegionCount {

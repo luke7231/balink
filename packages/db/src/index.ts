@@ -8,6 +8,7 @@ export type {
 } from "@prisma/client";
 export {
   JobPostRepository,
+  OrganizationRepository,
   SourcePostRepository,
   ScraperRunRepository,
   SubstitutePostRepository,
@@ -17,7 +18,16 @@ export {
   type UpsertSubstitutePostInput,
   type MatchNotificationInsert,
 } from "./repositories/index.js";
-export { toJobPostSummary, toJobPostDetail, toJobPostSourceLink, toScraperRunSummary, toSubstitutePostDetail, toSubstitutePostSummary } from "./mappers/index.js";
+export {
+  toJobPostSummary,
+  toJobPostDetail,
+  toJobPostSourceLink,
+  toOrganizationSummary,
+  toOrganizationDetail,
+  toScraperRunSummary,
+  toSubstitutePostDetail,
+  toSubstitutePostSummary,
+} from "./mappers/index.js";
 export {
   PushDeviceRepository,
   PushOutboxRepository,

@@ -7,6 +7,7 @@ import {
 } from "./enums.js";
 import { formatAdminLocationDisplay } from "./location/display.js";
 import { dateToKoreanWeekday } from "./notification-preference.js";
+import { ORGANIZATION_TYPE_LABELS, type OrganizationType } from "./organization.js";
 
 const SUBSTITUTE_SESSION_CARD_MAX = 4;
 
@@ -17,6 +18,11 @@ export function formatSource(source: string): string {
 export function formatJobType(jobType: string | null): string {
   if (!jobType) return "미분류";
   return JOB_TYPE_LABELS[jobType] ?? jobType;
+}
+
+export function formatOrganizationType(type: string | null | undefined): string {
+  if (!type) return ORGANIZATION_TYPE_LABELS.UNKNOWN;
+  return ORGANIZATION_TYPE_LABELS[type as OrganizationType] ?? type;
 }
 
 export function formatTimeSlot(slot: string): string {

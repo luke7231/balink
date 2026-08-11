@@ -67,6 +67,7 @@ export type JobPost = {
   jobType?: Maybe<Scalars['String']['output']>;
   locationSource?: Maybe<Scalars['String']['output']>;
   locationText?: Maybe<Scalars['String']['output']>;
+  organization?: Maybe<OrganizationSummary>;
   payMaxManwon?: Maybe<Scalars['Float']['output']>;
   payMinManwon?: Maybe<Scalars['Float']['output']>;
   payNegotiable: Scalars['Boolean']['output'];
@@ -150,6 +151,45 @@ export type JobRegionGroup = {
   sido: Scalars['String']['output'];
 };
 
+export type Organization = {
+  __typename?: 'Organization';
+  createdAt: Scalars['DateTime']['output'];
+  dongOrStation?: Maybe<Scalars['String']['output']>;
+  emails: Array<Scalars['String']['output']>;
+  externalProfileUrl?: Maybe<Scalars['String']['output']>;
+  gallery: Array<AcademyGalleryImage>;
+  id: Scalars['ID']['output'];
+  jobPostCount: Scalars['Int']['output'];
+  jobPosts: Array<JobPostSummary>;
+  logoUrl?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  phones: Array<Scalars['String']['output']>;
+  sido?: Maybe<Scalars['String']['output']>;
+  sigungu?: Maybe<Scalars['String']['output']>;
+  type: OrganizationType;
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type OrganizationSummary = {
+  __typename?: 'OrganizationSummary';
+  createdAt: Scalars['DateTime']['output'];
+  dongOrStation?: Maybe<Scalars['String']['output']>;
+  externalProfileUrl?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  logoUrl?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  sido?: Maybe<Scalars['String']['output']>;
+  sigungu?: Maybe<Scalars['String']['output']>;
+  type: OrganizationType;
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export enum OrganizationType {
+  Academy = 'ACADEMY',
+  DispatchAgency = 'DISPATCH_AGENCY',
+  Unknown = 'UNKNOWN'
+}
+
 export type PageInfo = {
   __typename?: 'PageInfo';
   limit: Scalars['Int']['output'];
@@ -169,6 +209,7 @@ export type Query = {
   jobPost?: Maybe<JobPost>;
   jobPosts: JobPostConnection;
   jobRegions: Array<JobRegionGroup>;
+  organization?: Maybe<Organization>;
   scraperRuns: Array<ScraperRun>;
   substitutePost?: Maybe<SubstitutePost>;
   substitutePosts: SubstitutePostConnection;
@@ -183,6 +224,11 @@ export type QueryJobPostArgs = {
 export type QueryJobPostsArgs = {
   filter?: InputMaybe<JobPostFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryOrganizationArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -476,6 +522,9 @@ export type ResolversTypes = {
   JobPostSummary: ResolverTypeWrapper<JobPostSummary>;
   JobRegionCount: ResolverTypeWrapper<JobRegionCount>;
   JobRegionGroup: ResolverTypeWrapper<JobRegionGroup>;
+  Organization: ResolverTypeWrapper<Organization>;
+  OrganizationSummary: ResolverTypeWrapper<OrganizationSummary>;
+  OrganizationType: OrganizationType;
   PageInfo: ResolverTypeWrapper<PageInfo>;
   PaginationInput: PaginationInput;
   Query: ResolverTypeWrapper<{}>;
@@ -514,6 +563,8 @@ export type ResolversParentTypes = {
   JobPostSummary: JobPostSummary;
   JobRegionCount: JobRegionCount;
   JobRegionGroup: JobRegionGroup;
+  Organization: Organization;
+  OrganizationSummary: OrganizationSummary;
   PageInfo: PageInfo;
   PaginationInput: PaginationInput;
   Query: {};
@@ -586,6 +637,7 @@ export type JobPostResolvers<ContextType = GraphQLContext, ParentType extends Re
   jobType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   locationSource?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   locationText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['OrganizationSummary']>, ParentType, ContextType>;
   payMaxManwon?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   payMinManwon?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   payNegotiable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -663,6 +715,39 @@ export type JobRegionGroupResolvers<ContextType = GraphQLContext, ParentType ext
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type OrganizationResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  dongOrStation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  emails?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  externalProfileUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  gallery?: Resolver<Array<ResolversTypes['AcademyGalleryImage']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  jobPostCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  jobPosts?: Resolver<Array<ResolversTypes['JobPostSummary']>, ParentType, ContextType>;
+  logoUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  phones?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  sido?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sigungu?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['OrganizationType'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OrganizationSummaryResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['OrganizationSummary'] = ResolversParentTypes['OrganizationSummary']> = {
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  dongOrStation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  externalProfileUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  logoUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sido?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sigungu?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['OrganizationType'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type PageInfoResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
   limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   page?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -676,6 +761,7 @@ export type QueryResolvers<ContextType = GraphQLContext, ParentType extends Reso
   jobPost?: Resolver<Maybe<ResolversTypes['JobPost']>, ParentType, ContextType, RequireFields<QueryJobPostArgs, 'id'>>;
   jobPosts?: Resolver<ResolversTypes['JobPostConnection'], ParentType, ContextType, Partial<QueryJobPostsArgs>>;
   jobRegions?: Resolver<Array<ResolversTypes['JobRegionGroup']>, ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<QueryOrganizationArgs, 'id'>>;
   scraperRuns?: Resolver<Array<ResolversTypes['ScraperRun']>, ParentType, ContextType, RequireFields<QueryScraperRunsArgs, 'limit'>>;
   substitutePost?: Resolver<Maybe<ResolversTypes['SubstitutePost']>, ParentType, ContextType, RequireFields<QuerySubstitutePostArgs, 'id'>>;
   substitutePosts?: Resolver<ResolversTypes['SubstitutePostConnection'], ParentType, ContextType, Partial<QuerySubstitutePostsArgs>>;
@@ -857,6 +943,8 @@ export type Resolvers<ContextType = GraphQLContext> = {
   JobPostSummary?: JobPostSummaryResolvers<ContextType>;
   JobRegionCount?: JobRegionCountResolvers<ContextType>;
   JobRegionGroup?: JobRegionGroupResolvers<ContextType>;
+  Organization?: OrganizationResolvers<ContextType>;
+  OrganizationSummary?: OrganizationSummaryResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   RepresentativePay?: RepresentativePayResolvers<ContextType>;

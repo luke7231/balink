@@ -6,6 +6,7 @@ import {
   formatDayGroups,
   formatJobType,
   formatLocation,
+  formatOrganizationType,
   formatPay,
   formatPostedAt,
   formatSource,
@@ -83,6 +84,22 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           <h1 className="text-2xl font-bold leading-tight text-foreground">{job.title}</h1>
 
           <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
+            {job.organization ? (
+              <div className="sm:col-span-2">
+                <dt className="text-muted-foreground">학원/회사</dt>
+                <dd className="mt-1">
+                  <Link
+                    href={`/organizations/${job.organization.id}`}
+                    className="inline-flex flex-wrap items-center gap-2 font-medium text-accent hover:underline"
+                  >
+                    <span>{job.organization.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatOrganizationType(job.organization.type)}
+                    </span>
+                  </Link>
+                </dd>
+              </div>
+            ) : null}
             <div>
               <dt className="text-muted-foreground">지역</dt>
               <dd className="mt-1 font-medium text-foreground">
@@ -111,7 +128,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           {job.displaySections.length > 0 ? (
             <section className="mt-8 space-y-4">
               <h2 className="text-sm font-semibold text-foreground">정돈된 공고</h2>
-              {job.displaySections.map((section) => (
+              {job.displaySections
+                .filter((section) => !(job.organization && section.title.trim() === "학원명"))
+                .map((section) => (
                 <div key={section.title} className="rounded-2xl border border-border bg-surface-muted/70 p-4">
                   <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
                   <p className="mt-2 whitespace-break-spaces text-sm leading-7 text-foreground">{section.content}</p>

@@ -105,6 +105,18 @@ query JobPost($id: ID!) {
       url
       sourceUrl
     }
+    organization {
+      id
+      name
+      type
+      sido
+      sigungu
+      dongOrStation
+      logoUrl
+      externalProfileUrl
+      createdAt
+      updatedAt
+    }
     contactMethods
     contactEmails
     contactPhones
@@ -122,6 +134,56 @@ query JobPost($id: ID!) {
         sourceUrl
         postedAt
       }
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query Organization($id: ID!) {
+  organization(id: $id) {
+    id
+    name
+    type
+    sido
+    sigungu
+    dongOrStation
+    logoUrl
+    externalProfileUrl
+    phones
+    emails
+    gallery {
+      type
+      order
+      url
+      sourceUrl
+    }
+    jobPostCount
+    jobPosts {
+      id
+      title
+      sourcePrimary
+      jobType
+      postedAt
+      locationText
+      sido
+      sigungu
+      dongOrStation
+      audienceTypes
+      subjectTypes
+      days
+      dayGroups
+      timeSlots
+      times
+      payText
+      payMinManwon
+      payMaxManwon
+      payNegotiable
+      representativePayText
+      academyThumbnailUrl
+      academyThumbnailType
+      createdAt
+      updatedAt
     }
     createdAt
     updatedAt

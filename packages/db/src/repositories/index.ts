@@ -1,7 +1,27 @@
-import type { JobPostFilterInput, SourceName } from "@balink/domain";
-import type { Prisma } from "@prisma/client";
+import type {
+  JobPostFilterInput,
+  OrganizationCandidate,
+  OrganizationExisting,
+  SourceName,
+} from "@balink/domain";
+import {
+  decideOrganizationMatch,
+  jsonArray,
+  mergeOrganizationFields,
+  normalizePhone,
+} from "@balink/domain";
+import type { Organization, Prisma } from "@prisma/client";
 import { prisma } from "../client.js";
-import { toJobPostDetail, toJobPostSourceLink, toJobPostSummary, toScraperRunSummary, toSubstitutePostDetail, toSubstitutePostSummary } from "../mappers/index.js";
+import {
+  toJobPostDetail,
+  toJobPostSourceLink,
+  toJobPostSummary,
+  toOrganizationDetail,
+  toOrganizationSummary,
+  toScraperRunSummary,
+  toSubstitutePostDetail,
+  toSubstitutePostSummary,
+} from "../mappers/index.js";
 
 const sourcePostSelect = {
   id: true,
@@ -40,6 +60,7 @@ export class JobPostRepository {
     const job = await prisma.jobPost.findUnique({
       where: { id },
       include: {
+        organization: true,
         jobPostSources: {
           include: { sourcePost: { select: sourcePostSelect } },
           orderBy: { createdAt: "asc" },
@@ -79,13 +100,175 @@ export interface ImportClassifiedItemInput {
   collectedAt: string;
   raw: Record<string, unknown>;
   classification: Record<string, unknown>;
+  organizationCandidate?: OrganizationCandidate | null;
   normalized: {
     title: string;
     postedAt: Date | null;
     contentHash: string;
     sourceConfidence: string | null;
-    jobPostData: Prisma.JobPostCreateInput;
+    jobPostData: Prisma.JobPostUncheckedCreateInput;
   };
+}
+
+type DbClient = Prisma.TransactionClient | typeof prisma;
+
+function toOrganizationExisting(org: Organization): OrganizationExisting {
+  return {
+    id: org.id,
+    name: org.name,
+    normalizedName: org.normalizedName,
+    type: org.type as OrganizationExisting["type"],
+    matchKey: org.matchKey,
+    sido: org.sido,
+    sigungu: org.sigungu,
+    dongOrStation: org.dongOrStation,
+    phones: jsonArray(org.phonesJson),
+    emails: jsonArray(org.emailsJson),
+    logoUrl: org.logoUrl,
+    gallery: Array.isArray(org.galleryJson)
+      ? (org.galleryJson as unknown as OrganizationExisting["gallery"])
+      : [],
+    externalProfileUrl: org.externalProfileUrl,
+  };
+}
+
+async function findOrganizationMatchCandidates(
+  tx: DbClient,
+  candidate: OrganizationCandidate,
+): Promise<OrganizationExisting[]> {
+  const phoneFilters = candidate.phones
+    .map(normalizePhone)
+    .filter((phone) => phone.length >= 8)
+    .map((phone) => ({ phonesJson: { array_contains: phone } }));
+
+  const rows = await tx.organization.findMany({
+    where: {
+      OR: [
+        { matchKey: candidate.matchKey },
+        ...(candidate.externalProfileUrl
+          ? [{ externalProfileUrl: candidate.externalProfileUrl }]
+          : []),
+        { normalizedName: candidate.normalizedName },
+        ...phoneFilters,
+      ],
+    },
+    take: 50,
+  });
+
+  return rows.map(toOrganizationExisting);
+}
+
+async function resolveOrganizationForImport(
+  tx: DbClient,
+  candidate: OrganizationCandidate | null | undefined,
+  existingOrganizationId: string | null,
+): Promise<string | null> {
+  // 재수집 시 기존 연결을 유지하고 누락 필드만 보강한다.
+  if (existingOrganizationId) {
+    if (candidate) {
+      const existing = await tx.organization.findUnique({ where: { id: existingOrganizationId } });
+      if (existing) {
+        const merged = mergeOrganizationFields(toOrganizationExisting(existing), candidate);
+        await tx.organization.update({
+          where: { id: existing.id },
+          data: {
+            type: merged.type,
+            sido: merged.sido,
+            sigungu: merged.sigungu,
+            dongOrStation: merged.dongOrStation,
+            phonesJson: (merged.phones ?? []) as unknown as Prisma.InputJsonValue,
+            emailsJson: (merged.emails ?? []) as unknown as Prisma.InputJsonValue,
+            logoUrl: merged.logoUrl,
+            galleryJson: (merged.gallery ?? []) as unknown as Prisma.InputJsonValue,
+            externalProfileUrl: merged.externalProfileUrl,
+          },
+        });
+      }
+    }
+    return existingOrganizationId;
+  }
+
+  if (!candidate) return null;
+
+  const existing = await findOrganizationMatchCandidates(tx, candidate);
+  const decision = decideOrganizationMatch(candidate, existing);
+
+  if (decision.kind === "ambiguous" || decision.kind === "skip") {
+    return null;
+  }
+
+  if (decision.kind === "reuse") {
+    const org = await tx.organization.findUnique({ where: { id: decision.organizationId } });
+    if (!org) return null;
+    const merged = mergeOrganizationFields(toOrganizationExisting(org), candidate);
+    await tx.organization.update({
+      where: { id: org.id },
+      data: {
+        type: merged.type,
+        sido: merged.sido,
+        sigungu: merged.sigungu,
+        dongOrStation: merged.dongOrStation,
+        phonesJson: (merged.phones ?? []) as unknown as Prisma.InputJsonValue,
+        emailsJson: (merged.emails ?? []) as unknown as Prisma.InputJsonValue,
+        logoUrl: merged.logoUrl,
+        galleryJson: (merged.gallery ?? []) as unknown as Prisma.InputJsonValue,
+        externalProfileUrl: merged.externalProfileUrl,
+      },
+    });
+    return org.id;
+  }
+
+  try {
+    const created = await tx.organization.create({
+      data: {
+        name: candidate.name,
+        normalizedName: candidate.normalizedName,
+        type: candidate.type,
+        matchKey: candidate.matchKey,
+        sido: candidate.sido,
+        sigungu: candidate.sigungu,
+        dongOrStation: candidate.dongOrStation,
+        phonesJson: candidate.phones as unknown as Prisma.InputJsonValue,
+        emailsJson: candidate.emails as unknown as Prisma.InputJsonValue,
+        logoUrl: candidate.logoUrl,
+        galleryJson: candidate.gallery as unknown as Prisma.InputJsonValue,
+        externalProfileUrl: candidate.externalProfileUrl,
+      },
+    });
+    return created.id;
+  } catch {
+    // 동시 생성으로 matchKey 충돌 시 기존 조직 재사용
+    const raced = await tx.organization.findUnique({ where: { matchKey: candidate.matchKey } });
+    return raced?.id ?? null;
+  }
+}
+
+export class OrganizationRepository {
+  async findById(id: string, jobLimit = 50) {
+    const org = await prisma.organization.findUnique({
+      where: { id },
+      include: {
+        jobPosts: {
+          where: { isBallet: true },
+          orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
+          take: jobLimit,
+        },
+      },
+    });
+    if (!org) return null;
+    const jobPostCount = await prisma.jobPost.count({
+      where: { organizationId: id, isBallet: true },
+    });
+    return {
+      ...toOrganizationDetail(org),
+      jobPostCount,
+    };
+  }
+
+  async findSummaryById(id: string) {
+    const org = await prisma.organization.findUnique({ where: { id } });
+    return org ? toOrganizationSummary(org) : null;
+  }
 }
 
 export class SourcePostRepository {
@@ -136,16 +319,27 @@ export class SourcePostRepository {
 
       const existingLink = await tx.jobPostSource.findFirst({
         where: { sourcePostId: sourcePost.id },
-        select: { jobPostId: true },
+        select: { jobPostId: true, jobPost: { select: { organizationId: true } } },
       });
+
+      const organizationId = await resolveOrganizationForImport(
+        tx,
+        input.organizationCandidate,
+        existingLink?.jobPost.organizationId ?? null,
+      );
+
+      const jobPostData = {
+        ...input.normalized.jobPostData,
+        ...(organizationId ? { organizationId } : {}),
+      };
 
       const jobPost = existingLink
         ? await tx.jobPost.update({
             where: { id: existingLink.jobPostId },
-            data: input.normalized.jobPostData,
+            data: jobPostData,
           })
         : await tx.jobPost.create({
-            data: input.normalized.jobPostData,
+            data: jobPostData,
           });
 
       await tx.jobPostSource.upsert({
@@ -173,6 +367,7 @@ export class SourcePostRepository {
         sourcePostId: sourcePost.id,
         jobPostId: jobPost.id,
         jobPost,
+        organizationId,
         created: !existingLink,
       };
     });

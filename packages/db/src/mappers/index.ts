@@ -1,4 +1,4 @@
-import type { JobPost, JobPostSource, SourcePost, SubstitutePost } from "@prisma/client";
+import type { JobPost, JobPostSource, Organization, SourcePost, SubstitutePost } from "@prisma/client";
 import {
   jsonArray,
   jsonValue,
@@ -8,6 +8,9 @@ import {
   type JobPostSourceLink,
   type JobPostSummary,
   type LocationSource,
+  type OrganizationDetail,
+  type OrganizationSummary,
+  type OrganizationType,
   type RepresentativePay,
   type SourceName,
   type SourcePostSummary,
@@ -24,6 +27,7 @@ import {
 } from "@balink/domain";
 
 type JobPostWithSources = JobPost & {
+  organization?: Organization | null;
   jobPostSources: (JobPostSource & {
     sourcePost: Pick<SourcePost, "id" | "sourcePostId" | "sourceUrl" | "title" | "postedAt">;
   })[];
@@ -83,6 +87,35 @@ export function toJobPostDetail(job: JobPostWithSources): JobPostDetail {
     locationSource: (job.locationSource as LocationSource | null) ?? null,
     academyLogoUrl: isAcademyPlaceholderImageUrl(job.academyLogoUrl) ? null : job.academyLogoUrl,
     academyGallery: parseAcademyGallery(job.academyGalleryJson),
+    organization: job.organization ? toOrganizationSummary(job.organization) : null,
+  };
+}
+
+export function toOrganizationSummary(org: Organization): OrganizationSummary {
+  return {
+    id: org.id,
+    name: org.name,
+    type: org.type as OrganizationType,
+    sido: org.sido,
+    sigungu: org.sigungu,
+    dongOrStation: org.dongOrStation,
+    logoUrl: isAcademyPlaceholderImageUrl(org.logoUrl) ? null : org.logoUrl,
+    externalProfileUrl: org.externalProfileUrl,
+    createdAt: org.createdAt,
+    updatedAt: org.updatedAt,
+  };
+}
+
+export function toOrganizationDetail(
+  org: Organization & { jobPosts: JobPost[] },
+): OrganizationDetail {
+  return {
+    ...toOrganizationSummary(org),
+    phones: jsonArray(org.phonesJson),
+    emails: jsonArray(org.emailsJson),
+    gallery: parseAcademyGallery(org.galleryJson),
+    jobPosts: org.jobPosts.map(toJobPostSummary),
+    jobPostCount: org.jobPosts.length,
   };
 }
 
