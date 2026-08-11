@@ -13,6 +13,6 @@ for (const envPath of [resolve(process.cwd(), ".env"), resolve(process.cwd(), ".
 export default defineConfig({
   schema: "prisma/schema.prisma",
   datasource: {
-    url: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/black_swan",
+    url: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/balink",
   },
 });

@@ -18,7 +18,7 @@ if (!process.env.VERCEL) {
 }
 
 const connectionString =
-  process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/black_swan";
+  process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/balink";
 
 const adapter = new PrismaPg({ connectionString });
 

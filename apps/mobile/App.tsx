@@ -27,7 +27,7 @@ import {
 
 const WEB_BASE_URL =
   (Constants.expoConfig?.extra?.webUrl as string | undefined) ||
-  "https://black-swan-web.vercel.app";
+  "https://balink-web.vercel.app";
 const INSTALLATION_ID_KEY = "balink.installation-id";
 const INSTALLATION_SECRET_KEY = "balink.installation-secret";
 const ALLOWED_PUSH_PATHS = ["/jobs/", "/substitutes/", "/notifications"];

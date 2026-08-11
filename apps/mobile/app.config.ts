@@ -3,21 +3,21 @@ import type { ExpoConfig, ConfigContext } from "expo/config";
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "발링크",
-  slug: "black-swan",
+  slug: "balink",
   owner: "luke7299",
   version: "0.1.0",
   orientation: "portrait",
-  scheme: "blackswan",
+  scheme: "balink",
   userInterfaceStyle: "automatic",
   ios: {
     supportsTablet: false,
-    bundleIdentifier: "com.luke7231.blackswan",
+    bundleIdentifier: "com.luke7231.balink",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
   },
   android: {
-    package: "com.luke7231.blackswan",
+    package: "com.luke7231.balink",
   },
   plugins: [
     "expo-dev-client",
@@ -30,10 +30,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-secure-store",
   ],
   extra: {
-    webUrl: process.env.EXPO_PUBLIC_WEB_URL || "https://black-swan-web.vercel.app",
+    webUrl: process.env.EXPO_PUBLIC_WEB_URL || "https://balink-web.vercel.app",
     eas: {
       projectId:
-        process.env.EXPO_PROJECT_ID || "7decf845-280c-4fb1-9931-f3a766ed1bd7",
+        process.env.EXPO_PROJECT_ID || "7e0451a0-6b73-42dd-95d6-c44f0a51187a",
     },
   },
 });
