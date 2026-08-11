@@ -1,10 +1,14 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
 import { prisma } from "@black-swan/db";
-import { parseNotificationPreference } from "@black-swan/domain";
+import {
+  formatNotificationRuleTitle,
+  parseNotificationPreference,
+} from "@black-swan/domain";
 import { auth } from "@/auth";
 import { markAllNotificationsReadAction } from "@/components/notification-actions";
 import { NotificationItem } from "@/components/notification-item";
 import { NotificationRulesOverview } from "@/components/notification-rules-overview";
+import { PushPermissionCallout } from "@/components/push-permission-callout";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
 
@@ -13,7 +17,27 @@ export const dynamic = "force-dynamic";
 export default async function NotificationsPage() {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/login");
+    const health = await fetchHealth();
+    return (
+      <div className="min-h-screen bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+        <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
+        <main className="mx-auto max-w-lg px-4 py-8">
+          <PushPermissionCallout loggedIn={false} serverEnabled={false} />
+          <section className="rounded-3xl border border-zinc-200 bg-white px-6 py-10 text-center shadow-sm">
+            <p className="text-sm font-semibold text-zinc-900">맞춤 알림은 로그인 후 이용할 수 있어요</p>
+            <p className="mt-2 text-sm text-zinc-500">
+              지역·요일 조건을 저장하고 내 알림함을 확인해 보세요.
+            </p>
+            <Link
+              href="/login"
+              className="mt-5 inline-flex rounded-full bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
+            >
+              로그인하기
+            </Link>
+          </section>
+        </main>
+      </div>
+    );
   }
 
   const [health, notifications, interestRegions, notificationRow] = await Promise.all([
@@ -38,12 +62,20 @@ export default async function NotificationsPage() {
     notificationRow,
     interestRegions,
   );
+  const activeRuleSummaries = notificationPreference.rules
+    .filter((rule) => rule.enabled)
+    .map(formatNotificationRuleTitle);
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-lg px-4 py-8 md:max-w-2xl">
+        <PushPermissionCallout
+          loggedIn
+          serverEnabled={notificationPreference.enabled}
+          activeRuleSummaries={activeRuleSummaries}
+        />
         <NotificationRulesOverview preference={notificationPreference} />
 
         <section>

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
-import { signOutAction } from "@/components/login-actions";
+import { MobileAwareSignOutForm } from "@/components/mobile-aware-sign-out-form";
 import { DEFAULT_AVATAR_PATH } from "@/lib/profile-image";
 
 interface SiteHeaderProps {
@@ -63,14 +63,7 @@ export async function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps)
               >
                 {user.name ?? "회원"}
               </Link>
-              <form action={signOutAction} className="hidden sm:block">
-                <button
-                  type="submit"
-                  className="rounded-full px-2.5 py-1 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
-                >
-                  로그아웃
-                </button>
-              </form>
+              <MobileAwareSignOutForm className="hidden sm:block" />
             </div>
           ) : (
             <Link

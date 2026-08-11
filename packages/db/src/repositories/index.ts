@@ -499,8 +499,8 @@ export type MatchNotificationInsert = {
 
 export class UserNotificationRepository {
   async createManyForMatch(rows: MatchNotificationInsert[]) {
-    if (rows.length === 0) return { count: 0 };
-    return prisma.userNotification.createMany({
+    if (rows.length === 0) return { count: 0, notifications: [] };
+    const result = await prisma.userNotification.createMany({
       data: rows.map((row) => ({
         userId: row.userId,
         type: row.type,
@@ -512,5 +512,16 @@ export class UserNotificationRepository {
       })),
       skipDuplicates: true,
     });
+    const notifications = await prisma.userNotification.findMany({
+      where: {
+        OR: rows.map((row) => ({
+          userId: row.userId,
+          ...(row.jobPostId
+            ? { jobPostId: row.jobPostId }
+            : { substitutePostId: row.substitutePostId }),
+        })),
+      },
+    });
+    return { count: result.count, notifications };
   }
 }

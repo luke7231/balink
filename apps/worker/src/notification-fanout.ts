@@ -1,4 +1,5 @@
 import {
+  PushOutboxRepository,
   UserNotificationRepository,
   prisma,
   type MatchNotificationInsert,
@@ -15,6 +16,7 @@ import {
 } from "@black-swan/domain";
 
 const userNotificationRepository = new UserNotificationRepository();
+const pushOutboxRepository = new PushOutboxRepository();
 
 export interface JobMatchFanOutTarget {
   id: string;
@@ -36,6 +38,7 @@ export interface SubstituteMatchFanOutTarget {
 export interface FanOutSummary {
   matched: number;
   inserted: number;
+  pushEnqueued: number;
   skippedReason?: "no_region";
 }
 
@@ -44,7 +47,7 @@ export async function fanOutJobMatch(jobPost: JobMatchFanOutTarget): Promise<Fan
   const matchInput = toJobMatchPreferenceInput(jobPost);
   if (!matchInput.sido || !matchInput.sigungu) {
     console.info(`[notification-fanout] skipped: no_region jobPostId=${jobPost.id}`);
-    return { matched: 0, inserted: 0, skippedReason: "no_region" };
+    return { matched: 0, inserted: 0, pushEnqueued: 0, skippedReason: "no_region" };
   }
 
   const title = JOB_MATCH_NOTIFICATION_TITLE;
@@ -60,7 +63,10 @@ export async function fanOutJobMatch(jobPost: JobMatchFanOutTarget): Promise<Fan
   }));
 
   const result = await userNotificationRepository.createManyForMatch(rows);
-  return { matched: rows.length, inserted: result.count };
+  const push = await pushOutboxRepository.enqueueUserNotifications(
+    result.notifications.map((notification) => notification.id),
+  );
+  return { matched: rows.length, inserted: result.count, pushEnqueued: push.deliveries };
 }
 
 export async function fanOutSubstituteMatch(
@@ -74,7 +80,7 @@ export async function fanOutSubstituteMatch(
   });
   if (!matchInput.sido || !matchInput.sigungu) {
     console.info(`[notification-fanout] skipped: no_region substitutePostId=${post.id}`);
-    return { matched: 0, inserted: 0, skippedReason: "no_region" };
+    return { matched: 0, inserted: 0, pushEnqueued: 0, skippedReason: "no_region" };
   }
 
   const title = SUBSTITUTE_MATCH_NOTIFICATION_TITLE;
@@ -94,7 +100,10 @@ export async function fanOutSubstituteMatch(
   }));
 
   const result = await userNotificationRepository.createManyForMatch(rows);
-  return { matched: rows.length, inserted: result.count };
+  const push = await pushOutboxRepository.enqueueUserNotifications(
+    result.notifications.map((notification) => notification.id),
+  );
+  return { matched: rows.length, inserted: result.count, pushEnqueued: push.deliveries };
 }
 
 async function collectMatchingRows(

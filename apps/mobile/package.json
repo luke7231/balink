@@ -1,0 +1,30 @@
+{
+  "name": "@black-swan/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "expo": "57.0.12",
+    "expo-constants": "57.0.10",
+    "expo-crypto": "57.0.1",
+    "expo-dev-client": "57.0.11",
+    "expo-device": "57.0.1",
+    "expo-linking": "57.0.5",
+    "expo-notifications": "57.0.10",
+    "expo-secure-store": "57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-webview": "13.16.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "eas-cli": "^21.7.1",
+    "typescript": "^6.0.3"
+  }
+}

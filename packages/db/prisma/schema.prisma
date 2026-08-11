@@ -23,6 +23,33 @@ enum SubstitutePostStatus {
   DELETED
 }
 
+enum PushPlatform {
+  ios
+  android
+}
+
+enum PushPermissionStatus {
+  granted
+  denied
+  undetermined
+  unavailable
+}
+
+enum PushDeliveryStatus {
+  pending
+  processing
+  ticketed
+  delivered
+  retrying
+  failed
+}
+
+enum PushReceiptStatus {
+  pending
+  ok
+  error
+}
+
 model SourcePost {
   id                 String          @id @default(cuid())
   source             SourceName
@@ -196,6 +223,7 @@ model User {
   jobBookmarks              JobBookmark[]
   notificationPreference    UserNotificationPreference?
   notifications             UserNotification[]
+  pushDevices               PushDevice[]
 }
 
 enum UserNotificationType {
@@ -216,9 +244,67 @@ model UserNotification {
   readAt           DateTime?
   createdAt        DateTime             @default(now())
   user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pushMessage      PushMessage?
 
   @@index([userId, createdAt])
   @@index([userId, readAt])
+}
+
+model PushDevice {
+  id                     String               @id @default(cuid())
+  userId                 String?
+  expoPushToken          String?              @unique
+  installationId         String               @unique
+  installationSecretHash String
+  platform               PushPlatform
+  enabled                Boolean              @default(true)
+  permissionStatus       PushPermissionStatus @default(undetermined)
+  canAskAgain            Boolean              @default(true)
+  permissionUpdatedAt    DateTime              @default(now())
+  lastSeenAt             DateTime              @default(now())
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  user                   User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  deliveries             PushDelivery[]
+
+  @@index([userId, enabled, permissionStatus])
+  @@index([enabled, permissionStatus])
+}
+
+model PushMessage {
+  id                 String            @id @default(cuid())
+  dedupeKey          String            @unique
+  userNotificationId String?           @unique
+  kind               String
+  title              String
+  body               String
+  href               String?
+  createdAt          DateTime          @default(now())
+  userNotification   UserNotification? @relation(fields: [userNotificationId], references: [id], onDelete: Cascade)
+  deliveries         PushDelivery[]
+}
+
+model PushDelivery {
+  id             String                @id @default(cuid())
+  pushMessageId  String
+  pushDeviceId   String
+  status         PushDeliveryStatus    @default(pending)
+  attempts       Int                   @default(0)
+  nextAttemptAt  DateTime              @default(now())
+  claimedAt      DateTime?
+  expoTicketId   String?               @unique
+  receiptStatus  PushReceiptStatus?
+  lastError      String?
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  pushMessage    PushMessage           @relation(fields: [pushMessageId], references: [id], onDelete: Cascade)
+  pushDevice     PushDevice            @relation(fields: [pushDeviceId], references: [id], onDelete: Cascade)
+
+  @@unique([pushMessageId, pushDeviceId])
+  @@index([status, nextAttemptAt])
+  @@index([receiptStatus, sentAt])
 }
 
 model UserNotificationPreference {

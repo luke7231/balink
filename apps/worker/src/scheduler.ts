@@ -1,19 +1,43 @@
+import { enqueueAnonymousDailyDigest } from "./anonymous-push.js";
 import { config } from "./config.js";
+import { runPushDispatchTick, runPushReceiptTick } from "./push-dispatcher.js";
 import { runScraper } from "./scraper.js";
 import { runSubstituteScraper } from "./substitute-scraper.js";
 
 let running = false;
 
 export function startScheduler(): void {
-  if (!config.scheduleEnabled) return;
-
-  const intervalMs = config.scheduleIntervalMinutes * 60_000;
-
-  setInterval(() => {
+  if (config.scheduleEnabled) {
+    const intervalMs = config.scheduleIntervalMinutes * 60_000;
+    setInterval(() => {
+      void tickScheduler();
+    }, intervalMs).unref();
     void tickScheduler();
-  }, intervalMs).unref();
+  }
 
-  void tickScheduler();
+  if (config.pushDispatchEnabled) {
+    setInterval(() => {
+      void runPushDispatchTick().catch((error) => {
+        console.error("[scheduler] push dispatch failed", error);
+      });
+    }, config.pushDispatchIntervalSeconds * 1_000).unref();
+    setInterval(() => {
+      void runPushReceiptTick().catch((error) => {
+        console.error("[scheduler] push receipt failed", error);
+      });
+    }, config.pushReceiptIntervalMinutes * 60_000).unref();
+    void runPushDispatchTick();
+    void runPushReceiptTick();
+  }
+
+  if (config.anonymousDailyDigestEnabled) {
+    setInterval(() => {
+      void enqueueAnonymousDailyDigest().catch((error) => {
+        console.error("[scheduler] anonymous daily digest failed", error);
+      });
+    }, 5 * 60_000).unref();
+    void enqueueAnonymousDailyDigest();
+  }
 }
 
 async function tickScheduler(): Promise<void> {

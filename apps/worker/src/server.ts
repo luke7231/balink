@@ -41,6 +41,9 @@ async function route(req: http.IncomingMessage, res: http.ServerResponse): Promi
       scheduleSources: config.scheduleSources,
       defaultLlmMode: config.defaultLlmMode,
       scraperWorkDir: config.scraperWorkDir,
+      pushDispatchEnabled: config.pushDispatchEnabled,
+      anonymousUrgentPushEnabled: config.anonymousUrgentPushEnabled,
+      anonymousDailyDigestEnabled: config.anonymousDailyDigestEnabled,
     });
     return;
   }

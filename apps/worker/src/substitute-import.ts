@@ -8,6 +8,7 @@ import {
   sanitizeLocationTextForStorage,
 } from "@black-swan/domain";
 import { SubstitutePostRepository } from "@black-swan/db";
+import { enqueueAnonymousUrgentPush } from "./anonymous-push.js";
 import type { FormattedSubstitutePost } from "./substitute-formatter.js";
 import { fanOutSubstituteMatch, shouldFanOutInbox } from "./notification-fanout.js";
 
@@ -129,6 +130,12 @@ export async function persistNormalizedSubstitute(input: PersistSubstituteInput)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[substitute-import] fanOutInbox failed substitutePostId=${post.id}: ${message}`);
+    }
+    try {
+      await enqueueAnonymousUrgentPush(post);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[substitute-import] anonymous push failed substitutePostId=${post.id}: ${message}`);
     }
   }
 

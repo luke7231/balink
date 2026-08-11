@@ -5,12 +5,14 @@ import {
   MAX_NOTIFICATION_RULES,
   createNotificationRuleId,
   defaultNotificationRule,
+  formatNotificationRuleTitle,
   isBlankNotificationPreference,
   listAdminDistrictGroups,
   parseNotificationPreference,
 } from "@black-swan/domain";
 import { auth } from "@/auth";
 import { NotificationSettingsPanel } from "@/components/notification-settings-panel";
+import { PushPermissionCallout } from "@/components/push-permission-callout";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
 
@@ -101,6 +103,16 @@ export default async function NotificationSettingsPage({
         <p className="mt-1 text-sm text-zinc-500">
           지역·유형·요일·시간대를 정해 저장하면 알림함에 반영됩니다.
         </p>
+
+        <div className="mt-6">
+          <PushPermissionCallout
+            loggedIn
+            serverEnabled={notificationPreference.enabled}
+            activeRuleSummaries={notificationPreference.rules
+              .filter((rule) => rule.enabled)
+              .map(formatNotificationRuleTitle)}
+          />
+        </div>
 
         <NotificationSettingsPanel
           initialPreference={notificationPreference}
