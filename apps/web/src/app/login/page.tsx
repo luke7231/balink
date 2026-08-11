@@ -45,16 +45,9 @@ export default async function LoginPage({
               priority
               className="h-10 w-auto"
             />
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
-                흩어진 발레 공고를
-                <br />
-                한곳에서
-              </h1>
-              <p className="text-sm text-zinc-500">
-                카카오 또는 Apple로 시작하고 관심 공고를 받아보세요.
-              </p>
-            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+              발레 커리어의 시작
+            </h1>
           </div>
 
           {deletedMessage ? (
