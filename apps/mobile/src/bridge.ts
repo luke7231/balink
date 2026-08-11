@@ -11,11 +11,23 @@ export interface InstallationCredential {
   installationSecret: string;
 }
 
+export type HapticStyle = "selection" | "light" | "medium" | "success" | "warning" | "error";
+
+const HAPTIC_STYLES = new Set<HapticStyle>([
+  "selection",
+  "light",
+  "medium",
+  "success",
+  "warning",
+  "error",
+]);
+
 export type WebToNativeMessage =
   | { type: "READY" }
   | { type: "GET_PUSH_PERMISSION" }
   | { type: "REQUEST_PUSH_PERMISSION" }
-  | { type: "OPEN_NOTIFICATION_SETTINGS" };
+  | { type: "OPEN_NOTIFICATION_SETTINGS" }
+  | { type: "HAPTIC"; style: HapticStyle };
 
 export type NativeToWebMessage =
   | ({ type: "PUSH_PERMISSION_STATUS" } & PushPermissionPayload)
@@ -28,13 +40,17 @@ export type NativeToWebMessage =
 
 export function parseWebMessage(value: string): WebToNativeMessage | null {
   try {
-    const message = JSON.parse(value) as Partial<WebToNativeMessage>;
+    const message = JSON.parse(value) as Partial<WebToNativeMessage> & { style?: string };
     switch (message.type) {
       case "READY":
       case "GET_PUSH_PERMISSION":
       case "REQUEST_PUSH_PERMISSION":
       case "OPEN_NOTIFICATION_SETTINGS":
         return message as WebToNativeMessage;
+      case "HAPTIC": {
+        if (!message.style || !HAPTIC_STYLES.has(message.style as HapticStyle)) return null;
+        return { type: "HAPTIC", style: message.style as HapticStyle };
+      }
       default:
         return null;
     }

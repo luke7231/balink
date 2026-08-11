@@ -33,6 +33,8 @@ type NativeMessage =
     }
   | { type: "PUSH_OPENED"; href: string };
 
+type HapticStyle = "selection" | "light" | "medium" | "success" | "warning" | "error";
+
 declare global {
   interface Window {
     ReactNativeWebView?: { postMessage(message: string): void };
@@ -42,6 +44,9 @@ declare global {
       refreshPermission(): void;
       detach(): Promise<void>;
       getState(): PushState;
+    };
+    balinkHaptics?: {
+      play(style?: HapticStyle): void;
     };
   }
 }
@@ -159,23 +164,31 @@ export function MobileBridge() {
       },
       getState: () => stateRef.current,
     };
+    window.balinkHaptics = {
+      play: (style: HapticStyle = "selection") => postNative({ type: "HAPTIC", style }),
+    };
     postNative({ type: "READY" });
 
     return () => {
       window.removeEventListener("message", handleMessage);
       delete window.balinkPush;
+      delete window.balinkHaptics;
     };
   }, [publishState, syncInstallation]);
 
   return null;
 }
 
-function postNative(message: {
-  type:
-    | "READY"
-    | "GET_PUSH_PERMISSION"
-    | "REQUEST_PUSH_PERMISSION"
-    | "OPEN_NOTIFICATION_SETTINGS";
-}) {
+function postNative(
+  message:
+    | {
+        type:
+          | "READY"
+          | "GET_PUSH_PERMISSION"
+          | "REQUEST_PUSH_PERMISSION"
+          | "OPEN_NOTIFICATION_SETTINGS";
+      }
+    | { type: "HAPTIC"; style: HapticStyle },
+) {
   window.ReactNativeWebView?.postMessage(JSON.stringify(message));
 }

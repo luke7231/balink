@@ -12,12 +12,14 @@ import {
 import Constants from "expo-constants";
 import * as Crypto from "expo-crypto";
 import * as Device from "expo-device";
+import * as Haptics from "expo-haptics";
 import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { WebView, type WebViewNavigation } from "react-native-webview";
 import type { WebViewMessageEvent } from "react-native-webview";
 import {
+  type HapticStyle,
   type InstallationCredential,
   type NativeToWebMessage,
   type PushPermissionPayload,
@@ -152,7 +154,9 @@ export default function App() {
     (event: WebViewMessageEvent) => {
       const message = parseWebMessage(event.nativeEvent.data);
       if (!message) return;
-      if (message.type === "REQUEST_PUSH_PERMISSION") {
+      if (message.type === "HAPTIC") {
+        void playHaptic(message.style);
+      } else if (message.type === "REQUEST_PUSH_PERMISSION") {
         void requestPushPermission();
       } else if (message.type === "OPEN_NOTIFICATION_SETTINGS") {
         void Linking.openSettings();
@@ -272,6 +276,33 @@ function isTrustedWebUrl(url: string): boolean {
     return new URL(url).origin === WEB_ORIGIN;
   } catch {
     return false;
+  }
+}
+
+async function playHaptic(style: HapticStyle): Promise<void> {
+  try {
+    switch (style) {
+      case "selection":
+        await Haptics.selectionAsync();
+        break;
+      case "light":
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        break;
+      case "medium":
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        break;
+      case "success":
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        break;
+      case "warning":
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        break;
+      case "error":
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        break;
+    }
+  } catch (error) {
+    console.warn("Haptic playback failed", error);
   }
 }
 

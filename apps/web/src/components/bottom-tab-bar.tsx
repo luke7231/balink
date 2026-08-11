@@ -57,6 +57,9 @@ export function BottomTabBar() {
                 href={tab.href}
                 prefetch
                 aria-current={active ? "page" : undefined}
+                onPointerDown={() => {
+                  if (!active) window.balinkHaptics?.play("selection");
+                }}
                 className={`flex h-full flex-col items-center justify-center gap-1 text-[11px] font-medium transition ${
                   active ? "text-zinc-900" : "text-zinc-400 hover:text-zinc-600"
                 }`}

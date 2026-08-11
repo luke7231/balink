@@ -10,11 +10,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "balink",
   userInterfaceStyle: "automatic",
   icon: "./assets/icon.png",
-  splash: {
-    image: "./assets/splash.png",
-    resizeMode: "cover",
-    backgroundColor: "#faf7f6",
-  },
   ios: {
     supportsTablet: false,
     bundleIdentifier: "com.luke7231.balink",
@@ -38,6 +33,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     "expo-secure-store",
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/splash.png",
+        backgroundColor: "#faf7f6",
+        resizeMode: "cover",
+        enableFullScreenImage_legacy: true,
+      },
+    ],
   ],
   extra: {
     webUrl: process.env.EXPO_PUBLIC_WEB_URL || "https://balink-web.vercel.app",
