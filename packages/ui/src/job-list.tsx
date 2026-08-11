@@ -15,11 +15,11 @@ export function JobList({ jobs, getHref, linkComponent, renderAction }: JobListP
   }
 
   return (
-    <div className="grid min-w-0 gap-4">
+    <div className="grid w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)] gap-4">
       {jobs.map((job, index) => (
         <div
           key={job.id}
-          className="motion-fade-up"
+          className="motion-fade-up min-w-0 max-w-full"
           style={{ ["--motion-index" as string]: Math.min(index, 10) } as CSSProperties}
         >
           <JobCard

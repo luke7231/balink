@@ -36,8 +36,8 @@ export function FilterChipBar({
 
   return (
     <>
-      <section aria-label={ariaLabel} className="mb-6">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none">
+      <section aria-label={ariaLabel} className="mb-6 min-w-0 max-w-full">
+        <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1 scrollbar-none">
           <button
             type="button"
             onClick={() => setOpen(true)}

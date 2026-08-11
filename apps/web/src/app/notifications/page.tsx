@@ -19,7 +19,7 @@ export default async function NotificationsPage() {
   if (!session?.user?.id) {
     const health = await fetchHealth();
     return (
-      <div className="min-h-screen bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+      <div className="min-h-full bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
         <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
         <main className="mx-auto max-w-lg px-4 py-8">
           <PushPermissionCallout loggedIn={false} serverEnabled={false} />
@@ -67,7 +67,7 @@ export default async function NotificationsPage() {
     .map(formatNotificationRuleTitle);
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+    <div className="min-h-full bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-lg px-4 py-8 md:max-w-2xl">

@@ -119,10 +119,10 @@ export default async function SubstitutesPage({ searchParams }: SubstitutesPageP
   const sortedPosts = sortByNextLesson(filteredPosts);
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+    <div className="min-h-full min-w-0 max-w-full overflow-x-clip bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
-      <main className="mx-auto max-w-5xl px-4 py-8">
+      <main className="mx-auto min-w-0 max-w-5xl px-4 py-8">
         <Suspense fallback={<div className="mb-6 h-10" aria-hidden="true" />}>
           <SubstitutesFilterBar
             dateFilter={dateFilter}

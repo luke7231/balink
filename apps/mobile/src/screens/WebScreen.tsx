@@ -31,6 +31,17 @@ import {
 const NATIVE_SHELL_BEFORE = `
   (function () {
     window.__BALINK_NATIVE_SHELL__ = true;
+    try {
+      var root = document.documentElement;
+      root.classList.add('native-shell');
+      if (!document.getElementById('balink-native-shell-css')) {
+        var style = document.createElement('style');
+        style.id = 'balink-native-shell-css';
+        style.textContent = 'nav[aria-label="하단 메뉴"]{display:none!important;height:0!important;overflow:hidden!important}body{padding-bottom:0!important}';
+        (root.firstChild ? root.insertBefore(style, root.firstChild) : root.appendChild(style));
+      }
+      window.dispatchEvent(new Event('balink:native-shell'));
+    } catch (err) {}
   })();
   true;
 `;
@@ -41,6 +52,10 @@ const NATIVE_NAV_INTERCEPT = `
     if (window.__BALINK_NAV_INTERCEPT__) return true;
     window.__BALINK_NAV_INTERCEPT__ = true;
     window.__BALINK_NATIVE_SHELL__ = true;
+    try {
+      document.documentElement.classList.add('native-shell');
+      window.dispatchEvent(new Event('balink:native-shell'));
+    } catch (err) {}
 
     function tabOf(pathname) {
       if (pathname.indexOf('/substitutes') === 0) return 'Substitutes';

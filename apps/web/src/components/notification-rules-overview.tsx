@@ -108,7 +108,7 @@ export function NotificationRulesOverview({
           </Link>
         </div>
       ) : (
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none">
+        <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1 scrollbar-none">
           {preference.rules.map((rule) => {
             const on = preference.enabled && rule.enabled;
             const title = formatNotificationRuleTitle(rule);

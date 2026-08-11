@@ -27,7 +27,7 @@ export default async function SavedJobsPage() {
   const jobs = bookmarks.map((bookmark) => toJobPostSummary(bookmark.jobPost));
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+    <div className="min-h-full bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-5xl px-4 py-8">

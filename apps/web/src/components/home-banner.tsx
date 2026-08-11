@@ -202,13 +202,19 @@ function BannerCarousel({
   const isMobile = variant === "mobile";
 
   return (
-    <div className={isMobile ? "relative md:hidden" : "relative hidden md:block"}>
+    <div
+      className={
+        isMobile
+          ? "relative min-w-0 max-w-full md:hidden"
+          : "relative hidden min-w-0 max-w-full md:block"
+      }
+    >
       <div
         ref={scrollerRef}
         className={
           isMobile
-            ? "-mx-4 flex touch-none snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-1 scrollbar-none"
-            : "flex w-full touch-none snap-x snap-mandatory gap-0 overflow-x-auto overscroll-x-contain scrollbar-none"
+            ? "flex min-w-0 max-w-full touch-none snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-1 scrollbar-none"
+            : "flex w-full min-w-0 max-w-full touch-none snap-x snap-mandatory gap-0 overflow-x-auto overscroll-x-contain scrollbar-none"
         }
         onPointerDown={(event) => {
           if (event.pointerType === "mouse" && event.button !== 0) return;

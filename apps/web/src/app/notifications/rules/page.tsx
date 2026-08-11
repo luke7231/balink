@@ -30,7 +30,7 @@ export default async function NotificationRulesPage() {
   const preference = parseNotificationPreference(notificationRow, interestRegions);
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+    <div className="min-h-full bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-lg px-4 py-8">

@@ -50,7 +50,7 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
   const slotBadges = displayableTimeSlots(job.timeSlots);
 
   return (
-    <div className="group relative min-w-0 max-w-full rounded-3xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md">
+    <div className="group relative box-border min-w-0 w-full max-w-full rounded-3xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md">
       <Link
         href={href}
         className={`block min-w-0 max-w-full p-4 sm:p-5 ${action ? "pr-14 sm:pr-16" : ""}`}

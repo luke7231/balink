@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useNativeShell } from "@/lib/native-shell";
 
 const tabs = [
   {
@@ -39,12 +40,16 @@ export function shouldHideBottomTab(pathname: string) {
 
 export function BottomTabBar() {
   const pathname = usePathname() || "/";
+  const nativeShell = useNativeShell();
   if (shouldHideBottomTab(pathname)) return null;
 
   return (
     <nav
       aria-label="하단 메뉴"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200/80 bg-white/95 backdrop-blur"
+      aria-hidden={nativeShell || undefined}
+      className={`fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200/80 bg-white/95 backdrop-blur ${
+        nativeShell ? "hidden" : ""
+      }`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <ul className="mx-auto flex h-[64px] max-w-lg items-stretch">

@@ -52,7 +52,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-full bg-zinc-50">
       <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-5">
           <Link href="/" className="text-sm font-medium text-rose-600 hover:text-rose-700">

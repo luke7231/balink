@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { notifyNativeShell } from "@/lib/native-shell";
 
 type PushPermission = "granted" | "denied" | "undetermined" | "unavailable";
 type Platform = "ios" | "android";
@@ -111,6 +112,8 @@ export function MobileBridge() {
   useEffect(() => {
     if (!window.ReactNativeWebView) return;
     publishState({ isMobileApp: true });
+    notifyNativeShell();
+    document.documentElement.classList.add("native-shell");
 
     const handleMessage = (event: MessageEvent<string>) => {
       if (typeof event.data !== "string") return;

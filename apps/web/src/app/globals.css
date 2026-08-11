@@ -16,9 +16,56 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* Tailwind doesn't ship scrollbar-none by default in this setup */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Native tab shell: hide WebView chrome scrollbars (list still scrolls). */
+html.native-shell,
+html.native-shell body {
+  scrollbar-width: none;
+}
+
+/* Belt-and-suspenders: never show the web tab bar inside the native shell. */
+html.native-shell nav[aria-label="하단 메뉴"] {
+  display: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+html.native-shell .app-shell-content {
+  padding-bottom: 0 !important;
+}
+
+html.native-shell::-webkit-scrollbar,
+html.native-shell body::-webkit-scrollbar,
+html.native-shell *::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 @keyframes balink-fade-up {
