@@ -14,6 +14,7 @@ import * as Crypto from "expo-crypto";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { WebView, type WebViewNavigation } from "react-native-webview";
 import type { WebViewMessageEvent } from "react-native-webview";
 import {
@@ -180,30 +181,32 @@ export default function App() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <WebView
-        ref={webViewRef}
-        source={{ uri: WEB_BASE_URL }}
-        sharedCookiesEnabled
-        thirdPartyCookiesEnabled
-        javaScriptEnabled
-        domStorageEnabled
-        startInLoadingState
-        renderLoading={() => (
-          <View style={styles.loading}>
-            <ActivityIndicator color="#111827" />
-          </View>
-        )}
-        onLoadEnd={() => void syncPermission()}
-        onMessage={handleWebMessage}
-        onNavigationStateChange={(state: WebViewNavigation) => {
-          currentUrlRef.current = state.url;
-          setCanGoBack(state.canGoBack);
-        }}
-        onShouldStartLoadWithRequest={handleNavigation}
-      />
-    </View>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container} edges={["top", "right", "bottom", "left"]}>
+        <StatusBar barStyle="dark-content" />
+        <WebView
+          ref={webViewRef}
+          source={{ uri: WEB_BASE_URL }}
+          sharedCookiesEnabled
+          thirdPartyCookiesEnabled
+          javaScriptEnabled
+          domStorageEnabled
+          startInLoadingState
+          renderLoading={() => (
+            <View style={styles.loading}>
+              <ActivityIndicator color="#111827" />
+            </View>
+          )}
+          onLoadEnd={() => void syncPermission()}
+          onMessage={handleWebMessage}
+          onNavigationStateChange={(state: WebViewNavigation) => {
+            currentUrlRef.current = state.url;
+            setCanGoBack(state.canGoBack);
+          }}
+          onShouldStartLoadWithRequest={handleNavigation}
+        />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
