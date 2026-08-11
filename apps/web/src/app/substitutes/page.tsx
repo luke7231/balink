@@ -6,17 +6,29 @@ import { SubstituteList } from "@/components/substitute-list";
 import { SubstitutesFilterBar } from "@/components/substitutes-filter-bar";
 import { fetchHealth, fetchSubstitutePosts } from "@/lib/graphql/queries";
 
-type DateFilter = "all" | "today" | "tomorrow" | "week";
+type DateFilter = "today" | "tomorrow" | "week";
 
 interface SubstitutesPageProps {
   searchParams: Promise<{
-    date?: string;
-    region?: string;
+    date?: string | string[];
+    region?: string | string[];
   }>;
 }
 
-function parseDateFilter(value?: string): DateFilter {
-  return value === "today" || value === "tomorrow" || value === "week" ? value : "all";
+function toParamList(value?: string | string[]): string[] {
+  if (!value) return [];
+  const entries = Array.isArray(value) ? value : [value];
+  return entries
+    .flatMap((entry) => entry.split(","))
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function parseDateFilters(value?: string | string[]): DateFilter[] {
+  const allowed = new Set<DateFilter>(["today", "tomorrow", "week"]);
+  return toParamList(value).filter((entry): entry is DateFilter =>
+    allowed.has(entry as DateFilter),
+  );
 }
 
 function toRegionValue(sido?: string | null, sigungu?: string | null): string {
@@ -33,16 +45,15 @@ function liveUrgency(post: {
   });
 }
 
-function filterByDate<
+function matchesDateFilter<
   T extends {
     urgency?: string | null;
     nextLessonAt?: string | null;
     sessions?: Array<{ date?: string | null; startTime?: string | null }>;
   },
->(posts: T[], dateFilter: DateFilter): T[] {
-  if (dateFilter === "all") return posts;
-  if (dateFilter === "today") return posts.filter((post) => liveUrgency(post) === "same_day");
-  if (dateFilter === "tomorrow") return posts.filter((post) => liveUrgency(post) === "next_day");
+>(post: T, dateFilter: DateFilter): boolean {
+  if (dateFilter === "today") return liveUrgency(post) === "same_day";
+  if (dateFilter === "tomorrow") return liveUrgency(post) === "next_day";
 
   const todayInKorea = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
@@ -54,18 +65,27 @@ function filterByDate<
   const rangeEnd = rangeStart + 7 * 24 * 60 * 60 * 1000;
   const now = Date.now();
 
-  return posts.filter((post) => {
-    const upcoming = (post.sessions ?? [])
-      .map((session) => {
-        if (!session.date) return null;
-        const time = session.startTime || "12:00";
-        return Date.parse(`${session.date}T${time}:00+09:00`);
-      })
-      .filter((value): value is number => value != null && value >= now)
-      .sort((a, b) => a - b)[0];
-    const lessonAt = upcoming ?? (post.nextLessonAt ? Date.parse(post.nextLessonAt) : NaN);
-    return Number.isFinite(lessonAt) && lessonAt >= rangeStart && lessonAt < rangeEnd;
-  });
+  const upcoming = (post.sessions ?? [])
+    .map((session) => {
+      if (!session.date) return null;
+      const time = session.startTime || "12:00";
+      return Date.parse(`${session.date}T${time}:00+09:00`);
+    })
+    .filter((value): value is number => value != null && value >= now)
+    .sort((a, b) => a - b)[0];
+  const lessonAt = upcoming ?? (post.nextLessonAt ? Date.parse(post.nextLessonAt) : NaN);
+  return Number.isFinite(lessonAt) && lessonAt >= rangeStart && lessonAt < rangeEnd;
+}
+
+function filterByDates<
+  T extends {
+    urgency?: string | null;
+    nextLessonAt?: string | null;
+    sessions?: Array<{ date?: string | null; startTime?: string | null }>;
+  },
+>(posts: T[], dateFilters: DateFilter[]): T[] {
+  if (dateFilters.length === 0) return posts;
+  return posts.filter((post) => dateFilters.some((filter) => matchesDateFilter(post, filter)));
 }
 
 function sortByNextLesson<
@@ -95,8 +115,8 @@ function sortByNextLesson<
 
 export default async function SubstitutesPage({ searchParams }: SubstitutesPageProps) {
   const query = await searchParams;
-  const dateFilter = parseDateFilter(query.date);
-  const selectedRegion = query.region ?? "";
+  const dateFilters = parseDateFilters(query.date);
+  const selectedRegions = toParamList(query.region);
   const [health, posts] = await Promise.all([
     fetchHealth(),
     fetchSubstitutePosts(1, 100, { status: "OPEN" }),
@@ -112,10 +132,12 @@ export default async function SubstitutesPage({ searchParams }: SubstitutesPageP
         }),
     ),
   ).sort(([, a], [, b]) => a.localeCompare(b, "ko"));
-  const regionFilteredPosts = selectedRegion
-    ? posts.items.filter((post) => toRegionValue(post.sido, post.sigungu) === selectedRegion)
-    : posts.items;
-  const filteredPosts = filterByDate(regionFilteredPosts, dateFilter);
+  const regionSet = new Set(selectedRegions);
+  const regionFilteredPosts =
+    selectedRegions.length > 0
+      ? posts.items.filter((post) => regionSet.has(toRegionValue(post.sido, post.sigungu)))
+      : posts.items;
+  const filteredPosts = filterByDates(regionFilteredPosts, dateFilters);
   const sortedPosts = sortByNextLesson(filteredPosts);
 
   return (
@@ -125,8 +147,8 @@ export default async function SubstitutesPage({ searchParams }: SubstitutesPageP
       <main className="mx-auto min-w-0 max-w-5xl px-4 py-8">
         <Suspense fallback={<div className="mb-6 h-10" aria-hidden="true" />}>
           <SubstitutesFilterBar
-            dateFilter={dateFilter}
-            selectedRegion={selectedRegion}
+            dateFilters={dateFilters}
+            selectedRegions={selectedRegions}
             regionOptions={regionOptions}
           />
         </Suspense>

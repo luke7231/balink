@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 
 interface BottomSheetProps {
   open: boolean;
@@ -9,11 +9,39 @@ interface BottomSheetProps {
   children: ReactNode;
 }
 
+const EXIT_MS = 280;
+
 export function BottomSheet({ open, title, onClose, children }: BottomSheetProps) {
   const titleId = useId();
+  const [mounted, setMounted] = useState(open);
+  const [visible, setVisible] = useState(false);
+  const [openSnapshot, setOpenSnapshot] = useState(open);
+
+  if (open !== openSnapshot) {
+    setOpenSnapshot(open);
+    if (open) {
+      setMounted(true);
+    } else {
+      setVisible(false);
+    }
+  }
 
   useEffect(() => {
-    if (!open) return;
+    if (!mounted) return;
+
+    if (open) {
+      const frame = requestAnimationFrame(() => {
+        requestAnimationFrame(() => setVisible(true));
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+
+    const timer = window.setTimeout(() => setMounted(false), EXIT_MS);
+    return () => window.clearTimeout(timer);
+  }, [open, mounted]);
+
+  useEffect(() => {
+    if (!mounted) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
@@ -24,23 +52,27 @@ export function BottomSheet({ open, title, onClose, children }: BottomSheetProps
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, onClose]);
+  }, [mounted, onClose]);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 z-[60]">
+    <div className="fixed inset-0 z-60">
       <button
         type="button"
         aria-label="필터 닫기"
-        className="absolute inset-0 bg-foreground/40"
+        className={`absolute inset-0 bg-foreground/40 transition-opacity duration-280 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="absolute inset-x-0 bottom-0 mx-auto max-h-[85vh] w-full max-w-5xl rounded-t-3xl bg-surface shadow-2xl"
+        className={`absolute inset-x-0 bottom-0 mx-auto max-h-[85vh] w-full max-w-5xl rounded-t-3xl bg-surface shadow-2xl transition-transform duration-280 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform motion-reduce:transition-none ${
+          visible ? "translate-y-0" : "translate-y-full"
+        }`}
       >
         <div className="flex justify-center pt-3">
           <div className="h-1.5 w-12 rounded-full bg-surface-muted" />

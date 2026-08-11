@@ -31,12 +31,30 @@ const sourcePostSelect = {
   postedAt: true,
 } as const;
 
+function splitFilterValues(value?: string | null): string[] {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
 export class JobPostRepository {
   buildWhere(filter: JobPostFilterInput | null | undefined): Prisma.JobPostWhereInput {
+    const sidos = splitFilterValues(filter?.sido);
+    const sigungus = splitFilterValues(filter?.sigungu);
+    const regionOr: Prisma.JobPostWhereInput[] = [
+      ...sidos.map((sido) => ({ sido })),
+      ...sigungus.map((sigungu) => ({ sigungu })),
+    ];
+
     return {
       isBallet: true,
-      ...(filter?.sido ? { sido: filter.sido } : {}),
-      ...(filter?.sigungu ? { sigungu: filter.sigungu } : {}),
+      ...(regionOr.length === 1
+        ? regionOr[0]
+        : regionOr.length > 1
+          ? { OR: regionOr }
+          : {}),
       ...(filter?.jobType ? { jobType: filter.jobType } : {}),
       ...(filter?.source ? { sourcePrimary: filter.source } : {}),
     };
@@ -496,10 +514,20 @@ export interface UpsertSubstitutePostInput {
 
 export class SubstitutePostRepository {
   buildWhere(filter: import("@balink/domain").SubstitutePostFilterInput | null | undefined): Prisma.SubstitutePostWhereInput {
+    const sidos = splitFilterValues(filter?.sido);
+    const sigungus = splitFilterValues(filter?.sigungu);
+    const regionOr: Prisma.SubstitutePostWhereInput[] = [
+      ...sidos.map((sido) => ({ sido })),
+      ...sigungus.map((sigungu) => ({ sigungu })),
+    ];
+
     return {
       ...(filter?.status ? { status: filter.status } : { status: "OPEN" }),
-      ...(filter?.sido ? { sido: filter.sido } : {}),
-      ...(filter?.sigungu ? { sigungu: filter.sigungu } : {}),
+      ...(regionOr.length === 1
+        ? regionOr[0]
+        : regionOr.length > 1
+          ? { OR: regionOr }
+          : {}),
       ...(filter?.source ? { source: filter.source } : {}),
     };
   }

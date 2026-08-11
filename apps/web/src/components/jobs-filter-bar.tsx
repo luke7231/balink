@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FilterChipBar } from "@/components/filter-chip-bar";
 
 interface DistrictOption {
@@ -18,58 +18,86 @@ interface RegionOption {
 
 interface JobsFilterBarProps {
   regions: RegionOption[];
-  selectedSido: string;
-  selectedSigungu: string;
+  selectedSidos: string[];
+  selectedSigungus: string[];
 }
 
-function buildJobsHref(sido?: string, sigungu?: string): string {
+function buildJobsHref(sidos: string[], sigungus: string[]): string {
   const params = new URLSearchParams();
-  if (sido) params.set("sido", sido);
-  if (sigungu) params.set("sigungu", sigungu);
+  for (const sido of sidos) params.append("sido", sido);
+  for (const sigungu of sigungus) params.append("sigungu", sigungu);
   const query = params.toString();
   return query ? `/?${query}` : "/";
 }
 
-export function JobsFilterBar({ regions, selectedSido, selectedSigungu }: JobsFilterBarProps) {
+function toggleValue(values: string[], value: string): string[] {
+  return values.includes(value) ? values.filter((entry) => entry !== value) : [...values, value];
+}
+
+function optionClass(selected: boolean): string {
+  return `rounded-xl px-3 py-2 text-sm font-semibold transition ${
+    selected
+      ? "bg-accent-subtle text-accent"
+      : "border border-border text-muted-foreground"
+  }`;
+}
+
+export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: JobsFilterBarProps) {
   const router = useRouter();
-  const [draftSido, setDraftSido] = useState(selectedSido);
-  const [draftSigungu, setDraftSigungu] = useState(selectedSigungu);
+  const selectionKey = `${selectedSidos.join("\0")}|${selectedSigungus.join("\0")}`;
+  const [draftKey, setDraftKey] = useState(selectionKey);
+  const [draftSidos, setDraftSidos] = useState(selectedSidos);
+  const [draftSigungus, setDraftSigungus] = useState(selectedSigungus);
 
-  useEffect(() => {
-    setDraftSido(selectedSido);
-    setDraftSigungu(selectedSigungu);
-  }, [selectedSido, selectedSigungu]);
+  if (draftKey !== selectionKey) {
+    setDraftKey(selectionKey);
+    setDraftSidos(selectedSidos);
+    setDraftSigungus(selectedSigungus);
+  }
 
-  const districts = useMemo(
-    () => regions.find((region) => region.sido === draftSido)?.districts ?? [],
-    [regions, draftSido],
-  );
+  const districts = useMemo(() => {
+    const selected = new Set(draftSidos);
+    return regions
+      .filter((region) => selected.has(region.sido))
+      .flatMap((region) =>
+        region.districts.map((district) => ({
+          ...district,
+          sido: region.sido,
+        })),
+      );
+  }, [regions, draftSidos]);
 
-  const activeCount = Number(Boolean(selectedSido)) + Number(Boolean(selectedSigungu));
+  const activeCount = selectedSidos.length + selectedSigungus.length;
 
   const chips = [
     {
       key: "all",
       label: "전체 지역",
       href: "/",
-      selected: !selectedSido,
+      selected: selectedSidos.length === 0 && selectedSigungus.length === 0,
     },
     ...regions.map((region) => ({
       key: region.sido,
       label: region.sido,
-      href: buildJobsHref(region.sido),
-      selected: selectedSido === region.sido,
+      href: buildJobsHref(
+        toggleValue(selectedSidos, region.sido),
+        selectedSidos.includes(region.sido)
+          ? selectedSigungus.filter(
+              (sigungu) => !region.districts.some((district) => district.sigungu === sigungu),
+            )
+          : selectedSigungus,
+      ),
+      selected: selectedSidos.includes(region.sido),
     })),
-    ...(selectedSigungu
-      ? [
-          {
-            key: `sigungu-${selectedSigungu}`,
-            label: selectedSigungu,
-            href: buildJobsHref(selectedSido, selectedSigungu),
-            selected: true,
-          },
-        ]
-      : []),
+    ...selectedSigungus.map((sigungu) => ({
+      key: `sigungu-${sigungu}`,
+      label: sigungu,
+      href: buildJobsHref(
+        selectedSidos,
+        selectedSigungus.filter((entry) => entry !== sigungu),
+      ),
+      selected: true,
+    })),
   ];
 
   return (
@@ -83,7 +111,7 @@ export function JobsFilterBar({ regions, selectedSido, selectedSigungu }: JobsFi
           className="space-y-5"
           onSubmit={(event) => {
             event.preventDefault();
-            router.push(buildJobsHref(draftSido || undefined, draftSigungu || undefined));
+            router.push(buildJobsHref(draftSidos, draftSigungus));
           }}
         >
           <div>
@@ -92,53 +120,64 @@ export function JobsFilterBar({ regions, selectedSido, selectedSigungu }: JobsFi
               <button
                 type="button"
                 onClick={() => {
-                  setDraftSido("");
-                  setDraftSigungu("");
+                  setDraftSidos([]);
+                  setDraftSigungus([]);
                 }}
-                className={`rounded-xl px-3 py-2 text-sm font-semibold ${
-                  !draftSido ? "bg-accent-subtle text-accent" : "border border-border text-muted-foreground"
-                }`}
+                className={optionClass(draftSidos.length === 0)}
               >
                 전체
               </button>
-              {regions.map((region) => (
-                <button
-                  key={region.sido}
-                  type="button"
-                  onClick={() => {
-                    setDraftSido(region.sido);
-                    setDraftSigungu("");
-                  }}
-                  className={`rounded-xl px-3 py-2 text-sm font-semibold ${
-                    draftSido === region.sido
-                      ? "bg-accent-subtle text-accent"
-                      : "border border-border text-muted-foreground"
-                  }`}
-                >
-                  {region.sido}
-                </button>
-              ))}
+              {regions.map((region) => {
+                const selected = draftSidos.includes(region.sido);
+                return (
+                  <button
+                    key={region.sido}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => {
+                      const removing = draftSidos.includes(region.sido);
+                      setDraftSidos((prev) => toggleValue(prev, region.sido));
+                      if (removing) {
+                        const removed = new Set(region.districts.map((district) => district.sigungu));
+                        setDraftSigungus((current) =>
+                          current.filter((sigungu) => !removed.has(sigungu)),
+                        );
+                      }
+                    }}
+                    className={optionClass(selected)}
+                  >
+                    {region.sido}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="jobs-sheet-sigungu">
-              시·군·구
-            </label>
-            <select
-              id="jobs-sheet-sigungu"
-              value={draftSigungu}
-              disabled={!draftSido}
-              onChange={(event) => setDraftSigungu(event.target.value)}
-              className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100 disabled:bg-surface-muted disabled:text-muted-foreground"
-            >
-              <option value="">{draftSido ? `${draftSido} 전체` : "시·도를 먼저 선택"}</option>
-              {districts.map((district) => (
-                <option key={district.sigungu} value={district.sigungu}>
-                  {district.sigungu} ({district.count})
-                </option>
-              ))}
-            </select>
+            <p className="mb-2 text-sm font-semibold text-foreground">시·군·구</p>
+            {draftSidos.length === 0 ? (
+              <p className="text-sm text-muted-foreground">시·도를 먼저 선택해 주세요.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {districts.map((district) => {
+                  const selected = draftSigungus.includes(district.sigungu);
+                  return (
+                    <button
+                      key={`${district.sido}-${district.sigungu}`}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() =>
+                        setDraftSigungus((prev) => toggleValue(prev, district.sigungu))
+                      }
+                      className={optionClass(selected)}
+                    >
+                      {district.sigungu}
+                      <span className="ml-1 text-xs font-medium opacity-70">({district.count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2 pt-2">
