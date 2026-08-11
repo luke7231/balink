@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { BottomSheet } from "@/components/bottom-sheet";
 
 export interface FilterChipItem {
@@ -28,20 +27,15 @@ export function FilterChipBar({
   ariaLabel,
 }: FilterChipBarProps) {
   const [open, setOpen] = useState(false);
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    setOpen(false);
-  }, [searchParams]);
 
   return (
     <>
       <section aria-label={ariaLabel} className="mb-6 min-w-0 max-w-full">
-        <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1 scrollbar-none">
+        <div className="flex min-w-0 max-w-full gap-2 pb-1">
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition ${
+            className={`inline-flex h-10 shrink-0 touch-manipulation items-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition ${
               activeCount > 0
                 ? "bg-accent-subtle text-accent"
                 : "border border-border bg-surface text-muted-foreground"
@@ -53,25 +47,34 @@ export function FilterChipBar({
             <span>{activeCount > 0 ? activeCount : "필터"}</span>
           </button>
 
-          {chips.map((chip) => (
-            <Link
-              key={chip.key}
-              href={chip.href}
-              aria-current={chip.selected ? "page" : undefined}
-              className={`inline-flex h-10 shrink-0 items-center rounded-xl px-3.5 text-sm font-semibold whitespace-nowrap transition ${
-                chip.selected
-                  ? "bg-accent-subtle text-accent"
-                  : "border border-border bg-surface text-muted-foreground"
-              }`}
-            >
-              {chip.label}
-            </Link>
-          ))}
+          <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto overscroll-x-contain scrollbar-none">
+            {chips.map((chip) => (
+              <Link
+                key={chip.key}
+                href={chip.href}
+                aria-current={chip.selected ? "page" : undefined}
+                className={`inline-flex h-10 shrink-0 items-center rounded-xl px-3.5 text-sm font-semibold whitespace-nowrap transition ${
+                  chip.selected
+                    ? "bg-accent-subtle text-accent"
+                    : "border border-border bg-surface text-muted-foreground"
+                }`}
+              >
+                {chip.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
       <BottomSheet open={open} title={sheetTitle} onClose={() => setOpen(false)}>
-        {sheetContent}
+        <div
+          onClick={(event) => {
+            if ((event.target as Element).closest("a")) setOpen(false);
+          }}
+          onSubmit={() => setOpen(false)}
+        >
+          {sheetContent}
+        </div>
       </BottomSheet>
     </>
   );

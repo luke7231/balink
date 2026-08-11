@@ -7,9 +7,12 @@ import type { HomeBannerItem } from "@/lib/home-banners";
 
 const AUTO_PLAY_MS = 4000;
 const RESUME_AUTO_PLAY_MS = 5500;
-const SWIPE_CLICK_THRESHOLD = 8;
-const SWIPE_CHANGE_THRESHOLD = 48;
 const DESKTOP_PAGE_SIZE = 3;
+/** 모바일: 중앙 82%, 좌우 피크 9% → 시작 시 6 | 1 | 2 */
+const MOBILE_PAGE_RATIO = 0.82;
+const GAP_PX = 12;
+/** 스크롤이 이 시간 동안 멈춰 있으면 정착으로 판단 */
+const SETTLE_MS = 160;
 
 type TrackPage = {
   key: string;
@@ -46,10 +49,10 @@ function buildTrack(pages: HomeBannerItem[][]): TrackPage[] {
   const last = pages.length - 1;
   return [
     { key: "clone-end", logicalIndex: last, items: pages[last]!, clone: "end" },
-    ...pages.map((items, index) => ({
+    ...pages.map((pageItems, index) => ({
       key: `page-${index}`,
       logicalIndex: index,
-      items,
+      items: pageItems,
     })),
     { key: "clone-start", logicalIndex: 0, items: pages[0]!, clone: "start" },
   ];
@@ -69,215 +72,257 @@ function BannerCarousel({
   const loop = pageCount > 1;
   const track = useMemo(() => buildTrack(pages), [pages]);
 
+  const isMobile = variant === "mobile";
+
+  const rootRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
-  /** track 배열 기준 인덱스 (루프 시 첫 실페이지 = 1) */
   const trackIndexRef = useRef(loop ? 1 : 0);
-  const dragStartTrackRef = useRef(loop ? 1 : 0);
-  const jumpingRef = useRef(false);
+  const pageWidthRef = useRef(0);
+  const didInitRef = useRef(false);
+  const interactingRef = useRef(false);
+
+  const watchRafRef = useRef<number | null>(null);
+  const lastLeftRef = useRef(Number.NaN);
+  const stableSinceRef = useRef(0);
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const normalizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dragRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startScrollLeft: number;
-    moved: boolean;
-  } | null>(null);
+
+  const trackRef = useRef(track);
+  const pageCountRef = useRef(pageCount);
+  const loopRef = useRef(loop);
 
   const [pageIndex, setPageIndex] = useState(0);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(true);
-  const [dragSuppressClick, setDragSuppressClick] = useState(false);
+  const [layout, setLayout] = useState({ pageWidth: 0, pad: 0 });
 
-  function logicalFromTrack(trackIndex: number) {
-    return track[trackIndex]?.logicalIndex ?? 0;
-  }
-
-  function scrollLeftForTrackIndex(trackIndex: number) {
-    const root = scrollerRef.current;
-    const pageEl = root?.querySelector<HTMLElement>(`[data-track-index="${trackIndex}"]`);
-    if (!root || !pageEl) return null;
-
-    if (variant === "mobile") {
-      return Math.max(0, pageEl.offsetLeft - (root.clientWidth - pageEl.clientWidth) / 2);
-    }
-    return pageEl.offsetLeft;
-  }
-
-  function jumpToTrackIndex(trackIndex: number) {
-    const root = scrollerRef.current;
-    const left = scrollLeftForTrackIndex(trackIndex);
-    if (!root || left == null) return;
-    jumpingRef.current = true;
-    root.scrollTo({ left, behavior: "auto" });
-    trackIndexRef.current = trackIndex;
-    setPageIndex(logicalFromTrack(trackIndex));
-    requestAnimationFrame(() => {
-      jumpingRef.current = false;
-    });
-  }
-
-  function normalizeLoopPosition(trackIndex: number) {
-    if (!loop) return;
-    // [clone-last][0..n-1][clone-first]
-    if (trackIndex <= 0) {
-      jumpToTrackIndex(pageCount);
-      return;
-    }
-    if (trackIndex >= pageCount + 1) {
-      jumpToTrackIndex(1);
-    }
-  }
-
-  function scrollToTrackIndex(trackIndex: number, behavior: ScrollBehavior = "smooth") {
-    const root = scrollerRef.current;
-    if (!root || track.length === 0) return;
-
-    const maxTrack = track.length - 1;
-    const next = Math.max(0, Math.min(maxTrack, trackIndex));
-    const left = scrollLeftForTrackIndex(next);
-    if (left == null) return;
-
-    trackIndexRef.current = next;
-    setPageIndex(logicalFromTrack(next));
-    root.scrollTo({ left, behavior });
-
-    if (behavior === "auto") {
-      normalizeLoopPosition(next);
-      return;
-    }
-
-    if (normalizeTimerRef.current) clearTimeout(normalizeTimerRef.current);
-    normalizeTimerRef.current = setTimeout(() => {
-      normalizeLoopPosition(trackIndexRef.current);
-    }, 420);
-  }
+  // 스크롤 감시 루프가 최신 트랙 정보를 읽도록 렌더 후 동기화한다
+  useEffect(() => {
+    trackRef.current = track;
+    pageCountRef.current = pageCount;
+    loopRef.current = loop;
+  });
 
   function pauseAutoPlay() {
     setAutoPlayEnabled(false);
     if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-    resumeTimerRef.current = setTimeout(() => {
-      setAutoPlayEnabled(true);
-    }, RESUME_AUTO_PLAY_MS);
+    resumeTimerRef.current = setTimeout(() => setAutoPlayEnabled(true), RESUME_AUTO_PLAY_MS);
   }
 
-  useEffect(() => {
-    scrollToTrackIndex(loop ? 1 : 0, "auto");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variant, pageCount, loop]);
+  function stride() {
+    return pageWidthRef.current + GAP_PX;
+  }
+
+  function indexFromScrollLeft() {
+    const scroller = scrollerRef.current;
+    if (!scroller || pageWidthRef.current <= 0) return trackIndexRef.current;
+    const maxIndex = Math.max(0, trackRef.current.length - 1);
+    return Math.max(0, Math.min(maxIndex, Math.round(scroller.scrollLeft / stride())));
+  }
+
+  function syncIndicator() {
+    const next = indexFromScrollLeft();
+    trackIndexRef.current = next;
+    const logical = trackRef.current[next]?.logicalIndex ?? 0;
+    setPageIndex((prev) => (prev === logical ? prev : logical));
+  }
+
+  function scrollToTrackIndex(trackIndex: number, behavior: ScrollBehavior) {
+    const scroller = scrollerRef.current;
+    if (!scroller || pageWidthRef.current <= 0) return;
+
+    trackIndexRef.current = trackIndex;
+    const logical = trackRef.current[trackIndex]?.logicalIndex ?? 0;
+    setPageIndex((prev) => (prev === logical ? prev : logical));
+
+    // 좌우 패딩이 (viewport - page)/2 이므로 index * stride 가 곧 중앙 정렬 위치
+    scroller.scrollTo({ left: trackIndex * stride(), behavior });
+  }
+
+  /** 클론 페이지에 멈추면 대응하는 실제 페이지로 순간 이동 */
+  function normalizeLoopPosition() {
+    if (!loopRef.current) return;
+    const count = pageCountRef.current;
+    const index = trackIndexRef.current;
+    if (index <= 0) {
+      scrollToTrackIndex(count, "auto");
+      return;
+    }
+    if (index >= count + 1) {
+      scrollToTrackIndex(1, "auto");
+    }
+  }
+
+  /**
+   * iOS WKWebView는 관성 스크롤 중 scroll 이벤트를 건너뛰는 경우가 있어
+   * 위치가 멈출 때까지 rAF로 직접 관찰한다.
+   */
+  function startWatch() {
+    if (watchRafRef.current != null) return;
+
+    lastLeftRef.current = Number.NaN;
+    stableSinceRef.current = performance.now();
+
+    const tick = () => {
+      const scroller = scrollerRef.current;
+      if (!scroller) {
+        watchRafRef.current = null;
+        return;
+      }
+
+      const left = scroller.scrollLeft;
+      const now = performance.now();
+
+      if (Number.isNaN(lastLeftRef.current) || Math.abs(left - lastLeftRef.current) > 0.5) {
+        lastLeftRef.current = left;
+        stableSinceRef.current = now;
+        syncIndicator();
+      }
+
+      const settled = now - stableSinceRef.current > SETTLE_MS;
+      if (settled && !interactingRef.current) {
+        watchRafRef.current = null;
+        syncIndicator();
+        normalizeLoopPosition();
+        return;
+      }
+
+      watchRafRef.current = requestAnimationFrame(tick);
+    };
+
+    watchRafRef.current = requestAnimationFrame(tick);
+  }
 
   useEffect(() => {
     return () => {
       if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-      if (normalizeTimerRef.current) clearTimeout(normalizeTimerRef.current);
+      if (watchRafRef.current != null) cancelAnimationFrame(watchRafRef.current);
     };
   }, []);
 
   useEffect(() => {
-    if (!autoPlayEnabled || !loop) return;
+    const root = rootRef.current;
+    const scroller = scrollerRef.current;
+    if (!root || !scroller) return;
+
+    didInitRef.current = false;
+
+    const measure = () => {
+      const viewportWidth = scroller.clientWidth || root.clientWidth;
+      if (viewportWidth <= 0) return;
+
+      const nextPageWidth = isMobile
+        ? Math.round(viewportWidth * MOBILE_PAGE_RATIO)
+        : viewportWidth;
+      const nextPad = isMobile ? Math.max(0, (viewportWidth - nextPageWidth) / 2) : 0;
+      const changed = nextPageWidth !== pageWidthRef.current;
+
+      pageWidthRef.current = nextPageWidth;
+      if (changed) setLayout({ pageWidth: nextPageWidth, pad: nextPad });
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (!didInitRef.current) {
+            didInitRef.current = true;
+            scrollToTrackIndex(loop ? 1 : 0, "auto");
+          } else if (changed) {
+            scrollToTrackIndex(trackIndexRef.current, "auto");
+          }
+        });
+      });
+    };
+
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(root);
+    observer.observe(scroller);
+
+    const onScroll = () => {
+      syncIndicator();
+      startWatch();
+    };
+
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      scroller.removeEventListener("scroll", onScroll);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variant, pageCount, loop]);
+
+  useEffect(() => {
+    if (!autoPlayEnabled || !loop || layout.pageWidth <= 0) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const timer = window.setInterval(() => {
+      if (interactingRef.current) return;
       scrollToTrackIndex(trackIndexRef.current + 1, "smooth");
+      window.setTimeout(startWatch, 450);
     }, AUTO_PLAY_MS);
 
     return () => window.clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPlayEnabled, loop, pageCount]);
-
-  useEffect(() => {
-    const root = scrollerRef.current;
-    if (!root || !loop) return;
-
-    const onScrollEnd = () => {
-      if (jumpingRef.current) return;
-      normalizeLoopPosition(trackIndexRef.current);
-    };
-
-    root.addEventListener("scrollend", onScrollEnd);
-    return () => root.removeEventListener("scrollend", onScrollEnd);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loop, pageCount, variant]);
+  }, [autoPlayEnabled, loop, pageCount, layout.pageWidth]);
 
   if (pageCount === 0) return null;
 
-  const isMobile = variant === "mobile";
+  const { pageWidth: pageWidthPx, pad: padPx } = layout;
+
+  const beginInteraction = () => {
+    interactingRef.current = true;
+    pauseAutoPlay();
+    startWatch();
+  };
+
+  const finishInteraction = () => {
+    interactingRef.current = false;
+    startWatch();
+  };
 
   return (
     <div
+      ref={rootRef}
       className={
         isMobile
-          ? "relative min-w-0 max-w-full md:hidden"
+          ? "relative -mx-4 min-w-0 md:hidden"
           : "relative hidden min-w-0 max-w-full md:block"
       }
     >
       <div
         ref={scrollerRef}
-        className={
-          isMobile
-            ? "flex min-w-0 max-w-full touch-none snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-1 scrollbar-none"
-            : "flex w-full min-w-0 max-w-full touch-none snap-x snap-mandatory gap-0 overflow-x-auto overscroll-x-contain scrollbar-none"
-        }
-        onPointerDown={(event) => {
-          if (event.pointerType === "mouse" && event.button !== 0) return;
-          const root = scrollerRef.current;
-          if (!root) return;
-          pauseAutoPlay();
-          dragStartTrackRef.current = trackIndexRef.current;
-          dragRef.current = {
-            pointerId: event.pointerId,
-            startX: event.clientX,
-            startScrollLeft: root.scrollLeft,
-            moved: false,
-          };
-          root.setPointerCapture(event.pointerId);
+        className="relative flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x scrollbar-none py-1"
+        style={{
+          gap: GAP_PX,
+          ...(pageWidthPx > 0 && isMobile
+            ? { paddingInline: padPx, scrollPaddingInline: padPx }
+            : {}),
         }}
-        onPointerMove={(event) => {
-          const drag = dragRef.current;
-          const root = scrollerRef.current;
-          if (!drag || !root || drag.pointerId !== event.pointerId) return;
-          const deltaX = event.clientX - drag.startX;
-          if (Math.abs(deltaX) > SWIPE_CLICK_THRESHOLD) {
-            drag.moved = true;
-            setDragSuppressClick(true);
-            event.preventDefault();
-          }
-          root.scrollLeft = drag.startScrollLeft - deltaX;
+        onTouchStart={beginInteraction}
+        onTouchMove={startWatch}
+        onTouchEnd={finishInteraction}
+        onTouchCancel={finishInteraction}
+        onPointerDown={(event) => {
+          if (event.pointerType === "mouse") beginInteraction();
         }}
         onPointerUp={(event) => {
-          const drag = dragRef.current;
-          const root = scrollerRef.current;
-          if (!drag || !root || drag.pointerId !== event.pointerId) return;
-          if (root.hasPointerCapture(event.pointerId)) {
-            root.releasePointerCapture(event.pointerId);
-          }
-
-          const deltaX = event.clientX - drag.startX;
-          const startTrack = dragStartTrackRef.current;
-          if (drag.moved && Math.abs(deltaX) > SWIPE_CHANGE_THRESHOLD) {
-            const next = deltaX < 0 ? startTrack + 1 : startTrack - 1;
-            scrollToTrackIndex(next, "smooth");
-          } else {
-            scrollToTrackIndex(startTrack, "smooth");
-          }
-
-          dragRef.current = null;
-          window.setTimeout(() => setDragSuppressClick(false), 0);
+          if (event.pointerType === "mouse") finishInteraction();
         }}
-        onPointerCancel={() => {
-          dragRef.current = null;
-          setDragSuppressClick(false);
-          scrollToTrackIndex(dragStartTrackRef.current, "smooth");
+        onPointerCancel={(event) => {
+          if (event.pointerType === "mouse") finishInteraction();
         }}
       >
-        {track.map((page, trackIndex) => (
+        {track.map((page) => (
           <div
             key={page.key}
-            data-track-index={trackIndex}
-            data-logical-index={page.logicalIndex}
             className={
-              isMobile
-                ? "w-[82%] shrink-0 snap-center sm:w-[78%]"
-                : "grid w-full min-w-full shrink-0 snap-start grid-cols-3 gap-3"
+              isMobile ? "shrink-0" : "grid shrink-0 grid-cols-3 gap-3"
             }
+            style={{
+              flex: pageWidthPx > 0 ? `0 0 ${pageWidthPx}px` : isMobile ? "0 0 82%" : "0 0 100%",
+              width: pageWidthPx > 0 ? pageWidthPx : isMobile ? "82%" : "100%",
+              scrollSnapAlign: "center",
+              scrollSnapStop: "always",
+            }}
           >
             {page.items.map((item, indexInPage) => (
               <BannerCard
@@ -285,7 +330,6 @@ function BannerCarousel({
                 item={item}
                 priority={!page.clone && page.logicalIndex === 0 && indexInPage === 0}
                 layout={variant}
-                suppressClick={dragSuppressClick}
               />
             ))}
             {!isMobile &&
@@ -326,20 +370,15 @@ function BannerCard({
   item,
   priority,
   layout,
-  suppressClick = false,
 }: {
   item: HomeBannerItem;
   priority?: boolean;
   layout: "mobile" | "desktop";
-  suppressClick?: boolean;
 }) {
   return (
     <Link
       href={item.href}
       draggable={false}
-      onClick={(event) => {
-        if (suppressClick) event.preventDefault();
-      }}
       className={`group relative block overflow-hidden bg-foreground shadow-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400 ${
         layout === "mobile" ? "aspect-4/5 rounded-[1.35rem]" : "aspect-3/4 rounded-2xl"
       }`}

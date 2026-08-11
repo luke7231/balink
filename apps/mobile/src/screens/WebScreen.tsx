@@ -284,6 +284,8 @@ export function WebScreen() {
         thirdPartyCookiesEnabled
         javaScriptEnabled
         domStorageEnabled
+        cacheEnabled={!__DEV__}
+        cacheMode={__DEV__ ? "LOAD_NO_CACHE" : "LOAD_DEFAULT"}
         style={{ backgroundColor }}
         containerStyle={{ backgroundColor }}
         startInLoadingState

@@ -1,5 +1,6 @@
 import { loadEnvConfig } from "@next/env";
 import type { NextConfig } from "next";
+import { networkInterfaces } from "node:os";
 import { resolve } from "node:path";
 
 // Local monorepo: shared secrets live in the repo root `.env`.
@@ -27,9 +28,15 @@ if (publicBaseUrl) {
   }
 }
 
+const allowedDevOrigins = Object.values(networkInterfaces())
+  .flatMap((entries) => entries ?? [])
+  .filter((entry) => entry.family === "IPv4" && !entry.internal)
+  .map((entry) => entry.address);
+
 const nextConfig: NextConfig = {
   outputFileTracingRoot: resolve(__dirname, "../.."),
   transpilePackages: ["@balink/ui", "@balink/domain", "@balink/db"],
+  allowedDevOrigins,
   images: {
     remotePatterns,
   },
