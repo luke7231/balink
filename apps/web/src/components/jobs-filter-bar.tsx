@@ -87,7 +87,7 @@ export function JobsFilterBar({ regions, selectedSido, selectedSigungu }: JobsFi
           }}
         >
           <div>
-            <p className="mb-2 text-sm font-semibold text-zinc-800">시·도</p>
+            <p className="mb-2 text-sm font-semibold text-foreground">시·도</p>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -96,7 +96,7 @@ export function JobsFilterBar({ regions, selectedSido, selectedSigungu }: JobsFi
                   setDraftSigungu("");
                 }}
                 className={`rounded-xl px-3 py-2 text-sm font-semibold ${
-                  !draftSido ? "bg-rose-50 text-rose-700" : "border border-zinc-200 text-zinc-600"
+                  !draftSido ? "bg-accent-subtle text-accent" : "border border-border text-muted-foreground"
                 }`}
               >
                 전체
@@ -111,8 +111,8 @@ export function JobsFilterBar({ regions, selectedSido, selectedSigungu }: JobsFi
                   }}
                   className={`rounded-xl px-3 py-2 text-sm font-semibold ${
                     draftSido === region.sido
-                      ? "bg-rose-50 text-rose-700"
-                      : "border border-zinc-200 text-zinc-600"
+                      ? "bg-accent-subtle text-accent"
+                      : "border border-border text-muted-foreground"
                   }`}
                 >
                   {region.sido}
@@ -122,7 +122,7 @@ export function JobsFilterBar({ regions, selectedSido, selectedSigungu }: JobsFi
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-semibold text-zinc-800" htmlFor="jobs-sheet-sigungu">
+            <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="jobs-sheet-sigungu">
               시·군·구
             </label>
             <select
@@ -130,7 +130,7 @@ export function JobsFilterBar({ regions, selectedSido, selectedSigungu }: JobsFi
               value={draftSigungu}
               disabled={!draftSido}
               onChange={(event) => setDraftSigungu(event.target.value)}
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-800 outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100 disabled:bg-zinc-50 disabled:text-zinc-400"
+              className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100 disabled:bg-surface-muted disabled:text-muted-foreground"
             >
               <option value="">{draftSido ? `${draftSido} 전체` : "시·도를 먼저 선택"}</option>
               {districts.map((district) => (
@@ -144,7 +144,7 @@ export function JobsFilterBar({ regions, selectedSido, selectedSigungu }: JobsFi
           <div className="flex gap-2 pt-2">
             <Link
               href="/"
-              className="flex-1 rounded-2xl border border-zinc-200 px-4 py-3 text-center text-sm font-semibold text-zinc-600"
+              className="flex-1 rounded-2xl border border-border px-4 py-3 text-center text-sm font-semibold text-muted-foreground"
             >
               초기화
             </Link>

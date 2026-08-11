@@ -6,6 +6,7 @@ import * as Notifications from "expo-notifications";
 import { enableScreens } from "react-native-screens";
 import { BridgeProvider } from "./src/bridge-context";
 import { RootNavigator } from "./src/navigation/RootNavigator";
+import { NativeThemeProvider, useNativeTheme } from "./src/theme-context";
 
 enableScreens(true);
 
@@ -22,11 +23,22 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar barStyle="dark-content" />
-        <BridgeProvider>
-          <RootNavigator />
-        </BridgeProvider>
+        <NativeThemeProvider>
+          <ThemedApp />
+        </NativeThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function ThemedApp() {
+  const { isDark } = useNativeTheme();
+  return (
+    <>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <BridgeProvider>
+        <RootNavigator />
+      </BridgeProvider>
+    </>
   );
 }

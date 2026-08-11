@@ -50,7 +50,7 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
   const slotBadges = displayableTimeSlots(job.timeSlots);
 
   return (
-    <div className="group relative box-border min-w-0 w-full max-w-full rounded-3xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md">
+    <div className="group relative box-border min-w-0 w-full max-w-full rounded-3xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-accent-border hover:shadow-md">
       <Link
         href={href}
         className={`block min-w-0 max-w-full p-4 sm:p-5 ${action ? "pr-14 sm:pr-16" : ""}`}
@@ -86,24 +86,24 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
               ))}
             </div>
 
-            <h2 className="mt-2 line-clamp-2 text-base font-semibold leading-snug text-zinc-900 group-hover:text-rose-700 sm:text-lg">
+            <h2 className="mt-2 line-clamp-2 text-base font-semibold leading-snug text-foreground group-hover:text-accent sm:text-lg">
               {job.title}
             </h2>
 
-            <div className="mt-3 space-y-1.5 text-sm text-zinc-600">
+            <div className="mt-3 space-y-1.5 text-sm text-muted-foreground">
               <p className="flex min-w-0 items-center gap-1.5">
-                <MapPinIcon className="text-zinc-400" />
+                <MapPinIcon className="text-muted-foreground" />
                 <span className="truncate">{locationLabel}</span>
               </p>
               <p className="flex min-w-0 items-center gap-1.5">
-                <CalendarIcon className="text-zinc-400" />
+                <CalendarIcon className="text-muted-foreground" />
                 <span className="truncate">{dayLabel}</span>
               </p>
             </div>
 
             <div className="mt-3 flex items-end justify-between gap-3">
-              <strong className="break-keep text-sm font-bold text-rose-700 sm:text-base">{payLabel}</strong>
-              <p className="shrink-0 text-right text-xs text-zinc-400">{formatPostedAt(job.postedAt ?? null)}</p>
+              <strong className="break-keep text-sm font-bold text-accent sm:text-base">{payLabel}</strong>
+              <p className="shrink-0 text-right text-xs text-muted-foreground">{formatPostedAt(job.postedAt ?? null)}</p>
             </div>
           </div>
         </div>

@@ -95,7 +95,7 @@ export function SubstituteList({
 }: SubstituteListProps) {
   if (posts.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-zinc-200 bg-white px-6 py-16 text-center text-sm text-zinc-500">
+      <div className="rounded-3xl border border-dashed border-border bg-surface px-6 py-16 text-center text-sm text-muted-foreground">
         표시할 대강 글이 없습니다.
       </div>
     );
@@ -129,7 +129,7 @@ export function SubstituteList({
             key={post.id}
             href={getHref(post)}
             style={motionIndexStyle(index)}
-            className="motion-fade-up group block min-w-0 max-w-full rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md sm:p-5"
+            className="motion-fade-up group block min-w-0 max-w-full rounded-3xl border border-border bg-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-border hover:shadow-md sm:p-5"
           >
             <div className="flex flex-wrap gap-2">
               {urgencyLabel ? (
@@ -138,22 +138,22 @@ export function SubstituteList({
               <Badge>{formatSubstituteStatus(post.status)}</Badge>
             </div>
 
-            <h2 className="mt-2 line-clamp-2 text-base font-semibold leading-snug text-zinc-900 group-hover:text-rose-700 sm:text-lg">
+            <h2 className="mt-2 line-clamp-2 text-base font-semibold leading-snug text-foreground group-hover:text-accent sm:text-lg">
               {post.title}
             </h2>
 
             <div className="mt-3 grid grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start gap-3">
-              <div className="min-w-0 text-sm text-zinc-600">
+              <div className="min-w-0 text-sm text-muted-foreground">
                 <div className="grid grid-cols-[14px_minmax(0,1fr)] items-start gap-x-1.5">
-                  <MapPinIcon className="mt-0.5 text-zinc-400" />
+                  <MapPinIcon className="mt-0.5 text-muted-foreground" />
                   <div className="min-w-0">
                     <p className="truncate">{locationLabel}</p>
                     {post.academyName ? (
-                      <p className="mt-1 truncate text-zinc-500">
+                      <p className="mt-1 truncate text-muted-foreground">
                         {post.academyName}
                       </p>
                     ) : null}
-                    <strong className="mt-1 block break-keep text-sm font-bold text-rose-700 sm:text-base">
+                    <strong className="mt-1 block break-keep text-sm font-bold text-accent sm:text-base">
                       {payLabel}
                     </strong>
                   </div>
@@ -161,20 +161,20 @@ export function SubstituteList({
               </div>
 
               <div className="min-w-0 self-end">
-                <div className="ml-auto inline-grid grid-cols-[14px_minmax(0,auto)] gap-x-1.5 gap-y-1 text-left text-sm leading-snug text-zinc-700">
+                <div className="ml-auto inline-grid grid-cols-[14px_minmax(0,auto)] gap-x-1.5 gap-y-1 text-left text-sm leading-snug text-foreground">
                   {schedule.kind === "groups" ? (
                     <>
                       {schedule.groups.map((group, groupIndex) => (
                         <div key={group.date} className="contents">
                           {groupIndex === 0 ? (
-                            <CalendarIcon className="mt-0.5 text-zinc-400" />
+                            <CalendarIcon className="mt-0.5 text-muted-foreground" />
                           ) : (
                             <span aria-hidden="true" />
                           )}
                           <div className="min-w-0">
                             <p className="font-medium">{group.dateLabel}</p>
                             {group.times.length > 0 ? (
-                              <ul className="mt-0.5 space-y-0.5 pl-2 text-zinc-600">
+                              <ul className="mt-0.5 space-y-0.5 pl-2 text-muted-foreground">
                                 {group.times.map((time) => (
                                   <li key={`${group.date}-${time}`}>
                                     · {time}
@@ -188,7 +188,7 @@ export function SubstituteList({
                       {schedule.overflow > 0 ? (
                         <>
                           <span aria-hidden="true" />
-                          <p className="text-zinc-500">
+                          <p className="text-muted-foreground">
                             외 {schedule.overflow}개
                           </p>
                         </>
@@ -198,7 +198,7 @@ export function SubstituteList({
                     schedule.lines.map((line, index) => (
                       <div key={`${line}-${index}`} className="contents">
                         {index === 0 ? (
-                          <CalendarIcon className="mt-0.5 text-zinc-400" />
+                          <CalendarIcon className="mt-0.5 text-muted-foreground" />
                         ) : (
                           <span aria-hidden="true" />
                         )}
@@ -209,7 +209,7 @@ export function SubstituteList({
                     ))
                   )}
                 </div>
-                <p className="mt-2 text-right text-xs text-zinc-400">
+                <p className="mt-2 text-right text-xs text-muted-foreground">
                   {formatPostedAt(post.postedAt ?? null)}
                 </p>
               </div>

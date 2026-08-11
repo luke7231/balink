@@ -37,24 +37,24 @@ export function NotificationItem({
         });
       }}
       style={{ ["--motion-index" as string]: Math.min(index, 10) }}
-      className={`motion-fade-up block rounded-3xl border px-4 py-4 shadow-sm transition hover:border-rose-200 ${
-        unread ? "border-rose-100 bg-rose-50/40" : "border-zinc-200 bg-white"
+      className={`motion-fade-up block rounded-3xl border px-4 py-4 shadow-sm transition hover:border-accent-border ${
+        unread ? "border-accent-border bg-accent-subtle/60" : "border-border bg-surface"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-semibold text-white">
+            <span className="rounded-full bg-foreground px-2 py-0.5 text-[10px] font-semibold text-background">
               {notificationTypeLabel(type)}
             </span>
             {unread ? (
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" aria-label="읽지 않음" />
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-subtle0" aria-label="읽지 않음" />
             ) : null}
           </div>
-          <p className="mt-2 text-sm font-semibold text-zinc-900">{title}</p>
-          <p className="mt-1 text-sm leading-relaxed text-zinc-600">{body}</p>
+          <p className="mt-2 text-sm font-semibold text-foreground">{title}</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{body}</p>
         </div>
-        <time className="shrink-0 text-xs text-zinc-400">{formatNotificationTime(createdAt)}</time>
+        <time className="shrink-0 text-xs text-muted-foreground">{formatNotificationTime(createdAt)}</time>
       </div>
     </Link>
   );

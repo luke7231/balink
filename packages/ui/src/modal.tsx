@@ -48,7 +48,7 @@ export function Modal({
       <button
         type="button"
         aria-label="닫기"
-        className="absolute inset-0 bg-zinc-950/40"
+        className="absolute inset-0 bg-foreground/40"
         onClick={closeOnBackdrop ? onClose : undefined}
       />
       <div
@@ -56,25 +56,25 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className={`relative w-full rounded-3xl bg-white p-5 shadow-2xl ${
+        className={`relative w-full rounded-3xl bg-surface p-5 shadow-2xl ${
           size === "md" ? "max-w-md" : "max-w-sm"
         }`}
       >
         <div className="flex items-start justify-between gap-3">
-          <h2 id={titleId} className="text-lg font-semibold tracking-tight text-zinc-900">
+          <h2 id={titleId} className="text-lg font-semibold tracking-tight text-foreground">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-1.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700"
+            className="rounded-full p-1.5 text-muted-foreground transition hover:bg-surface-muted hover:text-foreground"
             aria-label="닫기"
           >
             <CloseIcon />
           </button>
         </div>
 
-        <div id={descriptionId} className="mt-3 text-sm leading-relaxed text-zinc-600">
+        <div id={descriptionId} className="mt-3 text-sm leading-relaxed text-muted-foreground">
           {children}
         </div>
 

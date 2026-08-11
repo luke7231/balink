@@ -43,7 +43,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const hasFilter = Boolean(selectedSido || selectedSigungu);
 
   return (
-    <div className="min-h-full min-w-0 max-w-full overflow-x-clip bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+    <div className="min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto min-w-0 max-w-5xl px-4 py-8">
@@ -58,8 +58,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </Suspense>
 
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-zinc-900">최신 공고</h3>
-          <p className="text-sm text-zinc-500">
+          <h3 className="text-lg font-semibold text-foreground">최신 공고</h3>
+          <p className="text-sm text-muted-foreground">
             {jobs.pageInfo.total}건
             {hasFilter ? " · 필터 적용" : ""}
           </p>

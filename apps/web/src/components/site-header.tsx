@@ -12,7 +12,7 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps) {
   return (
-    <header className="border-b border-rose-100/80 bg-white/80 backdrop-blur">
+    <header className="border-b border-accent-border/80 bg-surface/80 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-5">
         <Link href="/" className="shrink-0" aria-label="발링크 홈">
           <Image
@@ -21,7 +21,15 @@ export function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps) {
             width={140}
             height={50}
             priority
-            className="h-8 w-auto sm:h-9"
+            className="h-8 w-auto dark:hidden sm:h-9"
+          />
+          <Image
+            src="/brand/logo-horizontal-dark.png"
+            alt="balink"
+            width={140}
+            height={50}
+            priority
+            className="hidden h-8 w-auto dark:block sm:h-9"
           />
         </Link>
 
@@ -29,13 +37,13 @@ export function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps) {
           <nav className="hidden items-center gap-1 md:flex" aria-label="주요 메뉴">
             <Link
               href="/"
-              className="rounded-full px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
+              className="rounded-full px-3 py-2 text-sm font-medium text-foreground hover:bg-accent-subtle hover:text-accent"
             >
               채용{jobCount != null ? ` (${jobCount})` : ""}
             </Link>
             <Link
               href="/substitutes"
-              className="rounded-full px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
+              className="rounded-full px-3 py-2 text-sm font-medium text-foreground hover:bg-accent-subtle hover:text-accent"
             >
               대강{substituteCount != null ? ` (${substituteCount})` : ""}
             </Link>
@@ -44,7 +52,7 @@ export function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps) {
             </Suspense>
           </nav>
 
-          <Suspense fallback={<div className="h-9 w-20 rounded-full bg-zinc-100" aria-hidden="true" />}>
+          <Suspense fallback={<div className="h-9 w-20 rounded-full bg-surface-muted" aria-hidden="true" />}>
             <SiteHeaderAuth />
           </Suspense>
         </div>
@@ -59,7 +67,7 @@ async function SiteHeaderNotificationsLink() {
   return (
     <Link
       href="/notifications"
-      className="rounded-full px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-rose-50 hover:text-rose-700"
+      className="rounded-full px-3 py-2 text-sm font-medium text-foreground hover:bg-accent-subtle hover:text-accent"
     >
       알림
     </Link>
@@ -72,7 +80,7 @@ async function SiteHeaderAuth() {
 
   if (user) {
     return (
-      <div className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-2 py-1.5">
+      <div className="flex items-center gap-2 rounded-full border border-border bg-surface px-2 py-1.5">
         <Image
           src={user.image || DEFAULT_AVATAR_PATH}
           alt=""
@@ -83,7 +91,7 @@ async function SiteHeaderAuth() {
         />
         <Link
           href="/account"
-          className="max-w-28 truncate text-sm font-medium text-zinc-800 hover:text-rose-700"
+          className="max-w-28 truncate text-sm font-medium text-foreground hover:text-accent"
         >
           {user.name ?? "회원"}
         </Link>
@@ -95,7 +103,7 @@ async function SiteHeaderAuth() {
   return (
     <Link
       href="/login"
-      className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+      className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90"
     >
       로그인
     </Link>

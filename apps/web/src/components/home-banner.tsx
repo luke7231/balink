@@ -340,7 +340,7 @@ function BannerCard({
       onClick={(event) => {
         if (suppressClick) event.preventDefault();
       }}
-      className={`group relative block overflow-hidden bg-zinc-900 shadow-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400 ${
+      className={`group relative block overflow-hidden bg-foreground shadow-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400 ${
         layout === "mobile" ? "aspect-4/5 rounded-[1.35rem]" : "aspect-3/4 rounded-2xl"
       }`}
     >

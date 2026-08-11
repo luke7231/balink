@@ -1,12 +1,18 @@
-import { useEffect, type ComponentProps } from "react";
+import { useEffect, useMemo, type ComponentProps } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+  createNavigationContainerRef,
+} from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useBridge } from "../bridge-context";
 import { playHaptic } from "../haptics";
 import { WebScreen } from "../screens/WebScreen";
+import { useNativeTheme } from "../theme-context";
 import { tabRootPath } from "../web-config";
 import { openPushHref } from "./open-path";
 import type { RootTabParamList, WebStackParamList } from "./types";
@@ -88,20 +94,44 @@ function TabIcon({
   name: ComponentProps<typeof Ionicons>["name"];
   nameOutline: ComponentProps<typeof Ionicons>["name"];
 }) {
+  const { isDark } = useNativeTheme();
+  const activeColor = isDark ? "#fafafa" : "#18181b";
+  const inactiveColor = isDark ? "#71717a" : "#a1a1aa";
   return (
     <View style={styles.tabItem}>
       <Ionicons
         name={focused ? name : nameOutline}
         size={22}
-        color={focused ? "#18181b" : "#a1a1aa"}
+        color={focused ? activeColor : inactiveColor}
       />
-      <Text style={[styles.tabLabel, focused ? styles.tabLabelActive : null]}>{label}</Text>
+      <Text
+        style={[
+          styles.tabLabel,
+          { color: focused ? activeColor : inactiveColor },
+        ]}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
 
 export function RootNavigator() {
   const { setPushOpenHandler } = useBridge();
+  const { isDark } = useNativeTheme();
+  const navigationTheme = useMemo(() => {
+    const base = isDark ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        background: isDark ? "#09090b" : "#ffffff",
+        card: isDark ? "#18181b" : "#ffffff",
+        border: isDark ? "#3f3f46" : "#e4e4e7",
+        text: isDark ? "#fafafa" : "#18181b",
+      },
+    };
+  }, [isDark]);
 
   useEffect(() => {
     setPushOpenHandler((href) => {
@@ -112,12 +142,18 @@ export function RootNavigator() {
   }, [setPushOpenHandler]);
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} theme={navigationTheme}>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
           freezeOnBlur: true,
-          tabBarStyle: styles.tabBar,
+          tabBarStyle: [
+            styles.tabBar,
+            {
+              borderTopColor: isDark ? "rgba(63,63,70,0.9)" : "rgba(228,228,231,0.9)",
+              backgroundColor: isDark ? "rgba(24,24,27,0.98)" : "rgba(255,255,255,0.98)",
+            },
+          ],
           tabBarShowLabel: false,
         }}
         screenListeners={{
@@ -190,8 +226,6 @@ const styles = StyleSheet.create({
   tabBar: {
     height: 64,
     paddingTop: 6,
-    borderTopColor: "rgba(228,228,231,0.9)",
-    backgroundColor: "rgba(255,255,255,0.98)",
   },
   tabItem: {
     alignItems: "center",
@@ -202,9 +236,5 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontSize: 11,
     fontWeight: "500",
-    color: "#a1a1aa",
-  },
-  tabLabelActive: {
-    color: "#18181b",
   },
 });

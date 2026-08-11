@@ -33,26 +33,26 @@ export function BottomSheet({ open, title, onClose, children }: BottomSheetProps
       <button
         type="button"
         aria-label="필터 닫기"
-        className="absolute inset-0 bg-zinc-950/40"
+        className="absolute inset-0 bg-foreground/40"
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="absolute inset-x-0 bottom-0 mx-auto max-h-[85vh] w-full max-w-5xl rounded-t-3xl bg-white shadow-2xl"
+        className="absolute inset-x-0 bottom-0 mx-auto max-h-[85vh] w-full max-w-5xl rounded-t-3xl bg-surface shadow-2xl"
       >
         <div className="flex justify-center pt-3">
-          <div className="h-1.5 w-12 rounded-full bg-zinc-200" />
+          <div className="h-1.5 w-12 rounded-full bg-surface-muted" />
         </div>
         <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-4">
-          <h2 id={titleId} className="text-lg font-semibold text-zinc-900">
+          <h2 id={titleId} className="text-lg font-semibold text-foreground">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-500 hover:bg-zinc-50"
+            className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted"
           >
             닫기
           </button>

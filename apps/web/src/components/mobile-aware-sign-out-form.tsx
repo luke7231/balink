@@ -26,7 +26,7 @@ export function MobileAwareSignOutForm({ className }: { className?: string }) {
     >
       <button
         type="submit"
-        className="rounded-full px-2.5 py-1 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+        className="rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground"
       >
         로그아웃
       </button>

@@ -62,7 +62,7 @@ export function PushPermissionCallout({
       >
         <Link
           href="/login"
-          className="text-xs font-semibold text-zinc-600 underline underline-offset-2"
+          className="text-xs font-semibold text-muted-foreground underline underline-offset-2"
         >
           맞춤 조건 알림은 로그인 후 설정
         </Link>
@@ -79,7 +79,7 @@ export function PushPermissionCallout({
       >
         <Link
           href="/notifications/rules"
-          className="inline-flex rounded-full bg-zinc-900 px-3.5 py-2 text-xs font-semibold text-white"
+          className="inline-flex rounded-full bg-foreground px-3.5 py-2 text-xs font-semibold text-background"
         >
           알림 조건 켜기
         </Link>
@@ -163,7 +163,7 @@ function PushPanel({
   const colors = {
     success: "border-emerald-200 bg-emerald-50 text-emerald-950",
     warning: "border-amber-200 bg-amber-50 text-amber-950",
-    neutral: "border-zinc-200 bg-zinc-50 text-zinc-900",
+    neutral: "border-border bg-surface-muted text-foreground",
   };
   return (
     <section className={`mb-6 rounded-2xl border px-4 py-4 ${colors[tone]}`}>

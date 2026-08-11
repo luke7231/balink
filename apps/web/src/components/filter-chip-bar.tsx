@@ -43,8 +43,8 @@ export function FilterChipBar({
             onClick={() => setOpen(true)}
             className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition ${
               activeCount > 0
-                ? "bg-rose-50 text-rose-700"
-                : "border border-zinc-200 bg-white text-zinc-600"
+                ? "bg-accent-subtle text-accent"
+                : "border border-border bg-surface text-muted-foreground"
             }`}
             aria-haspopup="dialog"
             aria-expanded={open}
@@ -60,8 +60,8 @@ export function FilterChipBar({
               aria-current={chip.selected ? "page" : undefined}
               className={`inline-flex h-10 shrink-0 items-center rounded-xl px-3.5 text-sm font-semibold whitespace-nowrap transition ${
                 chip.selected
-                  ? "bg-rose-50 text-rose-700"
-                  : "border border-zinc-200 bg-white text-zinc-600"
+                  ? "bg-accent-subtle text-accent"
+                  : "border border-border bg-surface text-muted-foreground"
               }`}
             >
               {chip.label}

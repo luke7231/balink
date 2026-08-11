@@ -8,8 +8,8 @@ interface BadgeProps {
 export function Badge({ children, variant = "neutral" }: BadgeProps) {
   const className =
     variant === "rose"
-      ? "rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700"
-      : "rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600";
+      ? "rounded-full bg-accent-subtle px-3 py-1 text-xs font-medium text-accent"
+      : "rounded-full bg-surface-muted px-3 py-1 text-xs text-muted-foreground";
 
   return <span className={className}>{children}</span>;
 }

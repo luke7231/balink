@@ -15,10 +15,10 @@ export function AcademyGallery({ logoUrl, gallery }: AcademyGalleryProps) {
 
   return (
     <section className="mt-8 space-y-4">
-      <h2 className="text-sm font-semibold text-zinc-900">학원 이미지</h2>
+      <h2 className="text-sm font-semibold text-foreground">학원 이미지</h2>
 
       {logoUrl ? (
-        <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
+        <div className="overflow-hidden rounded-2xl border border-border bg-surface-muted/70 p-4">
           <img src={logoUrl} alt="학원 로고" className="mx-auto max-h-16 w-auto object-contain" />
         </div>
       ) : null}
@@ -31,7 +31,7 @@ export function AcademyGallery({ logoUrl, gallery }: AcademyGalleryProps) {
             .map((image) => (
               <figure
                 key={`${image.order}-${image.url}`}
-                className="overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-50/70"
+                className="overflow-hidden rounded-2xl border border-border bg-surface-muted/70"
               >
                 <img
                   src={image.url}

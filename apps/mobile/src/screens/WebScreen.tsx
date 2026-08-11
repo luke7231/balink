@@ -17,6 +17,7 @@ import { parseWebMessage, serializeNativeMessage, type NativeToWebMessage } from
 import { playHaptic } from "../haptics";
 import { openAppPath } from "../navigation/open-path";
 import type { WebStackParamList } from "../navigation/types";
+import { useNativeTheme } from "../theme-context";
 import {
   WEBVIEW_AUTH_HOSTS,
   WEB_ORIGIN,
@@ -28,12 +29,18 @@ import {
   withNativeShell,
 } from "../web-config";
 
-const NATIVE_SHELL_BEFORE = `
+function nativeShellBefore(isDark: boolean) {
+  const resolvedTheme = isDark ? "dark" : "light";
+  const background = isDark ? "#09090b" : "#ffffff";
+  return `
   (function () {
     window.__BALINK_NATIVE_SHELL__ = true;
     try {
       var root = document.documentElement;
       root.classList.add('native-shell');
+      root.classList.toggle('dark', ${isDark});
+      root.style.colorScheme = '${resolvedTheme}';
+      root.style.backgroundColor = '${background}';
       if (!document.getElementById('balink-native-shell-css')) {
         var style = document.createElement('style');
         style.id = 'balink-native-shell-css';
@@ -45,6 +52,7 @@ const NATIVE_SHELL_BEFORE = `
   })();
   true;
 `;
+}
 
 /** Intercept same-origin navigations that should use native tabs/stacks. */
 const NATIVE_NAV_INTERCEPT = `
@@ -133,6 +141,9 @@ export function WebScreen() {
   const currentUrlRef = useRef(uri);
   const [canGoBackInWeb, setCanGoBackInWeb] = useState(false);
   const { buildPermissionMessages, requestPushPermission, openNotificationSettings } = useBridge();
+  const { preference, resolvedTheme, isDark, setPreference } = useNativeTheme();
+  const backgroundColor = isDark ? "#09090b" : "#ffffff";
+  const indicatorColor = isDark ? "#fafafa" : "#111827";
 
   const sendToWeb = useCallback((message: NativeToWebMessage) => {
     if (!isTrustedWebUrl(currentUrlRef.current)) return;
@@ -151,9 +162,28 @@ export function WebScreen() {
     for (const message of messages) sendToWeb(message);
   }, [buildPermissionMessages, sendToWeb]);
 
+  const syncTheme = useCallback(() => {
+    sendToWeb({ type: "THEME_STATE", preference, resolvedTheme });
+    webViewRef.current?.injectJavaScript(`
+      (function () {
+        var root = document.documentElement;
+        root.classList.toggle('dark', ${isDark});
+        root.style.colorScheme = '${resolvedTheme}';
+        root.style.backgroundColor = '${backgroundColor}';
+        if (document.body) document.body.style.backgroundColor = '${backgroundColor}';
+      })();
+      true;
+    `);
+  }, [backgroundColor, isDark, preference, resolvedTheme, sendToWeb]);
+
+  useEffect(() => {
+    syncTheme();
+  }, [syncTheme]);
+
   useFocusEffect(
     useCallback(() => {
       void syncPermission();
+      syncTheme();
       const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
         if (navigation.canGoBack()) {
           navigation.goBack();
@@ -166,7 +196,7 @@ export function WebScreen() {
         return false;
       });
       return () => subscription.remove();
-    }, [navigation, canGoBackInWeb, syncPermission]),
+    }, [navigation, canGoBackInWeb, syncPermission, syncTheme]),
   );
 
   useEffect(() => {
@@ -184,6 +214,8 @@ export function WebScreen() {
         void playHaptic(message.style);
       } else if (message.type === "NATIVE_NAV") {
         openAppPath(navigation, message.path);
+      } else if (message.type === "SET_THEME") {
+        setPreference(message.preference);
       } else if (message.type === "REQUEST_PUSH_PERMISSION") {
         void requestPushPermission().then(() => syncPermission());
       } else if (message.type === "OPEN_NOTIFICATION_SETTINGS") {
@@ -192,7 +224,7 @@ export function WebScreen() {
         void syncPermission();
       }
     },
-    [navigation, openNotificationSettings, requestPushPermission, syncPermission],
+    [navigation, openNotificationSettings, requestPushPermission, setPreference, syncPermission],
   );
 
   const handleNavigation = useCallback(
@@ -240,7 +272,10 @@ export function WebScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor }]}
+      edges={["top", "left", "right"]}
+    >
       <WebView
         key={uri}
         ref={webViewRef}
@@ -249,18 +284,21 @@ export function WebScreen() {
         thirdPartyCookiesEnabled
         javaScriptEnabled
         domStorageEnabled
+        style={{ backgroundColor }}
+        containerStyle={{ backgroundColor }}
         startInLoadingState
         allowsBackForwardNavigationGestures={false}
-        injectedJavaScriptBeforeContentLoaded={NATIVE_SHELL_BEFORE}
+        injectedJavaScriptBeforeContentLoaded={nativeShellBefore(isDark)}
         injectedJavaScript={NATIVE_NAV_INTERCEPT}
         renderLoading={() => (
-          <View style={styles.loading}>
-            <ActivityIndicator color="#111827" />
+          <View style={[styles.loading, { backgroundColor }]}>
+            <ActivityIndicator color={indicatorColor} />
           </View>
         )}
         onLoadEnd={() => {
           webViewRef.current?.injectJavaScript(NATIVE_NAV_INTERCEPT);
           void syncPermission();
+          syncTheme();
         }}
         onMessage={handleWebMessage}
         onNavigationStateChange={(state: WebViewNavigation) => {
@@ -276,13 +314,11 @@ export function WebScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
   },
   loading: {
     position: "absolute",
     inset: 0,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ffffff",
   },
 });

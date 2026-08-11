@@ -89,18 +89,18 @@ export default async function NotificationSettingsPage({
   }
 
   return (
-    <div className="min-h-full bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+    <div className="min-h-full page-bg">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-lg px-4 py-8">
-        <Link href="/notifications/rules" className="text-sm text-zinc-500 hover:text-zinc-800">
+        <Link href="/notifications/rules" className="text-sm text-muted-foreground hover:text-foreground">
           ← 알림 조건
         </Link>
 
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
           {wantsNew ? "알림 조건 추가" : "알림 조건 수정"}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           지역·유형·요일·시간대를 정해 저장하면 알림함에 반영됩니다.
         </p>
 

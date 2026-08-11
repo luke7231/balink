@@ -119,7 +119,7 @@ export default async function SubstitutesPage({ searchParams }: SubstitutesPageP
   const sortedPosts = sortByNextLesson(filteredPosts);
 
   return (
-    <div className="min-h-full min-w-0 max-w-full overflow-x-clip bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+    <div className="min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto min-w-0 max-w-5xl px-4 py-8">
@@ -132,8 +132,8 @@ export default async function SubstitutesPage({ searchParams }: SubstitutesPageP
         </Suspense>
 
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-zinc-900">모집 중</h3>
-          <p className="text-sm text-zinc-500">
+          <h3 className="text-lg font-semibold text-foreground">모집 중</h3>
+          <p className="text-sm text-muted-foreground">
             {sortedPosts.length}건
             {sortedPosts.length !== posts.pageInfo.total ? ` / 전체 ${posts.pageInfo.total}건` : ""}
           </p>

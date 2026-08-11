@@ -30,11 +30,11 @@ export default async function NotificationRulesPage() {
   const preference = parseNotificationPreference(notificationRow, interestRegions);
 
   return (
-    <div className="min-h-full bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
+    <div className="min-h-full page-bg">
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-lg px-4 py-8">
-        <Link href="/notifications" className="text-sm text-zinc-500 hover:text-zinc-800">
+        <Link href="/notifications" className="text-sm text-muted-foreground hover:text-foreground">
           ← 알림함
         </Link>
 

@@ -66,7 +66,7 @@ export function SubstitutesFilterBar({
           }}
         >
           <div>
-            <p className="mb-2 text-sm font-semibold text-zinc-800">일정</p>
+            <p className="mb-2 text-sm font-semibold text-foreground">일정</p>
             <div className="flex flex-wrap gap-2">
               {DATE_OPTIONS.map((option) => (
                 <button
@@ -75,8 +75,8 @@ export function SubstitutesFilterBar({
                   onClick={() => setDraftDate(option.value)}
                   className={`rounded-xl px-3 py-2 text-sm font-semibold ${
                     draftDate === option.value
-                      ? "bg-rose-50 text-rose-700"
-                      : "border border-zinc-200 text-zinc-600"
+                      ? "bg-accent-subtle text-accent"
+                      : "border border-border text-muted-foreground"
                   }`}
                 >
                   {option.label}
@@ -86,14 +86,14 @@ export function SubstitutesFilterBar({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-semibold text-zinc-800" htmlFor="substitutes-sheet-region">
+            <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="substitutes-sheet-region">
               지역
             </label>
             <select
               id="substitutes-sheet-region"
               value={draftRegion}
               onChange={(event) => setDraftRegion(event.target.value)}
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-800 outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+              className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
             >
               <option value="">전체 지역</option>
               {regionOptions.map(([value, label]) => (
@@ -107,7 +107,7 @@ export function SubstitutesFilterBar({
           <div className="flex gap-2 pt-2">
             <Link
               href="/substitutes"
-              className="flex-1 rounded-2xl border border-zinc-200 px-4 py-3 text-center text-sm font-semibold text-zinc-600"
+              className="flex-1 rounded-2xl border border-border px-4 py-3 text-center text-sm font-semibold text-muted-foreground"
             >
               초기화
             </Link>

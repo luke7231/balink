@@ -95,9 +95,9 @@ export function InterestRegionPicker({
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm font-medium text-zinc-800">선택한 관심지역</p>
+        <p className="text-sm font-medium text-foreground">선택한 관심지역</p>
         {regions.length === 0 ? (
-          <p className="mt-2 text-sm text-zinc-500">아직 선택한 지역이 없습니다.</p>
+          <p className="mt-2 text-sm text-muted-foreground">아직 선택한 지역이 없습니다.</p>
         ) : (
           <ul className="mt-2 flex flex-wrap gap-2">
             {regions.map((region) => (
@@ -106,10 +106,10 @@ export function InterestRegionPicker({
                   type="button"
                   disabled={pending}
                   onClick={() => removeById(region.id)}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-800 hover:bg-rose-100 disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-accent-border bg-accent-subtle px-3 py-1.5 text-sm font-medium text-accent hover:bg-accent-subtle disabled:opacity-60"
                 >
                   {formatSidoForDisplay(region.sido)} {region.sigungu}
-                  <span aria-hidden className="text-rose-500">
+                  <span aria-hidden className="text-accent">
                     ×
                   </span>
                 </button>
@@ -120,14 +120,14 @@ export function InterestRegionPicker({
       </div>
 
       <div>
-        <label htmlFor="interest-sido" className="text-sm font-medium text-zinc-800">
+        <label htmlFor="interest-sido" className="text-sm font-medium text-foreground">
           시·도
         </label>
         <select
           id="interest-sido"
           value={selectedSido}
           onChange={(event) => setSelectedSido(event.target.value)}
-          className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-800"
+          className="mt-2 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground"
         >
           {districtGroups.map((group) => (
             <option key={group.sido} value={group.sido}>
@@ -138,8 +138,8 @@ export function InterestRegionPicker({
       </div>
 
       <div>
-        <p className="text-sm font-medium text-zinc-800">시·군·구</p>
-        <p className="mt-1 text-xs text-zinc-500">원하는 만큼 여러 지역을 선택할 수 있습니다.</p>
+        <p className="text-sm font-medium text-foreground">시·군·구</p>
+        <p className="mt-1 text-xs text-muted-foreground">원하는 만큼 여러 지역을 선택할 수 있습니다.</p>
         <div className="mt-3 grid max-h-64 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3">
           {currentDistricts.map((sigungu) => {
             const checked = selectedKeys.has(interestRegionKey(selectedSido, sigungu));
@@ -151,8 +151,8 @@ export function InterestRegionPicker({
                 onClick={() => toggleRegion(selectedSido, sigungu)}
                 className={`rounded-xl border px-3 py-2 text-left text-sm transition disabled:opacity-60 ${
                   checked
-                    ? "border-zinc-900 bg-zinc-900 text-white"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-rose-200 hover:text-rose-700"
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-surface text-foreground hover:border-accent-border hover:text-accent"
                 }`}
               >
                 {sigungu}
@@ -162,7 +162,7 @@ export function InterestRegionPicker({
         </div>
       </div>
 
-      {error ? <p className="text-sm text-rose-700">{error}</p> : null}
+      {error ? <p className="text-sm text-accent">{error}</p> : null}
     </div>
   );
 }

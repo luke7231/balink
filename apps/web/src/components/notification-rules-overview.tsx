@@ -74,12 +74,12 @@ export function NotificationRulesOverview({
   return (
     <section id="alert-rules" className="mb-6 scroll-mt-20" aria-label="알림 조건">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="text-base font-semibold text-zinc-900">알림 조건</h3>
+        <h3 className="text-base font-semibold text-foreground">알림 조건</h3>
         {!blank ? (
           <div className="flex shrink-0 items-center gap-3">
-            <p className="flex items-center gap-2.5 text-[11px] text-zinc-500">
+            <p className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-rose-500" aria-hidden />
+                <span className="h-1.5 w-1.5 rounded-full bg-accent-subtle0" aria-hidden />
                 정규
               </span>
               <span className="inline-flex items-center gap-1">
@@ -89,7 +89,7 @@ export function NotificationRulesOverview({
             </p>
             <Link
               href="/notifications/rules"
-              className="text-xs font-semibold text-zinc-600 hover:text-zinc-900"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground"
             >
               전체 보기
             </Link>
@@ -98,11 +98,11 @@ export function NotificationRulesOverview({
       </div>
 
       {blank ? (
-        <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-4 py-5 text-center">
-          <p className="text-sm text-zinc-600">아직 알림 조건이 없습니다</p>
+        <div className="rounded-2xl border border-dashed border-border bg-surface px-4 py-5 text-center">
+          <p className="text-sm text-muted-foreground">아직 알림 조건이 없습니다</p>
           <Link
             href="/notifications/settings?new=1"
-            className="mt-3 inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
+            className="mt-3 inline-flex rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background hover:opacity-90"
           >
             조건 설정하기
           </Link>
@@ -119,8 +119,8 @@ export function NotificationRulesOverview({
                   on
                     ? rule.jobType === "substitute"
                       ? "bg-amber-50 text-amber-900 ring-1 ring-amber-100"
-                      : "bg-rose-50 text-rose-800 ring-1 ring-rose-100"
-                    : "border border-zinc-200 bg-zinc-50 text-zinc-400"
+                      : "bg-accent-subtle text-accent ring-1 ring-rose-100"
+                    : "border border-border bg-surface-muted text-muted-foreground"
                 }`}
               >
                 <Link
@@ -133,8 +133,8 @@ export function NotificationRulesOverview({
                       on
                         ? rule.jobType === "substitute"
                           ? "bg-amber-500"
-                          : "bg-rose-500"
-                        : "bg-zinc-300"
+                          : "bg-accent-subtle0"
+                        : "bg-surface-muted"
                     }`}
                     aria-hidden
                   />
@@ -149,7 +149,7 @@ export function NotificationRulesOverview({
                   className={`inline-flex h-7 w-7 items-center justify-center rounded-full transition disabled:opacity-50 ${
                     on
                       ? "text-current/70 hover:bg-black/5 hover:text-current"
-                      : "text-zinc-400 hover:bg-zinc-200/70 hover:text-zinc-600"
+                      : "text-muted-foreground hover:bg-surface-muted/70 hover:text-muted-foreground"
                   }`}
                 >
                   <ChipCloseIcon />
@@ -160,7 +160,7 @@ export function NotificationRulesOverview({
           {canAdd ? (
             <Link
               href="/notifications/settings?new=1"
-              className="inline-flex h-10 shrink-0 items-center rounded-full border border-dashed border-zinc-300 bg-white px-3.5 text-sm font-semibold text-zinc-500 hover:border-zinc-400 hover:text-zinc-800"
+              className="inline-flex h-10 shrink-0 items-center rounded-full border border-dashed border-border bg-surface px-3.5 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
             >
               + 조건
             </Link>
@@ -168,7 +168,7 @@ export function NotificationRulesOverview({
         </div>
       )}
 
-      {error ? <p className="mt-2 text-sm text-rose-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm text-accent">{error}</p> : null}
 
       <Modal
         open={Boolean(deleteTarget)}
@@ -183,7 +183,7 @@ export function NotificationRulesOverview({
               type="button"
               disabled={pending}
               onClick={() => setDeleteTarget(null)}
-              className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 hover:border-zinc-300 disabled:opacity-50"
+              className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:border-border disabled:opacity-50"
             >
               취소
             </button>
@@ -200,7 +200,7 @@ export function NotificationRulesOverview({
       >
         {deleteTarget ? (
           <>
-            <span className="font-semibold text-zinc-800">
+            <span className="font-semibold text-foreground">
               {formatNotificationRuleTitle(deleteTarget)}
             </span>
             조건을 삭제할까요? 삭제하면 이 조건으로는 더 이상 알림이 오지 않습니다.

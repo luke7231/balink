@@ -14,12 +14,12 @@ export function LoginScreen({
   deletedMessage?: string | null;
 }) {
   return (
-    <main className="flex min-h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,#fff9fa,#ffffff_42%)]">
+    <main className="flex min-h-full flex-1 flex-col page-bg-radial">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-8">
         {showBrowseLink ? (
           <Link
             href="/"
-            className="motion-fade-in inline-flex w-fit items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800"
+            className="motion-fade-in inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
             style={motionIndexStyle(0)}
           >
             ← 둘러보기
@@ -39,9 +39,17 @@ export function LoginScreen({
               width={200}
               height={72}
               priority
-              className="h-10 w-auto"
+              className="h-10 w-auto dark:hidden"
             />
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+            <Image
+              src="/brand/logo-horizontal-dark.png"
+              alt="balink"
+              width={200}
+              height={72}
+              priority
+              className="hidden h-10 w-auto dark:block"
+            />
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
               발레 커리어의 시작
             </h1>
           </div>
@@ -57,7 +65,7 @@ export function LoginScreen({
 
           {errorMessage ? (
             <p
-              className="motion-fade-up w-full rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+              className="motion-fade-up w-full rounded-xl border border-accent-border bg-accent-subtle px-4 py-3 text-sm text-accent"
               style={motionIndexStyle(2)}
             >
               {errorMessage}
@@ -79,7 +87,7 @@ export function LoginScreen({
               <form action={signInWithApple} className="motion-fade-up" style={motionIndexStyle(4)}>
                 <button
                   type="submit"
-                  className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-zinc-950 text-[15px] font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.985]"
+                  className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-foreground text-[15px] font-semibold text-background transition hover:opacity-90 active:scale-[0.985]"
                 >
                   <AppleIcon />
                   Apple로 계속하기
@@ -87,7 +95,7 @@ export function LoginScreen({
               </form>
             ) : (
               <p
-                className="motion-fade-in px-1 text-center text-xs text-zinc-400"
+                className="motion-fade-in px-1 text-center text-xs text-muted-foreground"
                 style={motionIndexStyle(4)}
               >
                 Apple 로그인은 설정 후 활성화됩니다.

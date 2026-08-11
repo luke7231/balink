@@ -12,6 +12,8 @@ export interface InstallationCredential {
 }
 
 export type HapticStyle = "selection" | "light" | "medium" | "success" | "warning" | "error";
+export type ThemePreference = "system" | "light" | "dark";
+export type ResolvedTheme = "light" | "dark";
 
 const HAPTIC_STYLES = new Set<HapticStyle>([
   "selection",
@@ -28,7 +30,8 @@ export type WebToNativeMessage =
   | { type: "REQUEST_PUSH_PERMISSION" }
   | { type: "OPEN_NOTIFICATION_SETTINGS" }
   | { type: "HAPTIC"; style: HapticStyle }
-  | { type: "NATIVE_NAV"; path: string };
+  | { type: "NATIVE_NAV"; path: string }
+  | { type: "SET_THEME"; preference: ThemePreference };
 
 export type NativeToWebMessage =
   | ({ type: "PUSH_PERMISSION_STATUS" } & PushPermissionPayload)
@@ -37,7 +40,16 @@ export type NativeToWebMessage =
       type: "PUSH_INSTALLATION";
       platform: "ios" | "android";
     } & InstallationCredential)
-  | { type: "PUSH_OPENED"; href: string };
+  | { type: "PUSH_OPENED"; href: string }
+  | {
+      type: "THEME_STATE";
+      preference: ThemePreference;
+      resolvedTheme: ResolvedTheme;
+    };
+
+function isThemePreference(value: unknown): value is ThemePreference {
+  return value === "system" || value === "light" || value === "dark";
+}
 
 export function parseWebMessage(value: string): WebToNativeMessage | null {
   try {
@@ -58,6 +70,11 @@ export function parseWebMessage(value: string): WebToNativeMessage | null {
           : "";
         if (!path.startsWith("/") || path.startsWith("//")) return null;
         return { type: "NATIVE_NAV", path };
+      }
+      case "SET_THEME": {
+        const preference = (message as { preference?: unknown }).preference;
+        if (!isThemePreference(preference)) return null;
+        return { type: "SET_THEME", preference };
       }
       default:
         return null;

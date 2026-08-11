@@ -18,7 +18,7 @@ export function NotificationSettingsPanel({
   editRuleId?: string;
 }) {
   return (
-    <div className="mt-6 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="mt-6 rounded-3xl border border-border bg-surface p-5 shadow-sm">
       <NotificationPreferenceForm
         initialPreference={initialPreference}
         districtGroups={districtGroups}

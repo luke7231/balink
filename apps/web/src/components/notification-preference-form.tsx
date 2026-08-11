@@ -130,12 +130,12 @@ export function NotificationPreferenceForm({
 
   if (singleMode && !editingRule) {
     return (
-      <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-8 text-center">
-        <p className="text-sm text-zinc-600">수정할 조건을 찾을 수 없습니다.</p>
+      <div className="rounded-2xl border border-border bg-surface px-4 py-8 text-center">
+        <p className="text-sm text-muted-foreground">수정할 조건을 찾을 수 없습니다.</p>
         <button
           type="button"
           onClick={() => router.push(redirectOnSave)}
-          className="mt-4 text-sm font-semibold text-zinc-800 underline"
+          className="mt-4 text-sm font-semibold text-foreground underline"
         >
           알림으로 돌아가기
         </button>
@@ -148,8 +148,8 @@ export function NotificationPreferenceForm({
       <div className="space-y-4">
         {!singleMode ? (
           <div>
-            <h2 className="text-base font-semibold text-zinc-900">알림 규칙</h2>
-            <p className="mt-1 text-xs text-zinc-500">
+            <h2 className="text-base font-semibold text-foreground">알림 규칙</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
               규칙마다 지역·정규/대강·요일·시간대를 따로 정합니다. 하나라도 맞으면 알림이 옵니다.
             </p>
           </div>
@@ -200,32 +200,32 @@ export function NotificationPreferenceForm({
           <button
             type="button"
             onClick={addRule}
-            className="w-full rounded-2xl border border-dashed border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-600 hover:border-zinc-400 hover:text-zinc-800"
+            className="w-full rounded-2xl border border-dashed border-border px-4 py-3 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
           >
             + 규칙 추가
           </button>
         ) : null}
 
         {!singleMode && preference.rules.length >= MAX_NOTIFICATION_RULES ? (
-          <p className="text-center text-xs text-zinc-500">
+          <p className="text-center text-xs text-muted-foreground">
             규칙은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있습니다.
           </p>
         ) : null}
 
         {!singleMode ? (
-          <div className="rounded-2xl border border-rose-100 bg-rose-50/50 px-4 py-3">
-            <p className="text-xs font-semibold text-rose-800">이렇게 알림이 옵니다</p>
-            <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-zinc-800">
+          <div className="rounded-2xl border border-accent-border bg-accent-subtle/50 px-4 py-3">
+            <p className="text-xs font-semibold text-accent">이렇게 알림이 옵니다</p>
+            <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-foreground">
               {summary}
             </p>
           </div>
         ) : editingRule ? (
-          <div className="rounded-2xl border border-rose-100 bg-rose-50/50 px-4 py-3">
-            <p className="text-xs font-semibold text-rose-800">미리보기</p>
-            <ul className="mt-2 space-y-1 text-sm text-zinc-800">
+          <div className="rounded-2xl border border-accent-border bg-accent-subtle/50 px-4 py-3">
+            <p className="text-xs font-semibold text-accent">미리보기</p>
+            <ul className="mt-2 space-y-1 text-sm text-foreground">
               {getNotificationRuleSummaryParts(editingRule).map((part) => (
                 <li key={part} className="flex gap-2 leading-snug">
-                  <span className="text-zinc-400" aria-hidden>
+                  <span className="text-muted-foreground" aria-hidden>
                     ·
                   </span>
                   <span>{part}</span>
@@ -241,7 +241,7 @@ export function NotificationPreferenceForm({
           type="button"
           disabled={pending}
           onClick={() => save({ ...preference, enabled: true })}
-          className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-60"
+          className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "저장 중..." : "저장하기"}
         </button>
@@ -250,13 +250,13 @@ export function NotificationPreferenceForm({
             type="button"
             disabled={pending}
             onClick={() => router.push(redirectOnSave)}
-            className="rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:border-zinc-300"
+            className="rounded-full border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground hover:border-border"
           >
             취소
           </button>
         ) : null}
         {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
-        {error ? <p className="text-sm text-rose-700">{error}</p> : null}
+        {error ? <p className="text-sm text-accent">{error}</p> : null}
       </div>
     </div>
   );
@@ -286,12 +286,12 @@ function RuleCard({
   return (
     <div
       className={`rounded-2xl border px-4 py-4 ${
-        rule.enabled ? "border-zinc-200 bg-white shadow-sm" : "border-zinc-200 bg-zinc-50 opacity-70"
+        rule.enabled ? "border-border bg-surface shadow-sm" : "border-border bg-surface-muted opacity-70"
       }`}
     >
       {!hideHeader ? (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-zinc-900">
+          <p className="text-sm font-semibold text-foreground">
             {formatNotificationRuleTitle(rule)}
           </p>
           <div className="flex items-center gap-2">
@@ -299,7 +299,7 @@ function RuleCard({
               <button
                 type="button"
                 onClick={onRemove}
-                className="text-xs font-medium text-zinc-500 hover:text-rose-700"
+                className="text-xs font-medium text-muted-foreground hover:text-accent"
               >
                 삭제
               </button>
@@ -309,14 +309,14 @@ function RuleCard({
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-zinc-900">
+          <p className="text-sm font-semibold text-foreground">
             {formatNotificationRuleTitle(rule)}
           </p>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onRemove}
-              className="text-xs font-medium text-zinc-500 hover:text-rose-700"
+              className="text-xs font-medium text-muted-foreground hover:text-accent"
             >
               삭제
             </button>
@@ -327,8 +327,8 @@ function RuleCard({
 
       <div className={`mt-4 space-y-5 ${rule.enabled ? "" : "pointer-events-none opacity-45"}`}>
         <section>
-          <h3 className="text-sm font-semibold text-zinc-900">유형</h3>
-          <div className="mt-2 flex rounded-2xl border border-zinc-200 bg-zinc-50 p-1">
+          <h3 className="text-sm font-semibold text-foreground">유형</h3>
+          <div className="mt-2 flex rounded-2xl border border-border bg-surface-muted p-1">
             {(
               [
                 { key: "regular" as AlertJobType, label: "정규 채용" },
@@ -343,8 +343,8 @@ function RuleCard({
                   onClick={() => onChange({ ...rule, jobType: item.key })}
                   className={`flex-1 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
                     selected
-                      ? "bg-white text-zinc-900 shadow-sm"
-                      : "text-zinc-500 hover:text-zinc-700"
+                      ? "bg-surface text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {item.label}
@@ -355,7 +355,7 @@ function RuleCard({
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold text-zinc-900">지역</h3>
+          <h3 className="text-sm font-semibold text-foreground">지역</h3>
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
             <label className="block">
               <span className="sr-only">시·도</span>
@@ -364,7 +364,7 @@ function RuleCard({
                 onChange={(event) =>
                   onChange({ ...rule, sido: event.target.value, sigungu: "" })
                 }
-                className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-800"
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground"
               >
                 <option value="">시·도 선택</option>
                 {districtGroups.map((group) => (
@@ -380,7 +380,7 @@ function RuleCard({
                 value={rule.sigungu}
                 disabled={!rule.sido}
                 onChange={(event) => onChange({ ...rule, sigungu: event.target.value })}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-800 disabled:opacity-50"
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground disabled:opacity-50"
               >
                 <option value="">시·군·구 선택</option>
                 {districts.map((sigungu) => (
@@ -392,13 +392,13 @@ function RuleCard({
             </label>
           </div>
           {!rule.sido || !rule.sigungu ? (
-            <p className="mt-2 text-xs text-rose-600">지역을 선택해야 이 규칙으로 알림이 갑니다.</p>
+            <p className="mt-2 text-xs text-accent">지역을 선택해야 이 규칙으로 알림이 갑니다.</p>
           ) : null}
         </section>
 
         <section>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-zinc-900">요일</h3>
+            <h3 className="text-sm font-semibold text-foreground">요일</h3>
             <div className="flex flex-wrap gap-1.5">
               {WEEKDAY_PRESETS.map((preset) => {
                 const selected =
@@ -413,8 +413,8 @@ function RuleCard({
                     onClick={() => onChange({ ...rule, days: [...preset.days] })}
                     className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                       selected
-                        ? "bg-zinc-900 text-white"
-                        : "border border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300"
+                        ? "bg-foreground text-background"
+                        : "border border-border bg-surface text-muted-foreground hover:border-border"
                     }`}
                   >
                     {preset.label}
@@ -443,10 +443,10 @@ function RuleCard({
                   }}
                   className={`rounded-xl py-2.5 text-sm font-semibold ${
                     selected
-                      ? "bg-zinc-900 text-white"
+                      ? "bg-foreground text-background"
                       : anyDay
-                        ? "border border-zinc-200 bg-white text-zinc-400"
-                        : "border border-zinc-200 bg-white text-zinc-600"
+                        ? "border border-border bg-surface text-muted-foreground"
+                        : "border border-border bg-surface text-muted-foreground"
                   }`}
                 >
                   {day}
@@ -454,7 +454,7 @@ function RuleCard({
               );
             })}
           </div>
-          <p className="mt-2 text-xs text-zinc-500">
+          <p className="mt-2 text-xs text-muted-foreground">
             {anyDay
               ? "요일 상관없이 알림이 옵니다."
               : "선택한 요일이 모두 들어 있는 공고만 맞습니다."}
@@ -462,15 +462,15 @@ function RuleCard({
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold text-zinc-900">시간대</h3>
+          <h3 className="text-sm font-semibold text-foreground">시간대</h3>
           <div className="mt-3 space-y-2">
             <button
               type="button"
               onClick={() => onChange({ ...rule, timeSlots: [] })}
               className={`w-full rounded-2xl px-3 py-3 text-sm font-semibold ${
                 rule.timeSlots.length === 0
-                  ? "bg-zinc-900 text-white"
-                  : "border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300"
+                  ? "bg-foreground text-background"
+                  : "border border-border bg-surface text-muted-foreground hover:border-border"
               }`}
             >
               상관없음
@@ -499,10 +499,10 @@ function RuleCard({
                     }}
                     className={`rounded-2xl px-2 py-3 text-sm font-semibold ${
                       selected
-                        ? "bg-zinc-900 text-white"
+                        ? "bg-foreground text-background"
                         : anyTime
-                          ? "border border-zinc-200 bg-white text-zinc-400"
-                          : "border border-zinc-200 bg-white text-zinc-600"
+                          ? "border border-border bg-surface text-muted-foreground"
+                          : "border border-border bg-surface text-muted-foreground"
                     }`}
                   >
                     {formatTimeSlot(slot)}
@@ -511,7 +511,7 @@ function RuleCard({
               })}
             </div>
           </div>
-          <p className="mt-2 text-xs text-zinc-500">
+          <p className="mt-2 text-xs text-muted-foreground">
             {rule.timeSlots.length === 0
               ? "시간대 상관없이 알림이 옵니다. 오전·오후·저녁과는 함께 고를 수 없습니다."
               : "선택한 시간대 중 하나라도 겹치면 알림이 옵니다."}
@@ -539,11 +539,11 @@ function Toggle({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative h-7 w-12 shrink-0 rounded-full transition disabled:opacity-50 ${
-        checked ? "bg-zinc-900" : "bg-zinc-300"
+        checked ? "bg-foreground" : "bg-surface-muted"
       }`}
     >
       <span
-        className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition ${
+        className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-surface shadow transition ${
           checked ? "translate-x-5" : "translate-x-0"
         }`}
       />

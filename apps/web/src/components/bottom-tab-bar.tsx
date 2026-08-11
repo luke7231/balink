@@ -47,7 +47,7 @@ export function BottomTabBar() {
     <nav
       aria-label="하단 메뉴"
       aria-hidden={nativeShell || undefined}
-      className={`fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200/80 bg-white/95 backdrop-blur ${
+      className={`fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-surface/95 backdrop-blur ${
         nativeShell ? "hidden" : ""
       }`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -66,7 +66,7 @@ export function BottomTabBar() {
                   if (!active) window.balinkHaptics?.play("selection");
                 }}
                 className={`flex h-full flex-col items-center justify-center gap-1 text-[11px] font-medium transition ${
-                  active ? "text-zinc-900" : "text-zinc-400 hover:text-zinc-600"
+                  active ? "text-foreground" : "text-muted-foreground hover:text-muted-foreground"
                 }`}
               >
                 <Icon active={active} />

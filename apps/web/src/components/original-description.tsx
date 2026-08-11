@@ -14,13 +14,13 @@ export function OriginalDescription({ description }: OriginalDescriptionProps) {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center justify-between rounded-2xl border border-zinc-200 px-4 py-3 text-left text-sm font-semibold text-zinc-900 transition hover:border-rose-200 hover:bg-rose-50/40"
+        className="flex w-full items-center justify-between rounded-2xl border border-border px-4 py-3 text-left text-sm font-semibold text-foreground transition hover:border-accent-border hover:bg-accent-subtle/60"
       >
         <span>원문 보기</span>
-        <span className="text-zinc-500">{open ? "접기" : "펼치기"}</span>
+        <span className="text-muted-foreground">{open ? "접기" : "펼치기"}</span>
       </button>
       {open ? (
-        <p className="mt-3 whitespace-break-spaces rounded-2xl bg-zinc-50 px-4 py-4 leading-7 text-zinc-700">
+        <p className="mt-3 whitespace-break-spaces rounded-2xl bg-surface-muted px-4 py-4 leading-7 text-foreground">
           {description}
         </p>
       ) : null}

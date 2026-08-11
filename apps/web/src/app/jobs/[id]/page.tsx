@@ -52,10 +52,10 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   );
 
   return (
-    <div className="min-h-full bg-zinc-50">
-      <header className="border-b border-zinc-200 bg-white">
+    <div className="min-h-full bg-surface-muted">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-5">
-          <Link href="/" className="text-sm font-medium text-rose-600 hover:text-rose-700">
+          <Link href="/" className="text-sm font-medium text-accent hover:text-accent">
             ← 목록으로
           </Link>
           {session?.user ? (
@@ -63,7 +63,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           ) : (
             <Link
               href="/login"
-              className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 hover:border-rose-200 hover:text-rose-700"
+              className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
             >
               로그인 후 저장
             </Link>
@@ -72,7 +72,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <article className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <article className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
           <div className="mb-4 flex flex-wrap gap-2">
             <Badge variant="rose">{formatJobType(job.jobType ?? null)}</Badge>
             {displayableTimeSlots(job.timeSlots).map((slot) => (
@@ -80,41 +80,41 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             ))}
           </div>
 
-          <h1 className="text-2xl font-bold leading-tight text-zinc-900">{job.title}</h1>
+          <h1 className="text-2xl font-bold leading-tight text-foreground">{job.title}</h1>
 
           <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-zinc-500">지역</dt>
-              <dd className="mt-1 font-medium text-zinc-900">
+              <dt className="text-muted-foreground">지역</dt>
+              <dd className="mt-1 font-medium text-foreground">
                 {formatLocation(job.sido ?? null, job.sigungu ?? null, job.dongOrStation ?? null)}
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-500">게시일</dt>
-              <dd className="mt-1 font-medium text-zinc-900">{formatPostedAt(job.postedAt ?? null)}</dd>
+              <dt className="text-muted-foreground">게시일</dt>
+              <dd className="mt-1 font-medium text-foreground">{formatPostedAt(job.postedAt ?? null)}</dd>
             </div>
             <div>
-              <dt className="text-zinc-500">요일</dt>
-              <dd className="mt-1 font-medium text-zinc-900">
+              <dt className="text-muted-foreground">요일</dt>
+              <dd className="mt-1 font-medium text-foreground">
                 {formatDayGroups(job.dayGroups, job.days)}
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-500">급여</dt>
-              <dd className="mt-1 font-medium text-zinc-900">{payLabel}</dd>
+              <dt className="text-muted-foreground">급여</dt>
+              <dd className="mt-1 font-medium text-foreground">{payLabel}</dd>
               {job.representativePay?.evidence ? (
-                <dd className="mt-1 text-xs text-zinc-500">근거: {job.representativePay.evidence}</dd>
+                <dd className="mt-1 text-xs text-muted-foreground">근거: {job.representativePay.evidence}</dd>
               ) : null}
             </div>
           </dl>
 
           {job.displaySections.length > 0 ? (
             <section className="mt-8 space-y-4">
-              <h2 className="text-sm font-semibold text-zinc-900">정돈된 공고</h2>
+              <h2 className="text-sm font-semibold text-foreground">정돈된 공고</h2>
               {job.displaySections.map((section) => (
-                <div key={section.title} className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-                  <h3 className="text-sm font-semibold text-zinc-900">{section.title}</h3>
-                  <p className="mt-2 whitespace-break-spaces text-sm leading-7 text-zinc-700">{section.content}</p>
+                <div key={section.title} className="rounded-2xl border border-border bg-surface-muted/70 p-4">
+                  <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
+                  <p className="mt-2 whitespace-break-spaces text-sm leading-7 text-foreground">{section.content}</p>
                 </div>
               ))}
             </section>
@@ -125,7 +125,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           {job.description ? <OriginalDescription description={job.description} /> : null}
 
           <section className="mt-8">
-            <h2 className="text-sm font-semibold text-zinc-900">원본 링크</h2>
+            <h2 className="text-sm font-semibold text-foreground">원본 링크</h2>
             <div className="mt-3 space-y-3">
               {job.sources.map((source) => (
                 <a
@@ -133,13 +133,13 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                   href={source.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-2xl border border-zinc-200 px-4 py-3 transition hover:border-rose-200 hover:bg-rose-50/40"
+                  className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 transition hover:border-accent-border hover:bg-accent-subtle/60"
                 >
                   <div>
-                    <p className="font-medium text-zinc-900">{formatSource(source.source)}</p>
-                    <p className="mt-1 text-sm text-zinc-500">{source.sourcePost.title}</p>
+                    <p className="font-medium text-foreground">{formatSource(source.source)}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{source.sourcePost.title}</p>
                   </div>
-                  <span className="text-sm font-medium text-rose-600">바로가기</span>
+                  <span className="text-sm font-medium text-accent">바로가기</span>
                 </a>
               ))}
             </div>

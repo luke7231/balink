@@ -74,8 +74,8 @@ export function BookmarkButton({
         aria-pressed={bookmarked}
         className={`rounded-full border p-2 shadow-sm transition ${
           bookmarked
-            ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
-            : "border-zinc-200 bg-white text-zinc-500 hover:border-rose-200 hover:text-rose-700"
+            ? "border-accent-border bg-accent-subtle text-accent hover:bg-accent-subtle"
+            : "border-border bg-surface text-muted-foreground hover:border-accent-border hover:text-accent"
         }`}
       >
         <BookmarkIcon filled={bookmarked} />
@@ -91,14 +91,14 @@ export function BookmarkButton({
         onClick={onToggle}
         className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
           bookmarked
-            ? "border border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100"
-            : "border border-zinc-200 bg-white text-zinc-700 hover:border-rose-200 hover:text-rose-700"
+            ? "border border-accent-border bg-accent-subtle text-accent hover:bg-accent-subtle"
+            : "border border-border bg-surface text-foreground hover:border-accent-border hover:text-accent"
         }`}
         aria-pressed={bookmarked}
       >
         {bookmarked ? "저장됨" : "공고 저장"}
       </button>
-      {error ? <p className="text-xs text-rose-700">{error}</p> : null}
+      {error ? <p className="text-xs text-accent">{error}</p> : null}
     </div>
   );
 }

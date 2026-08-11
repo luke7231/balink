@@ -3,8 +3,8 @@ import { motionIndexStyle } from "@/lib/motion";
 
 export function TabPageSkeleton() {
   return (
-    <div className="min-h-full bg-[linear-gradient(180deg,#fffcfd_0%,#ffffff_140px)]">
-      <div className="border-b border-rose-100/80 bg-white/80 px-4 py-5">
+    <div className="min-h-full page-bg">
+      <div className="border-b border-accent-border/80 bg-surface/80 px-4 py-5">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
           <div className="motion-shimmer h-8 w-28 rounded" />
           <div className="flex gap-2">
