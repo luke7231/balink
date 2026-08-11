@@ -102,7 +102,7 @@ export default async function NotificationsPage() {
             </div>
           ) : (
             <ul className="space-y-3">
-              {notifications.map((item) => (
+              {notifications.map((item, index) => (
                 <li key={item.id}>
                   <NotificationItem
                     id={item.id}
@@ -112,6 +112,7 @@ export default async function NotificationsPage() {
                     href={item.href}
                     createdAt={item.createdAt}
                     unread={!item.readAt}
+                    index={index}
                   />
                 </li>
               ))}

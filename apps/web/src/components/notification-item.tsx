@@ -13,6 +13,7 @@ export function NotificationItem({
   href,
   createdAt,
   unread,
+  index = 0,
 }: {
   id: string;
   type: string;
@@ -21,6 +22,7 @@ export function NotificationItem({
   href: string | null;
   createdAt: Date | string;
   unread: boolean;
+  index?: number;
 }) {
   const [, startTransition] = useTransition();
   const target = href || "/notifications";
@@ -34,7 +36,8 @@ export function NotificationItem({
           await markNotificationReadAction(id);
         });
       }}
-      className={`block rounded-3xl border px-4 py-4 shadow-sm transition hover:border-rose-200 ${
+      style={{ ["--motion-index" as string]: Math.min(index, 10) }}
+      className={`motion-fade-up block rounded-3xl border px-4 py-4 shadow-sm transition hover:border-rose-200 ${
         unread ? "border-rose-100 bg-rose-50/40" : "border-zinc-200 bg-white"
       }`}
     >

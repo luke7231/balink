@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, isAppleLoginEnabled } from "@/auth";
 import { signInWithApple, signInWithKakao } from "@/components/login-actions";
+import { motionIndexStyle } from "@/lib/motion";
 
 export default async function LoginPage({
   searchParams,
@@ -25,13 +26,17 @@ export default async function LoginPage({
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-8">
         <Link
           href="/"
-          className="inline-flex w-fit items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800"
+          className="motion-fade-in inline-flex w-fit items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800"
+          style={motionIndexStyle(0)}
         >
           ← 둘러보기
         </Link>
 
         <div className="flex flex-1 flex-col items-center justify-center gap-8 pb-10">
-          <div className="flex flex-col items-center gap-5 text-center">
+          <div
+            className="motion-soft-scale flex flex-col items-center gap-5 text-center"
+            style={motionIndexStyle(1)}
+          >
             <Image
               src="/brand/logo-horizontal.png"
               alt="balink"
@@ -53,22 +58,28 @@ export default async function LoginPage({
           </div>
 
           {deletedMessage ? (
-            <p className="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <p
+              className="motion-fade-up w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+              style={motionIndexStyle(2)}
+            >
               {deletedMessage}
             </p>
           ) : null}
 
           {errorMessage ? (
-            <p className="w-full rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <p
+              className="motion-fade-up w-full rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+              style={motionIndexStyle(2)}
+            >
               {errorMessage}
             </p>
           ) : null}
 
-          <div className="flex w-full flex-col gap-3">
-            <form action={signInWithKakao}>
+          <div className="flex w-full flex-col gap-3" style={motionIndexStyle(3)}>
+            <form action={signInWithKakao} className="motion-fade-up" style={motionIndexStyle(3)}>
               <button
                 type="submit"
-                className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-[#FEE500] text-[15px] font-semibold text-[#191600] transition hover:brightness-95"
+                className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-[#FEE500] text-[15px] font-semibold text-[#191600] transition hover:brightness-95 active:scale-[0.985]"
               >
                 <KakaoIcon />
                 카카오로 계속하기
@@ -76,17 +87,17 @@ export default async function LoginPage({
             </form>
 
             {isAppleLoginEnabled ? (
-              <form action={signInWithApple}>
+              <form action={signInWithApple} className="motion-fade-up" style={motionIndexStyle(4)}>
                 <button
                   type="submit"
-                  className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-zinc-950 text-[15px] font-semibold text-white transition hover:bg-zinc-800"
+                  className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-zinc-950 text-[15px] font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.985]"
                 >
                   <AppleIcon />
                   Apple로 계속하기
                 </button>
               </form>
             ) : (
-              <p className="px-1 text-center text-xs text-zinc-400">
+              <p className="motion-fade-in px-1 text-center text-xs text-zinc-400" style={motionIndexStyle(4)}>
                 Apple 로그인은 설정 후 활성화됩니다.
               </p>
             )}

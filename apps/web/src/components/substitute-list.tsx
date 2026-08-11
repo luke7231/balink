@@ -12,6 +12,7 @@ import {
 } from "@balink/domain";
 import { Badge } from "@balink/ui/badge";
 import { CalendarIcon, MapPinIcon } from "@balink/ui";
+import { motionIndexStyle } from "@/lib/motion";
 
 export interface SubstituteCardData {
   id: string;
@@ -102,7 +103,7 @@ export function SubstituteList({
 
   return (
     <div className="grid gap-4">
-      {posts.map((post) => {
+      {posts.map((post, index) => {
         const urgencyLabel = formatSubstituteUrgency(
           resolveSubstituteUrgency({
             sessions: post.sessions,
@@ -127,7 +128,8 @@ export function SubstituteList({
           <LinkComponent
             key={post.id}
             href={getHref(post)}
-            className="group block min-w-0 max-w-full rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md sm:p-5"
+            style={motionIndexStyle(index)}
+            className="motion-fade-up group block min-w-0 max-w-full rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md sm:p-5"
           >
             <div className="flex flex-wrap gap-2">
               {urgencyLabel ? (

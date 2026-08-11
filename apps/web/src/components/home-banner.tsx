@@ -22,7 +22,7 @@ export function HomeBanner({ items }: { items: HomeBannerItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="mb-6" aria-label="추천 배너">
+    <section className="motion-fade-up mb-6" aria-label="추천 배너" style={{ ["--motion-index" as string]: 0 }}>
       <BannerCarousel items={items} pageSize={1} variant="mobile" />
       <BannerCarousel items={items} pageSize={DESKTOP_PAGE_SIZE} variant="desktop" />
     </section>
