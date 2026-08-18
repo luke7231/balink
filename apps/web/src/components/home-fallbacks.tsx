@@ -1,13 +1,12 @@
-import type { CSSProperties } from "react";
-import { motionIndexStyle } from "@/lib/motion";
+import { SkeletonCard, SkeletonChip } from "@/components/skeleton-block";
 
 export function HomeFiltersFallback() {
   return (
     <div className="mb-6 flex gap-2 overflow-hidden" aria-hidden="true">
-      <div className="motion-shimmer h-10 w-16 shrink-0 rounded-full" />
-      <div className="motion-shimmer h-10 w-24 shrink-0 rounded-full" />
-      <div className="motion-shimmer h-10 w-28 shrink-0 rounded-full" />
-      <div className="motion-shimmer h-10 w-20 shrink-0 rounded-full" />
+      <SkeletonChip index={0} className="h-10 w-16 rounded-full" />
+      <SkeletonChip index={1} className="h-10 w-24 rounded-full" />
+      <SkeletonChip index={2} className="h-10 w-28 rounded-full" />
+      <SkeletonChip index={3} className="h-10 w-20 rounded-full" />
     </div>
   );
 }
@@ -24,11 +23,7 @@ export function HomeJobsSectionFallback({ hasFilter }: { hasFilter: boolean }) {
       </div>
       <div className="space-y-3" aria-busy="true" aria-label="공고 목록 로딩">
         {[0, 1, 2, 3].map((index) => (
-          <div
-            key={index}
-            className="motion-fade-up motion-shimmer h-28 rounded-3xl"
-            style={motionIndexStyle(index) as CSSProperties}
-          />
+          <SkeletonCard key={index} index={index} />
         ))}
       </div>
     </>

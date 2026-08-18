@@ -1,10 +1,9 @@
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import { resolveSubstituteUrgency } from "@balink/domain";
 import { SubstituteList } from "@/components/substitute-list";
+import { SubstitutesFallback } from "@/components/substitutes-fallback";
 import { SubstitutesFilterBar } from "@/components/substitutes-filter-bar";
 import { fetchSubstitutePosts } from "@/lib/graphql/queries";
-import { motionIndexStyle } from "@/lib/motion";
 
 type DateFilter = "today" | "tomorrow" | "week";
 
@@ -91,32 +90,7 @@ function sortByNextLesson<
 }
 
 export function SubstitutesContentFallback({ hasFilter }: { hasFilter: boolean }) {
-  return (
-    <>
-      <div className="mb-6 flex gap-2 overflow-hidden" aria-hidden="true">
-        <div className="motion-shimmer h-10 w-20 shrink-0 rounded-full" />
-        <div className="motion-shimmer h-10 w-14 shrink-0 rounded-full" />
-        <div className="motion-shimmer h-10 w-14 shrink-0 rounded-full" />
-        <div className="motion-shimmer h-10 w-20 shrink-0 rounded-full" />
-      </div>
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">모집 중</h3>
-        <p className="text-sm text-muted-foreground">
-          {hasFilter ? "필터 적용 · " : ""}
-          불러오는 중
-        </p>
-      </div>
-      <div className="space-y-3" aria-busy="true" aria-label="대강 목록 로딩">
-        {[0, 1, 2, 3].map((index) => (
-          <div
-            key={index}
-            className="motion-fade-up motion-shimmer h-28 rounded-3xl"
-            style={motionIndexStyle(index) as CSSProperties}
-          />
-        ))}
-      </div>
-    </>
-  );
+  return <SubstitutesFallback hasFilter={hasFilter} />;
 }
 
 export async function SubstitutesContent({

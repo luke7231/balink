@@ -3,6 +3,7 @@ import { HomeFiltersClient } from "@/components/home-filters-client";
 import { HomeJobsClient } from "@/components/home-jobs-client";
 import { MotionReveal } from "@/components/motion-reveal";
 import { SiteHeader } from "@/components/site-header";
+import { SubstitutesListWarmup } from "@/components/substitutes-list-warmup";
 import { HOME_BANNERS } from "@/lib/home-banners";
 import type { JobPostFilterInput } from "@/generated/graphql";
 
@@ -64,6 +65,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <HomeBanner items={HOME_BANNERS} />
         <HomeFiltersClient selectedSidos={selectedSidos} selectedSigungus={selectedSigungus} />
         <HomeJobsClient filter={filter} hasFilter={hasFilter} />
+        <SubstitutesListWarmup />
       </main>
     </div>
   );

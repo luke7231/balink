@@ -32,7 +32,7 @@ export default async function SubstitutesPage({ searchParams }: SubstitutesPageP
   const selectedRegions = toParamList(query.region);
 
   return (
-    <div className="min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
+    <div className="home-surface min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
       <SiteHeader />
 
       <main className="mx-auto min-w-0 max-w-5xl px-4 py-8">

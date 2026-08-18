@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { resolveSubstituteUrgency } from "@balink/domain";
+import { SoftContentSwap } from "@/components/soft-content-swap";
 import { SubstituteList, type SubstituteCardData } from "@/components/substitute-list";
+import { SubstitutesFallback } from "@/components/substitutes-fallback";
 import { SubstitutesFilterBar } from "@/components/substitutes-filter-bar";
 import {
   SubstitutePostsDocument,
@@ -11,7 +13,6 @@ import {
 } from "@/generated/graphql";
 import { browserGraphqlRequest } from "@/lib/graphql/browser-client";
 import { readListCache, writeListCache } from "@/lib/list-cache";
-import { motionIndexStyle } from "@/lib/motion";
 
 type DateFilter = "today" | "tomorrow" | "week";
 
@@ -80,35 +81,6 @@ type CachedSubstitutes = {
 
 const CACHE_KEY = "substitute-posts-open";
 
-function SubstitutesClientFallback({ hasFilter }: { hasFilter: boolean }) {
-  return (
-    <>
-      <div className="mb-6 flex gap-2 overflow-hidden" aria-hidden="true">
-        <div className="motion-shimmer h-10 w-20 shrink-0 rounded-full" />
-        <div className="motion-shimmer h-10 w-14 shrink-0 rounded-full" />
-        <div className="motion-shimmer h-10 w-14 shrink-0 rounded-full" />
-        <div className="motion-shimmer h-10 w-20 shrink-0 rounded-full" />
-      </div>
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">모집 중</h3>
-        <p className="text-sm text-muted-foreground">
-          {hasFilter ? "필터 적용 · " : ""}
-          불러오는 중
-        </p>
-      </div>
-      <div className="space-y-3" aria-busy="true" aria-label="대강 목록 로딩">
-        {[0, 1, 2, 3].map((index) => (
-          <div
-            key={index}
-            className="motion-fade-up motion-shimmer h-28 rounded-3xl"
-            style={motionIndexStyle(index) as CSSProperties}
-          />
-        ))}
-      </div>
-    </>
-  );
-}
-
 export function SubstitutesClient({
   dateFilters,
   selectedRegions,
@@ -171,27 +143,32 @@ export function SubstitutesClient({
     return { items, total: raw.total, regionOptions };
   }, [raw, dateFilters, selectedRegions]);
 
-  if (!view) return <SubstitutesClientFallback hasFilter={hasFilter} />;
-
   return (
-    <>
-      <SubstitutesFilterBar
-        dateFilters={dateFilters}
-        selectedRegions={selectedRegions}
-        regionOptions={view.regionOptions}
-      />
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">모집 중</h3>
-        <p className="text-sm text-muted-foreground">
-          {view.items.length}건
-          {view.items.length !== view.total ? ` / 전체 ${view.total}건` : ""}
-        </p>
-      </div>
-      <SubstituteList
-        posts={view.items}
-        getHref={(post) => `/substitutes/${post.id}`}
-        linkComponent={Link}
-      />
-    </>
+    <SoftContentSwap
+      ready={view != null}
+      skeleton={<SubstitutesFallback hasFilter={hasFilter} />}
+    >
+      {view ? (
+        <>
+          <SubstitutesFilterBar
+            dateFilters={dateFilters}
+            selectedRegions={selectedRegions}
+            regionOptions={view.regionOptions}
+          />
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-foreground">모집 중</h3>
+            <p className="text-sm text-muted-foreground">
+              {view.items.length}건
+              {view.items.length !== view.total ? ` / 전체 ${view.total}건` : ""}
+            </p>
+          </div>
+          <SubstituteList
+            posts={view.items}
+            getHref={(post) => `/substitutes/${post.id}`}
+            linkComponent={Link}
+          />
+        </>
+      ) : null}
+    </SoftContentSwap>
   );
 }
