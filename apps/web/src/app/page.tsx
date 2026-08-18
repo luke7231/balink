@@ -56,7 +56,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     : null;
 
   return (
-    <div className="home-surface min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
+    <div className="home-surface home-motion min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
       <MotionReveal index={0} variant="fade-in">
         <SiteHeader />
       </MotionReveal>

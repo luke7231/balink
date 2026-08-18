@@ -370,7 +370,7 @@ function BannerCarousel({
   return (
     <div ref={rootRef} className="relative -mx-4 min-w-0 md:mx-0">
       <div
-        className={`pointer-events-none absolute inset-x-0 top-0 z-10 transition-opacity duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+        className={`pointer-events-none absolute inset-x-0 top-0 z-10 transition-opacity duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
           reveal ? "opacity-0" : "opacity-100"
         }`}
         aria-hidden={reveal}
@@ -379,8 +379,8 @@ function BannerCarousel({
       </div>
 
       <div
-        className={`transition-[opacity,transform] duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
-          reveal ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
+        className={`transition-[opacity,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+          reveal ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2.5 opacity-0"
         }`}
         aria-busy={!reveal}
       >
