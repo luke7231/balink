@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import { resolveSubstituteUrgency } from "@balink/domain";
 import { SoftContentSwap } from "@/components/soft-content-swap";
 import { SubstituteList, type SubstituteCardData } from "@/components/substitute-list";
@@ -106,8 +106,11 @@ export function SubstitutesClient({
           items: result.substitutePosts.items as SubstituteCardData[],
           total: result.substitutePosts.pageInfo.total,
         };
-        setRaw(next);
         writeListCache(CACHE_KEY, next);
+        // 무거운 리스트 커밋이 쉬머를 멈추지 않게 전환을 낮춤
+        startTransition(() => {
+          setRaw(next);
+        });
       } catch {
         // keep cache
       }
@@ -143,11 +146,13 @@ export function SubstitutesClient({
     return { items, total: raw.total, regionOptions };
   }, [raw, dateFilters, selectedRegions]);
 
+  const skeleton = useMemo(
+    () => <SubstitutesFallback hasFilter={hasFilter} />,
+    [hasFilter],
+  );
+
   return (
-    <SoftContentSwap
-      ready={view != null}
-      skeleton={<SubstitutesFallback hasFilter={hasFilter} />}
-    >
+    <SoftContentSwap ready={view != null} skeleton={skeleton}>
       {view ? (
         <>
           <SubstitutesFilterBar
