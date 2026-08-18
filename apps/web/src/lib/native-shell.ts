@@ -30,6 +30,26 @@ export function notifyNativeShell() {
   window.dispatchEvent(new Event(NATIVE_SHELL_EVENT));
 }
 
+export function isSafeHttpUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/** Ask the native shell to open an in-app browser sheet. Returns true if handled. */
+export function openInAppBrowser(url: string, title?: string): boolean {
+  if (typeof window === "undefined") return false;
+  if (!window.ReactNativeWebView) return false;
+  if (!isSafeHttpUrl(url)) return false;
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({ type: "OPEN_IN_APP_BROWSER", url, title }),
+  );
+  return true;
+}
+
 export function useNativeShell(): boolean {
   const [nativeShell, setNativeShell] = useState(false);
 

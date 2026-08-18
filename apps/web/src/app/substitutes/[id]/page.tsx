@@ -15,6 +15,7 @@ import {
   resolveSubstituteUrgency,
 } from "@balink/domain";
 import { Badge } from "@balink/ui/badge";
+import { OriginalSourceLink } from "@/components/original-source-link";
 import { fetchSubstitutePost } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -87,14 +88,13 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
               </div>
             </div>
             <div className="mt-5 hidden sm:block">
-              <a
+              <OriginalSourceLink
                 href={post.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
+                title="원문"
                 className="inline-flex rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-700"
               >
                 원문 보기
-              </a>
+              </OriginalSourceLink>
             </div>
           </section>
 
@@ -182,28 +182,26 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
           ) : null}
 
           <div className="mt-8">
-            <a
+            <OriginalSourceLink
               href={post.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
+              title="원문"
               className="inline-flex rounded-full bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700"
             >
               발레매니아 원문 보기
-            </a>
+            </OriginalSourceLink>
           </div>
         </article>
       </main>
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur sm:hidden">
         <div className="mx-auto flex max-w-3xl gap-2">
-          <a
+          <OriginalSourceLink
             href={post.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
+            title="원문"
             className="flex-1 rounded-full bg-rose-600 px-4 py-3 text-center text-sm font-semibold text-white"
           >
             원문 보기
-          </a>
+          </OriginalSourceLink>
         </div>
       </div>
     </div>

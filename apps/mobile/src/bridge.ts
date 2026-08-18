@@ -31,6 +31,7 @@ export type WebToNativeMessage =
   | { type: "OPEN_NOTIFICATION_SETTINGS" }
   | { type: "HAPTIC"; style: HapticStyle }
   | { type: "NATIVE_NAV"; path: string }
+  | { type: "OPEN_IN_APP_BROWSER"; url: string; title?: string }
   | { type: "SET_THEME"; preference: ThemePreference };
 
 export type NativeToWebMessage =
@@ -49,6 +50,15 @@ export type NativeToWebMessage =
 
 function isThemePreference(value: unknown): value is ThemePreference {
   return value === "system" || value === "light" || value === "dark";
+}
+
+function isSafeHttpUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 export function parseWebMessage(value: string): WebToNativeMessage | null {
@@ -70,6 +80,16 @@ export function parseWebMessage(value: string): WebToNativeMessage | null {
           : "";
         if (!path.startsWith("/") || path.startsWith("//")) return null;
         return { type: "NATIVE_NAV", path };
+      }
+      case "OPEN_IN_APP_BROWSER": {
+        const url = typeof (message as { url?: unknown }).url === "string"
+          ? (message as { url: string }).url
+          : "";
+        const title = typeof (message as { title?: unknown }).title === "string"
+          ? (message as { title: string }).title
+          : undefined;
+        if (!isSafeHttpUrl(url)) return null;
+        return { type: "OPEN_IN_APP_BROWSER", url, title };
       }
       case "SET_THEME": {
         const preference = (message as { preference?: unknown }).preference;

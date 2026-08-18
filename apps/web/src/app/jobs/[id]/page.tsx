@@ -16,6 +16,7 @@ import { Badge } from "@balink/ui/badge";
 import { auth } from "@/auth";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { OriginalDescription } from "@/components/original-description";
+import { OriginalSourceLink } from "@/components/original-source-link";
 import { AcademyGallery } from "@/components/academy-gallery";
 import { fetchJobPost } from "@/lib/graphql/queries";
 
@@ -147,11 +148,10 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             <h2 className="text-sm font-semibold text-foreground">원본 링크</h2>
             <div className="mt-3 space-y-3">
               {job.sources.map((source) => (
-                <a
+                <OriginalSourceLink
                   key={source.id}
                   href={source.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  title={formatSource(source.source)}
                   className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 transition hover:border-accent-border hover:bg-accent-subtle/60"
                 >
                   <div>
@@ -159,7 +159,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                     <p className="mt-1 text-sm text-muted-foreground">{source.sourcePost.title}</p>
                   </div>
                   <span className="text-sm font-medium text-accent">바로가기</span>
-                </a>
+                </OriginalSourceLink>
               ))}
             </div>
           </section>
