@@ -26,9 +26,9 @@ export const SUBSTITUTE_URGENCY_LABELS: Record<string, string> = {
 };
 
 export const TIME_SLOT_LABELS: Record<string, string> = {
-  morning: "오전",
-  afternoon: "오후",
-  evening: "저녁",
+  morning: "☀️ 오전",
+  afternoon: "🌤 오후",
+  evening: "🌙 저녁",
   unknown: "협의",
 };
 

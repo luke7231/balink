@@ -182,7 +182,7 @@ test("inbox notification titles and body formatting", () => {
       days: ["월", "수", "금"],
       timeSlots: ["evening"],
     }),
-    "성북구 · 월수금 · 저녁",
+    "성북구 · 월수금 · 🌙 저녁",
   );
   assert.equal(
     formatSubstituteMatchNotificationBody({
@@ -190,6 +190,6 @@ test("inbox notification titles and body formatting", () => {
       lessonDates: ["2026-03-12"],
       timeSlots: ["evening"],
     }),
-    "성북구 · 3/12(목) · 저녁",
+    "성북구 · 3/12(목) · 🌙 저녁",
   );
 });

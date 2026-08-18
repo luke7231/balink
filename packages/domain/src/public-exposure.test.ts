@@ -18,7 +18,7 @@ test("buildPublicTitleSummary prefers dong then sigungu with Korean labels", () 
       subjectTypes: ["ballet"],
       timeSlots: ["morning", "unknown"],
     }),
-    "평택시 · 영유아 · 정규 · 오전",
+    "평택시 · 영유아 · 정규 · ☀️ 오전",
   );
 });
 
@@ -31,7 +31,7 @@ test("buildPublicTitleSummary omits generic ballet but keeps barre and ballet fi
       subjectTypes: ["ballet", "barre", "ballet_fit"],
       timeSlots: ["morning"],
     }),
-    "강남구 · 성인 · 바레 · 발레핏 · 정규 · 오전",
+    "강남구 · 성인 · 바레 · 발레핏 · 정규 · ☀️ 오전",
   );
 });
 
@@ -73,7 +73,7 @@ test("redactBalletmaniaJobSummary replaces title and pay text", () => {
   };
 
   const redacted = redactBalletmaniaJobSummary(job);
-  assert.equal(redacted.title, "역삼동 · 성인 · 정규 · 저녁");
+  assert.equal(redacted.title, "역삼동 · 성인 · 정규 · 🌙 저녁");
   assert.equal(redacted.payText, null);
   assert.equal(redacted.representativePayText, "3~4만원대");
   assert.equal(redacted.locationText, "서울 강남구 역삼동");
