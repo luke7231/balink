@@ -1,5 +1,5 @@
 import { useEffect, useMemo, type ComponentProps } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   DarkTheme,
@@ -25,6 +25,31 @@ const NotificationsStackNav = createNativeStackNavigator<WebStackParamList>();
 const AccountStackNav = createNativeStackNavigator<WebStackParamList>();
 
 export const navigationRef = createNavigationContainerRef<RootTabParamList>();
+
+const TAB_SHIFT_PX = 12;
+
+function tabSceneStyle({
+  current,
+}: {
+  current: { progress: Animated.Value };
+}) {
+  return {
+    sceneStyle: {
+      opacity: current.progress.interpolate({
+        inputRange: [-1, 0, 1],
+        outputRange: [0, 1, 0],
+      }),
+      transform: [
+        {
+          translateX: current.progress.interpolate({
+            inputRange: [-1, 0, 1],
+            outputRange: [-TAB_SHIFT_PX, 0, TAB_SHIFT_PX],
+          }),
+        },
+      ],
+    },
+  };
+}
 
 const stackScreenOptions = {
   headerShown: false,
@@ -161,6 +186,15 @@ export function RootNavigator() {
         screenOptions={{
           headerShown: false,
           freezeOnBlur: true,
+          animation: "fade",
+          sceneStyleInterpolator: tabSceneStyle,
+          transitionSpec: {
+            animation: "timing",
+            config: {
+              duration: 180,
+              easing: Easing.bezier(0.16, 1, 0.3, 1),
+            },
+          },
           tabBarStyle: [
             styles.tabBar,
             {

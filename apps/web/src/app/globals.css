@@ -170,6 +170,10 @@ html.native-shell *::-webkit-scrollbar {
   animation-delay: calc(var(--motion-index, 0) * var(--motion-stagger));
 }
 
+.motion-settled {
+  animation: none !important;
+}
+
 /** 홈·목록 기본 */
 .home-surface {
   --motion-duration: 360ms;
