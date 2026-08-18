@@ -5,6 +5,7 @@ import type {
   SourceName,
 } from "@balink/domain";
 import {
+  buildRegionFilterClauses,
   decideOrganizationMatch,
   jsonArray,
   mergeOrganizationFields,
@@ -39,23 +40,25 @@ function splitFilterValues(value?: string | null): string[] {
     .filter(Boolean);
 }
 
+function regionWhere(sidos: string[], sigungus: string[]): { sido?: string; sigungu?: string } | { OR: Array<{ sido?: string; sigungu?: string }> } | Record<string, never> {
+  const clauses = buildRegionFilterClauses(sidos, sigungus).map((clause) => ({
+    ...(clause.sido ? { sido: clause.sido } : {}),
+    ...(clause.sigungu ? { sigungu: clause.sigungu } : {}),
+  }));
+  if (clauses.length === 0) return {};
+  if (clauses.length === 1) return clauses[0]!;
+  return { OR: clauses };
+}
+
 export class JobPostRepository {
   buildWhere(filter: JobPostFilterInput | null | undefined): Prisma.JobPostWhereInput {
     const sidos = splitFilterValues(filter?.sido);
     const sigungus = splitFilterValues(filter?.sigungu);
-    const regionOr: Prisma.JobPostWhereInput[] = [
-      ...sidos.map((sido) => ({ sido })),
-      ...sigungus.map((sigungu) => ({ sigungu })),
-    ];
 
     return {
       isBallet: true,
       jobType: { not: "substitute" },
-      ...(regionOr.length === 1
-        ? regionOr[0]
-        : regionOr.length > 1
-          ? { OR: regionOr }
-          : {}),
+      ...regionWhere(sidos, sigungus),
       ...(filter?.jobType ? { jobType: filter.jobType } : {}),
       ...(filter?.source ? { sourcePrimary: filter.source } : {}),
     };
@@ -583,18 +586,10 @@ export class SubstitutePostRepository {
   buildWhere(filter: import("@balink/domain").SubstitutePostFilterInput | null | undefined): Prisma.SubstitutePostWhereInput {
     const sidos = splitFilterValues(filter?.sido);
     const sigungus = splitFilterValues(filter?.sigungu);
-    const regionOr: Prisma.SubstitutePostWhereInput[] = [
-      ...sidos.map((sido) => ({ sido })),
-      ...sigungus.map((sigungu) => ({ sigungu })),
-    ];
 
     return {
       ...(filter?.status ? { status: filter.status } : { status: "OPEN" }),
-      ...(regionOr.length === 1
-        ? regionOr[0]
-        : regionOr.length > 1
-          ? { OR: regionOr }
-          : {}),
+      ...regionWhere(sidos, sigungus),
       ...(filter?.source ? { source: filter.source } : {}),
     };
   }

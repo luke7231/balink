@@ -67,7 +67,12 @@ export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: Jobs
       );
   }, [regions, draftSidos]);
 
-  const activeCount = selectedSidos.length + selectedSigungus.length;
+  const activeCount =
+    selectedSidos.filter((sido) => {
+      const region = regions.find((entry) => entry.sido === sido);
+      if (!region) return true;
+      return !region.districts.some((district) => selectedSigungus.includes(district.sigungu));
+    }).length + selectedSigungus.length;
 
   const chips = [
     {
@@ -76,19 +81,25 @@ export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: Jobs
       href: "/",
       selected: selectedSidos.length === 0 && selectedSigungus.length === 0,
     },
-    ...regions.map((region) => ({
-      key: region.sido,
-      label: region.sido,
-      href: buildJobsHref(
-        toggleValue(selectedSidos, region.sido),
-        selectedSidos.includes(region.sido)
-          ? selectedSigungus.filter(
-              (sigungu) => !region.districts.some((district) => district.sigungu === sigungu),
-            )
-          : selectedSigungus,
-      ),
-      selected: selectedSidos.includes(region.sido),
-    })),
+    ...regions.map((region) => {
+      const hasDistrictSelection = region.districts.some((district) =>
+        selectedSigungus.includes(district.sigungu),
+      );
+      return {
+        key: region.sido,
+        label: region.sido,
+        href: buildJobsHref(
+          toggleValue(selectedSidos, region.sido),
+          selectedSidos.includes(region.sido)
+            ? selectedSigungus.filter(
+                (sigungu) => !region.districts.some((district) => district.sigungu === sigungu),
+              )
+            : selectedSigungus,
+        ),
+        // 구가 선택된 시·도는 "시 전체" 칩으로 강조하지 않는다.
+        selected: selectedSidos.includes(region.sido) && !hasDistrictSelection,
+      };
+    }),
     ...selectedSigungus.map((sigungu) => ({
       key: `sigungu-${sigungu}`,
       label: sigungu,
