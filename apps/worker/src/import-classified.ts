@@ -1,26 +1,36 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import type { Prisma, PrismaSourceName } from "@balink/db";
-import { SourcePostRepository } from "@balink/db";
+import { SourcePostRepository, SubstitutePostRepository } from "@balink/db";
 import type { ListingEnrichment, LocationSource, SourceName } from "@balink/domain";
 import {
   canonicalizeAdminRegion,
   sanitizeLocationTextForStorage,
   sanitizeSchedule,
+  shouldRouteEmployListingToSubstitute,
+  toEmploySubstituteSourcePostId,
 } from "@balink/domain";
 import { classifiedPayloadSchema, parseOrThrow } from "@balink/validation";
 import { mirrorAcademyImagesToS3, parseRawAcademyImages } from "./academy-images.js";
 import { fanOutJobMatch, shouldFanOutInbox } from "./notification-fanout.js";
 import { buildOrganizationCandidate } from "./organization-matching.js";
+import {
+  hashSubstituteContent,
+  persistNormalizedSubstitute,
+  type SubstituteRawRecord,
+} from "./substitute-import.js";
+import { formatSubstitutePost, validateFormattedSubstitute } from "./substitute-formatter.js";
 
 const sourcePostRepository = new SourcePostRepository();
+const substitutePostRepository = new SubstitutePostRepository();
 
 interface ImportResult {
   imported: number;
+  routedToSubstitute: number;
 }
 
 export interface ImportClassifiedOptions {
-  /** true일 때만 신규 JobPost 알림함 fan-out. 백필/재처리는 false(기본). */
+  /** true일 때만 신규 JobPost/대강 알림함 fan-out. 백필/재처리는 false(기본). */
   fanOutInbox?: boolean;
 }
 
@@ -40,20 +50,28 @@ export async function importClassifiedFile(
   const rawPayload = JSON.parse(await fs.readFile(filePath, "utf8"));
   const payload = parseOrThrow(classifiedPayloadSchema, rawPayload, "Invalid classified payload");
   let imported = 0;
+  let routedToSubstitute = 0;
 
   for (const item of payload.listings) {
-    await importClassifiedItem(payload.source, item as ClassifiedListingInput, options);
+    const routed = await importClassifiedItem(payload.source, item as ClassifiedListingInput, options);
     imported += 1;
+    if (routed) routedToSubstitute += 1;
   }
 
-  return { imported };
+  return { imported, routedToSubstitute };
 }
 
 async function importClassifiedItem(
   source: SourceName,
   item: ClassifiedListingInput,
   options: ImportClassifiedOptions = {},
-): Promise<void> {
+): Promise<boolean> {
+  const jobType = stringValue(item.classification.jobType);
+  if (shouldRouteEmployListingToSubstitute(jobType)) {
+    await importAsEmploySubstitute(source, item, options);
+    return true;
+  }
+
   const normalized = await normalizeItem(source, item);
   const organizationCandidate = buildOrganizationCandidate({
     source,
@@ -85,7 +103,7 @@ async function importClassifiedItem(
   });
 
   if (!shouldFanOutInbox({ created: result.created, fanOutInbox: options.fanOutInbox })) {
-    return;
+    return false;
   }
 
   try {
@@ -94,6 +112,78 @@ async function importClassifiedItem(
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[import-classified] fanOutInbox failed jobPostId=${result.jobPostId}: ${message}`);
   }
+  return false;
+}
+
+async function importAsEmploySubstitute(
+  source: SourceName,
+  item: ClassifiedListingInput,
+  options: ImportClassifiedOptions,
+): Promise<void> {
+  const title = stringValue(item.raw.title) || "Untitled substitute post";
+  const detailText = stringValue(item.raw.detailText);
+  const contentHash = hashContent([source, title, detailText ?? "", stringValue(item.raw.postedDate)].join("\n"));
+  const postedAt = parseDate(stringValue(item.raw.postedDate));
+
+  await sourcePostRepository.upsertSourcePostWithoutJob({
+    source,
+    sourcePostId: item.sourcePostId,
+    url: item.url,
+    title,
+    postedAt,
+    collectedAt: item.collectedAt,
+    raw: item.raw,
+    classification: item.classification,
+    contentHash,
+    sourceConfidence: stringValue(item.classification.balletConfidence),
+  });
+
+  const existingByUrl = await substitutePostRepository.findBySourceUrl(item.url);
+  const substituteSource = existingByUrl?.source ?? source;
+  const substituteSourcePostId =
+    existingByUrl?.sourcePostId ?? toEmploySubstituteSourcePostId(item.sourcePostId);
+
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is required to route employ substitute listings");
+  }
+
+  const contact = asRecord(item.classification.contact);
+  const contactPhones = stringArray(contact.phones);
+  const contactEmails = stringArray(contact.emails);
+  const rawRecord: SubstituteRawRecord = {
+    title,
+    detailText,
+    author: stringValue(item.raw.company),
+    authorMemberNo: null,
+    postedDate: stringValue(item.raw.postedDate),
+    postedAtIso: postedAt?.toISOString() ?? null,
+    contactPhones,
+    contactEmails,
+    recommendCount: 0,
+    viewCount: 0,
+  };
+
+  const formatted = await formatSubstitutePost({
+    title,
+    detailText: detailText ?? "",
+    postedAt: rawRecord.postedAtIso,
+  });
+  validateFormattedSubstitute(formatted, `${title}\n${detailText ?? ""}`);
+
+  await persistNormalizedSubstitute({
+    source: substituteSource,
+    sourcePostId: substituteSourcePostId,
+    sourceUrl: item.url,
+    collectedAt: item.collectedAt,
+    raw: rawRecord,
+    formatted,
+    contentHash: hashSubstituteContent(title, detailText),
+    fanOutInbox: options.fanOutInbox,
+  });
+
+  console.log(
+    `[import-classified] routed employ substitute source=${source} sourcePostId=${item.sourcePostId} → ${substituteSource}:${substituteSourcePostId}`,
+  );
 }
 
 async function normalizeItem(source: SourceName, item: ClassifiedListingInput) {
@@ -226,6 +316,11 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function stringValue(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
 }
 
 function numberValue(value: unknown): number | null {

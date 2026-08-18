@@ -105,6 +105,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               <dd className="mt-1 font-medium text-foreground">
                 {formatLocation(job.sido ?? null, job.sigungu ?? null, job.dongOrStation ?? null)}
               </dd>
+              {job.locationText ? (
+                <dd className="mt-1 text-xs text-muted-foreground">{job.locationText}</dd>
+              ) : null}
             </div>
             <div>
               <dt className="text-muted-foreground">게시일</dt>
@@ -119,9 +122,6 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             <div>
               <dt className="text-muted-foreground">급여</dt>
               <dd className="mt-1 font-medium text-foreground">{payLabel}</dd>
-              {job.representativePay?.evidence ? (
-                <dd className="mt-1 text-xs text-muted-foreground">근거: {job.representativePay.evidence}</dd>
-              ) : null}
             </div>
           </dl>
 

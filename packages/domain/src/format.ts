@@ -1,6 +1,8 @@
 import {
+  AUDIENCE_TYPE_LABELS,
   JOB_TYPE_LABELS,
   SOURCE_LABELS,
+  SUBJECT_TYPE_LABELS,
   SUBSTITUTE_STATUS_LABELS,
   SUBSTITUTE_URGENCY_LABELS,
   TIME_SLOT_LABELS,
@@ -27,6 +29,20 @@ export function formatOrganizationType(type: string | null | undefined): string 
 
 export function formatTimeSlot(slot: string): string {
   return TIME_SLOT_LABELS[slot] ?? slot;
+}
+
+export function formatAudienceType(audience: string | null | undefined): string | null {
+  if (!audience) return null;
+  const trimmed = audience.trim();
+  if (!trimmed || trimmed === "unknown") return null;
+  return AUDIENCE_TYPE_LABELS[trimmed] ?? trimmed;
+}
+
+export function formatSubjectType(subject: string | null | undefined): string | null {
+  if (!subject) return null;
+  const trimmed = subject.trim();
+  if (!trimmed || trimmed === "other" || trimmed === "unknown") return null;
+  return SUBJECT_TYPE_LABELS[trimmed] ?? trimmed;
 }
 
 export { displayableTimeSlots, formatDayGroups } from "./schedule.js";

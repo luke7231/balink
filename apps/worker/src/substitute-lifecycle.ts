@@ -1,5 +1,9 @@
 import { SubstitutePostRepository } from "@balink/db";
-import { deriveSubstituteStatus } from "@balink/domain";
+import {
+  deriveSubstituteStatus,
+  isEmployBoardSourceUrl,
+  isEmploySubstituteSourcePostId,
+} from "@balink/domain";
 import { detectWorkingDetailState, fetchEucKrHtml, loginBalletmania } from "./balletmania-working.js";
 
 const substitutePostRepository = new SubstitutePostRepository();
@@ -22,6 +26,10 @@ export async function refreshSubstituteLifecycle(limit = 50): Promise<{ expired:
 
   const deletionCandidates = openPosts
     .filter((post) => {
+      // 채용 보드에서 라우팅된 대강은 working HTML 파서로 삭제 판정하면 안 됨
+      if (isEmploySubstituteSourcePostId(post.sourcePostId) || isEmployBoardSourceUrl(post.sourceUrl)) {
+        return false;
+      }
       if (!post.nextLessonAt) return false;
       if (post.nextLessonAt.getTime() > now.getTime() + 48 * 60 * 60 * 1000) return false;
       if (post.lastDeletionCheckAt && now.getTime() - post.lastDeletionCheckAt.getTime() < DELETION_CHECK_COOLDOWN_MS) {

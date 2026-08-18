@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  formatAudienceType,
   formatLessonDates,
   formatLocation,
+  formatPay,
   formatPostedAt,
   formatRecurrenceSummary,
+  formatSubjectType,
   formatSubstituteSessionLabel,
   formatSubstituteSessionsCardLabel,
   formatSubstituteStatus,
@@ -18,10 +21,6 @@ export const dynamic = "force-dynamic";
 
 interface SubstituteDetailPageProps {
   params: Promise<{ id: string }>;
-}
-
-function phoneHref(phone: string): string {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
 
 export default async function SubstituteDetailPage({ params }: SubstituteDetailPageProps) {
@@ -48,10 +47,12 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
   const locationLabel = hasNormalizedLocation
     ? formatLocation(post.sido ?? null, post.sigungu ?? null, post.dongOrStation ?? null)
     : post.locationText || "지역 미상";
-  const payLabel =
-    post.representativePayText || post.representativePay?.displayText || post.payText || "급여 협의";
-  const primaryPhone = post.contactPhones[0];
-  const primaryEmail = post.contactEmails[0];
+  const payLabel = formatPay(
+    post.payText ?? null,
+    post.representativePay?.minManwon ?? null,
+    post.representativePay?.maxManwon ?? null,
+    post.representativePayText ?? post.representativePay?.displayText ?? null,
+  );
 
   return (
     <div className="min-h-full bg-surface-muted pb-24 sm:pb-0">
@@ -76,34 +77,21 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
               <div>
                 <p className="text-muted-foreground">지역</p>
                 <p className="mt-1 font-semibold text-foreground">{locationLabel}</p>
+                {post.locationText && hasNormalizedLocation ? (
+                  <p className="mt-1 text-xs text-muted-foreground">{post.locationText}</p>
+                ) : null}
               </div>
               <div>
                 <p className="text-muted-foreground">급여</p>
                 <p className="mt-1 font-bold text-accent">{payLabel}</p>
               </div>
             </div>
-            <div className="mt-5 hidden flex-wrap gap-2 sm:flex">
-              {primaryPhone ? (
-                <a
-                  href={phoneHref(primaryPhone)}
-                  className="inline-flex rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-700"
-                >
-                  전화하기
-                </a>
-              ) : null}
-              {primaryEmail ? (
-                <a
-                  href={`mailto:${primaryEmail}`}
-                  className="inline-flex rounded-full border border-accent-border bg-surface px-5 py-2.5 text-sm font-semibold text-accent hover:bg-accent-subtle"
-                >
-                  이메일 보내기
-                </a>
-              ) : null}
+            <div className="mt-5 hidden sm:block">
               <a
                 href={post.sourceUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-surface-muted"
+                className="inline-flex rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-700"
               >
                 원문 보기
               </a>
@@ -115,16 +103,15 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
 
           <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-muted-foreground">작성자</dt>
-              <dd className="mt-1 font-medium text-foreground">{post.author || "미상"}</dd>
-            </div>
-            <div>
               <dt className="text-muted-foreground">게시일</dt>
               <dd className="mt-1 font-medium text-foreground">{formatPostedAt(post.postedAt ?? null)}</dd>
             </div>
             <div>
               <dt className="text-muted-foreground">지역</dt>
               <dd className="mt-1 font-medium text-foreground">{locationLabel}</dd>
+              {post.locationText && hasNormalizedLocation ? (
+                <dd className="mt-1 text-xs text-muted-foreground">{post.locationText}</dd>
+              ) : null}
             </div>
             <div>
               <dt className="text-muted-foreground">일정</dt>
@@ -147,14 +134,25 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
               <h2 className="text-sm font-semibold text-foreground">수업 세션</h2>
               <ul className="mt-3 space-y-3">
                 {explicitSessions.map((session, index) => (
-                  <li key={`${session.date}-${session.startTime}-${index}`} className="rounded-2xl bg-surface-muted p-4 text-sm">
-                    <div className="font-medium text-foreground">{formatSubstituteSessionLabel(session)}</div>
-                    <div className="mt-2 text-muted-foreground">
-                      대상: {session.audienceTypes.join(", ") || "미상"} · 장르: {session.subjectTypes.join(", ") || "미상"}
+                  <li
+                    key={`${session.date}-${session.startTime}-${index}`}
+                    className="rounded-2xl bg-surface-muted p-4 text-sm"
+                  >
+                    <div className="font-medium text-foreground">
+                      {formatSubstituteSessionLabel(session)}
                     </div>
-                    {session.pay ? (
+                    <div className="mt-2 text-muted-foreground">
+                      대상:{" "}
+                      {session.audienceTypes.map(formatAudienceType).filter(Boolean).join(", ") ||
+                        "미상"}{" "}
+                      · 장르:{" "}
+                      {session.subjectTypes.map(formatSubjectType).filter(Boolean).join(", ") ||
+                        "미상"}
+                    </div>
+                    {session.pay && (session.pay.minManwon != null || session.pay.maxManwon != null) ? (
                       <div className="mt-1 text-muted-foreground">
-                        급여: {session.pay.evidence || `${session.pay.minManwon ?? ""}만원`}
+                        급여:{" "}
+                        {formatPay(null, session.pay.minManwon ?? null, session.pay.maxManwon ?? null, null)}
                       </div>
                     ) : null}
                   </li>
@@ -183,28 +181,6 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
             </section>
           ) : null}
 
-          {(post.contactPhones.length > 0 || post.contactEmails.length > 0) && (
-            <section className="mt-8">
-              <h2 className="text-sm font-semibold text-foreground">연락처</h2>
-              <ul className="mt-3 space-y-2 text-sm text-foreground">
-                {post.contactPhones.map((phone) => (
-                  <li key={phone}>
-                    <a href={phoneHref(phone)} className="font-medium text-accent hover:underline">
-                      {phone}
-                    </a>
-                  </li>
-                ))}
-                {post.contactEmails.map((email) => (
-                  <li key={email}>
-                    <a href={`mailto:${email}`} className="font-medium text-accent hover:underline">
-                      {email}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
           <div className="mt-8">
             <a
               href={post.sourceUrl}
@@ -220,26 +196,11 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur sm:hidden">
         <div className="mx-auto flex max-w-3xl gap-2">
-          {primaryPhone ? (
-            <a
-              href={phoneHref(primaryPhone)}
-              className="flex-1 rounded-full bg-rose-600 px-4 py-3 text-center text-sm font-semibold text-white"
-            >
-              전화하기
-            </a>
-          ) : primaryEmail ? (
-            <a
-              href={`mailto:${primaryEmail}`}
-              className="flex-1 rounded-full bg-rose-600 px-4 py-3 text-center text-sm font-semibold text-white"
-            >
-              이메일 보내기
-            </a>
-          ) : null}
           <a
             href={post.sourceUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex-1 rounded-full border border-border bg-surface px-4 py-3 text-center text-sm font-semibold text-foreground"
+            className="flex-1 rounded-full bg-rose-600 px-4 py-3 text-center text-sm font-semibold text-white"
           >
             원문 보기
           </a>

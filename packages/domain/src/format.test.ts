@@ -2,12 +2,19 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   formatCompactLessonDate,
+  formatJobType,
   formatLessonDates,
   formatRecurrenceSummary,
   formatSubstituteSessionLabel,
   formatSubstituteSessionsCardLabel,
   groupSubstituteSessionsByDate,
 } from "./format.js";
+
+test("formatJobType maps one_time to 특강", () => {
+  assert.equal(formatJobType("one_time"), "특강");
+  assert.equal(formatJobType("substitute"), "대강");
+  assert.equal(formatJobType("regular"), "정규");
+});
 
 test("formatCompactLessonDate omits year", () => {
   assert.equal(formatCompactLessonDate("2026-08-04"), "8/4");

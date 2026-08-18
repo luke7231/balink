@@ -461,7 +461,8 @@ function mergeLlmClassification(ruleClassification, llmResult, meta) {
     appliedFields.push("subjects");
   }
 
-  if (isApplicableConfidence(confidence.jobType) && llmResult.jobType && llmResult.jobType !== "unknown") {
+  // jobType은 LLM-first: confidence와 무관하게 채택 (unknown만 제외)
+  if (llmResult.jobType && llmResult.jobType !== "unknown") {
     merged.jobType = llmResult.jobType;
     appliedFields.push("jobType");
   }
@@ -705,7 +706,11 @@ function classifyAudiences(text) {
 }
 
 function classifyJobType(text) {
-  if (!/대타\s*가\s*아닌|대타\s*아닌/.test(text) && /대타|대강|당일|이번\s*주/.test(text)) {
+  if (/대타\s*가\s*아닌|대타\s*아닌/.test(text)) {
+    // fall through
+  } else if (/대타|대강/.test(text)) {
+    return "substitute";
+  } else if (/(?:당일|이번\s*주)/.test(text) && /\d{1,2}\s*일|\d{1,2}\s*[\/.]\s*\d{1,2}|\d{4}-\d{2}-\d{2}/.test(text)) {
     return "substitute";
   }
   if (/단기|이벤트|특강/.test(text)) return "one_time";

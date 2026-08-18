@@ -50,6 +50,7 @@ export class JobPostRepository {
 
     return {
       isBallet: true,
+      jobType: { not: "substitute" },
       ...(regionOr.length === 1
         ? regionOr[0]
         : regionOr.length > 1
@@ -100,14 +101,21 @@ export class JobPostRepository {
   async groupRegions() {
     return prisma.jobPost.groupBy({
       by: ["sido", "sigungu"],
-      where: { isBallet: true, sido: { not: null }, sigungu: { not: null } },
+      where: {
+        isBallet: true,
+        jobType: { not: "substitute" },
+        sido: { not: null },
+        sigungu: { not: null },
+      },
       _count: { _all: true },
       orderBy: [{ sido: "asc" }, { sigungu: "asc" }],
     });
   }
 
   async countBalletPosts() {
-    return prisma.jobPost.count({ where: { isBallet: true } });
+    return prisma.jobPost.count({
+      where: { isBallet: true, jobType: { not: "substitute" } },
+    });
   }
 }
 
@@ -390,6 +398,65 @@ export class SourcePostRepository {
       };
     });
   }
+
+  /**
+   * 채용 보드 대강 라우팅용: SourcePost만 upsert하고, 이미 연결된 JobPost가 있으면 삭제.
+   * (incremental filter가 SourcePost id를 보기 때문에 SourcePost는 반드시 남겨 둔다.)
+   */
+  async upsertSourcePostWithoutJob(input: {
+    source: SourceName;
+    sourcePostId: string;
+    url: string;
+    title: string;
+    postedAt: Date | null;
+    collectedAt: string;
+    raw: Record<string, unknown>;
+    classification: Record<string, unknown>;
+    contentHash: string;
+    sourceConfidence: string | null;
+  }) {
+    return prisma.$transaction(async (tx) => {
+      const sourcePost = await tx.sourcePost.upsert({
+        where: {
+          source_sourcePostId: {
+            source: input.source,
+            sourcePostId: input.sourcePostId,
+          },
+        },
+        update: {
+          sourceUrl: input.url,
+          title: input.title,
+          postedAt: input.postedAt,
+          rawJson: input.raw as Prisma.InputJsonValue,
+          classificationJson: input.classification as Prisma.InputJsonValue,
+          contentHash: input.contentHash,
+          fetchedAt: new Date(input.collectedAt),
+        },
+        create: {
+          source: input.source,
+          sourcePostId: input.sourcePostId,
+          sourceUrl: input.url,
+          title: input.title,
+          postedAt: input.postedAt,
+          rawJson: input.raw as Prisma.InputJsonValue,
+          classificationJson: input.classification as Prisma.InputJsonValue,
+          contentHash: input.contentHash,
+          fetchedAt: new Date(input.collectedAt),
+        },
+      });
+
+      const existingLinks = await tx.jobPostSource.findMany({
+        where: { sourcePostId: sourcePost.id },
+        select: { jobPostId: true },
+      });
+      const jobPostIds = [...new Set(existingLinks.map((link) => link.jobPostId))];
+      if (jobPostIds.length > 0) {
+        await tx.jobPost.deleteMany({ where: { id: { in: jobPostIds } } });
+      }
+
+      return { sourcePostId: sourcePost.id, deletedJobPostIds: jobPostIds };
+    });
+  }
 }
 
 export class ScraperRunRepository {
@@ -564,6 +631,18 @@ export class SubstitutePostRepository {
         status: true,
         lastDeletionCheckAt: true,
         nextLessonAt: true,
+      },
+    });
+  }
+
+  async findBySourceUrl(sourceUrl: string) {
+    return prisma.substitutePost.findFirst({
+      where: { sourceUrl },
+      select: {
+        id: true,
+        source: true,
+        sourcePostId: true,
+        sourceUrl: true,
       },
     });
   }

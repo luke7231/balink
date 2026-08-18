@@ -24,6 +24,10 @@ import {
   type SubstituteUrgency,
   isAcademyPlaceholderImageUrl,
   pickAcademyThumbnail,
+  redactBalletmaniaJobDetail,
+  redactBalletmaniaJobSummary,
+  redactBalletmaniaSubstituteDetail,
+  redactBalletmaniaSubstituteSummary,
 } from "@balink/domain";
 
 type JobPostWithSources = JobPost & {
@@ -39,7 +43,7 @@ export function toJobPostSummary(job: JobPost): JobPostSummary {
     job.academyLogoUrl,
   );
 
-  return {
+  return redactBalletmaniaJobSummary({
     id: job.id,
     title: job.title,
     sourcePrimary: job.sourcePrimary as SourceName,
@@ -64,12 +68,17 @@ export function toJobPostSummary(job: JobPost): JobPostSummary {
     academyThumbnailType: thumbnail?.type ?? null,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
-  };
+  });
 }
 
 export function toJobPostDetail(job: JobPostWithSources): JobPostDetail {
-  return {
-    ...toJobPostSummary(job),
+  const summary = toJobPostSummary(job);
+  return redactBalletmaniaJobDetail({
+    ...summary,
+    // 요약 매퍼가 이미 title/pay를 줄였을 수 있으므로, 상세 마스킹 전에 원문 필드를 다시 붙인다.
+    title: job.title,
+    payText: job.payText,
+    representativePayText: job.representativePayText,
     description: job.description,
     status: job.status,
     isBallet: job.isBallet,
@@ -88,7 +97,7 @@ export function toJobPostDetail(job: JobPostWithSources): JobPostDetail {
     academyLogoUrl: isAcademyPlaceholderImageUrl(job.academyLogoUrl) ? null : job.academyLogoUrl,
     academyGallery: parseAcademyGallery(job.academyGalleryJson),
     organization: job.organization ? toOrganizationSummary(job.organization) : null,
-  };
+  });
 }
 
 export function toOrganizationSummary(org: Organization): OrganizationSummary {
@@ -120,12 +129,17 @@ export function toOrganizationDetail(
 }
 
 export function toJobPostSourceLink(link: JobPostSource & { sourcePost: SourcePostSummary }): JobPostSourceLink {
+  const source = link.source as SourceName;
   return {
     id: link.id,
-    source: link.source as SourceName,
+    source,
     sourceUrl: link.sourceUrl,
     confidence: link.confidence,
-    sourcePost: link.sourcePost,
+    sourcePost: {
+      ...link.sourcePost,
+      // 발레매니아 원문 제목은 공개 요약 정책상 노출하지 않음
+      title: source === "balletmania" ? "원문 공고" : link.sourcePost.title,
+    },
   };
 }
 
@@ -178,7 +192,7 @@ function parseAcademyGallery(value: unknown): AcademyGalleryImage[] {
 }
 
 export function toSubstitutePostSummary(post: SubstitutePost): SubstitutePostSummary {
-  return {
+  return redactBalletmaniaSubstituteSummary({
     id: post.id,
     source: post.source as SourceName,
     sourceUrl: post.sourceUrl,
@@ -208,12 +222,18 @@ export function toSubstitutePostSummary(post: SubstitutePost): SubstitutePostSum
     viewCount: post.viewCount,
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
-  };
+  });
 }
 
 export function toSubstitutePostDetail(post: SubstitutePost): SubstitutePostDetail {
-  return {
-    ...toSubstitutePostSummary(post),
+  const summary = toSubstitutePostSummary(post);
+  return redactBalletmaniaSubstituteDetail({
+    ...summary,
+    title: post.title,
+    summary: post.summary,
+    payText: post.payText,
+    representativePayText: post.representativePayText,
+    sessions: parseSessions(post.sessionsJson),
     body: post.body,
     requirements: jsonArray(post.requirementsJson),
     applicationInstructions: post.applicationInstructions,
@@ -223,7 +243,7 @@ export function toSubstitutePostDetail(post: SubstitutePost): SubstitutePostDeta
     contactEmails: jsonArray(post.contactEmailsJson),
     contactPhones: jsonArray(post.contactPhonesJson),
     classification: jsonValue(post.classificationJson),
-  };
+  });
 }
 
 function parseSessions(value: unknown): SubstituteSession[] {
