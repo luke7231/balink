@@ -67,11 +67,10 @@ const NATIVE_NAV_INTERCEPT = `
 
     function tabOf(pathname) {
       if (pathname.indexOf('/substitutes') === 0) return 'Substitutes';
+      if (pathname === '/saved' || pathname.indexOf('/saved/') === 0) return 'Bookmarks';
       if (pathname.indexOf('/notifications') === 0) return 'Notifications';
       if (
         pathname.indexOf('/account') === 0 ||
-        pathname === '/saved' ||
-        pathname.indexOf('/saved/') === 0 ||
         pathname === '/login' ||
         pathname.indexOf('/login/') === 0
       ) return 'Account';
@@ -82,6 +81,7 @@ const NATIVE_NAV_INTERCEPT = `
       return (
         pathname === '/' ||
         pathname === '/substitutes' ||
+        pathname === '/saved' ||
         pathname === '/notifications' ||
         pathname === '/account' ||
         pathname === '/login'
@@ -92,7 +92,7 @@ const NATIVE_NAV_INTERCEPT = `
       if (pathname.indexOf('/jobs/') === 0) return true;
       if (pathname.indexOf('/substitutes/') === 0 && pathname !== '/substitutes') return true;
       if (pathname.indexOf('/notifications/') === 0 && pathname !== '/notifications') return true;
-      if (pathname === '/saved' || pathname.indexOf('/saved/') === 0) return true;
+      if (pathname.indexOf('/saved/') === 0 && pathname !== '/saved') return true;
       return false;
     }
 

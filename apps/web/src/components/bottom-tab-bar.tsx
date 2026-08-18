@@ -18,6 +18,12 @@ const tabs = [
     icon: CalendarIcon,
   },
   {
+    href: "/saved",
+    label: "북마크",
+    match: (pathname: string) => pathname === "/saved" || pathname.startsWith("/saved/"),
+    icon: BookmarkIcon,
+  },
+  {
     href: "/notifications",
     label: "알림",
     match: (pathname: string) => pathname.startsWith("/notifications"),
@@ -129,6 +135,21 @@ function CalendarIcon({ active }: { active: boolean }) {
         stroke="currentColor"
         strokeWidth={active ? 2.2 : 1.7}
         strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function BookmarkIcon({ active }: { active: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" aria-hidden="true">
+      <path
+        d="M7 4.75h10A1.25 1.25 0 0 1 18.25 6v13.1l-5.5-3.3-5.5 3.3V6A1.25 1.25 0 0 1 7 4.75Z"
+        stroke="currentColor"
+        strokeWidth={active ? 2.2 : 1.7}
+        strokeLinejoin="round"
+        fill={active ? "currentColor" : "none"}
+        fillOpacity={active ? 0.12 : 0}
       />
     </svg>
   );

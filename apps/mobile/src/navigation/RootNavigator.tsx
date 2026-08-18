@@ -20,6 +20,7 @@ import type { RootTabParamList, WebStackParamList } from "./types";
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const JobsStackNav = createNativeStackNavigator<WebStackParamList>();
 const SubstitutesStackNav = createNativeStackNavigator<WebStackParamList>();
+const BookmarksStackNav = createNativeStackNavigator<WebStackParamList>();
 const NotificationsStackNav = createNativeStackNavigator<WebStackParamList>();
 const AccountStackNav = createNativeStackNavigator<WebStackParamList>();
 
@@ -54,6 +55,19 @@ function SubstitutesStackScreen() {
       />
       <SubstitutesStackNav.Screen name="Web" component={WebScreen} />
     </SubstitutesStackNav.Navigator>
+  );
+}
+
+function BookmarksStackScreen() {
+  return (
+    <BookmarksStackNav.Navigator screenOptions={stackScreenOptions}>
+      <BookmarksStackNav.Screen
+        name="Home"
+        component={WebScreen}
+        initialParams={{ path: tabRootPath("Bookmarks") }}
+      />
+      <BookmarksStackNav.Screen name="Web" component={WebScreen} />
+    </BookmarksStackNav.Navigator>
   );
 }
 
@@ -190,6 +204,20 @@ export function RootNavigator() {
                 focused={focused}
                 name="calendar"
                 nameOutline="calendar-outline"
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Bookmarks"
+          component={BookmarksStackScreen}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <TabIcon
+                label="북마크"
+                focused={focused}
+                name="bookmark"
+                nameOutline="bookmark-outline"
               />
             ),
           }}

@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { prisma, toJobPostSummary } from "@balink/db";
 import { JobList } from "@balink/ui/job-list";
 import { auth } from "@/auth";
 import { BookmarkButton } from "@/components/bookmark-button";
+import { LoginScreen } from "@/components/login-screen";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
 
@@ -12,7 +12,8 @@ export const dynamic = "force-dynamic";
 export default async function SavedJobsPage() {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/login");
+    // Stay on the Bookmarks tab root (same pattern as /account).
+    return <LoginScreen showBrowseLink={false} />;
   }
 
   const [health, bookmarks] = await Promise.all([

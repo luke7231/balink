@@ -15,7 +15,7 @@ export const WEBVIEW_AUTH_HOSTS = new Set([
 
 export const ALLOWED_PUSH_PATHS = ["/jobs/", "/substitutes/", "/notifications"];
 
-export type TabName = "Jobs" | "Substitutes" | "Notifications" | "Account";
+export type TabName = "Jobs" | "Substitutes" | "Bookmarks" | "Notifications" | "Account";
 
 export function withNativeShell(pathOrUrl: string): string {
   const url = new URL(pathOrUrl, WEB_BASE_URL);
@@ -54,6 +54,7 @@ export function isTabRootPath(pathname: string): boolean {
   return (
     pathname === "/" ||
     pathname === "/substitutes" ||
+    pathname === "/saved" ||
     pathname === "/notifications" ||
     pathname === "/account" ||
     // Guest account gate: keep login in the Account tab root (no stack push).
@@ -66,20 +67,15 @@ export function isStackPath(pathname: string): boolean {
   if (pathname.startsWith("/jobs/")) return true;
   if (pathname.startsWith("/substitutes/") && pathname !== "/substitutes") return true;
   if (pathname.startsWith("/notifications/") && pathname !== "/notifications") return true;
-  if (pathname === "/saved" || pathname.startsWith("/saved/")) return true;
+  if (pathname.startsWith("/saved/") && pathname !== "/saved") return true;
   return false;
 }
 
 export function tabForPath(pathname: string): TabName {
   if (pathname.startsWith("/substitutes")) return "Substitutes";
+  if (pathname === "/saved" || pathname.startsWith("/saved/")) return "Bookmarks";
   if (pathname.startsWith("/notifications")) return "Notifications";
-  if (
-    pathname.startsWith("/account") ||
-    pathname === "/saved" ||
-    pathname.startsWith("/saved/") ||
-    pathname === "/login" ||
-    pathname.startsWith("/login/")
-  ) {
+  if (pathname.startsWith("/account") || pathname === "/login" || pathname.startsWith("/login/")) {
     return "Account";
   }
   return "Jobs";
@@ -91,6 +87,8 @@ export function tabRootPath(tab: TabName): string {
       return "/";
     case "Substitutes":
       return "/substitutes";
+    case "Bookmarks":
+      return "/saved";
     case "Notifications":
       return "/notifications";
     case "Account":

@@ -57,13 +57,6 @@ export default async function AccountPage() {
             알림 조건 설정
             <span aria-hidden>→</span>
           </Link>
-          <Link
-            href="/saved"
-            className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
-          >
-            저장한 공고
-            <span aria-hidden>→</span>
-          </Link>
         </section>
 
         <section className="mt-4 rounded-3xl border border-accent-border bg-accent-subtle p-6">

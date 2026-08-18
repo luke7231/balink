@@ -9,6 +9,7 @@ export type WebStackParamList = {
 export type RootTabParamList = {
   Jobs: NavigatorScreenParams<WebStackParamList>;
   Substitutes: NavigatorScreenParams<WebStackParamList>;
+  Bookmarks: NavigatorScreenParams<WebStackParamList>;
   Notifications: NavigatorScreenParams<WebStackParamList>;
   Account: NavigatorScreenParams<WebStackParamList>;
 };

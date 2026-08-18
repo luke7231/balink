@@ -25,6 +25,7 @@ function findTabNavigation(
       names &&
       names.includes("Jobs") &&
       names.includes("Substitutes") &&
+      names.includes("Bookmarks") &&
       names.includes("Notifications") &&
       names.includes("Account")
     ) {
