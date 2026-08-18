@@ -1,10 +1,10 @@
-import { Suspense } from "react";
 import { HomeBanner } from "@/components/home-banner";
-import { HomeJobList, HomeJobListFallback } from "@/components/home-job-list";
-import { JobsFilterBar } from "@/components/jobs-filter-bar";
+import { HomeFiltersClient } from "@/components/home-filters-client";
+import { HomeJobsClient } from "@/components/home-jobs-client";
+import { MotionReveal } from "@/components/motion-reveal";
 import { SiteHeader } from "@/components/site-header";
-import { fetchHealth, fetchJobPosts, fetchJobRegions } from "@/lib/graphql/queries";
 import { HOME_BANNERS } from "@/lib/home-banners";
+import type { JobPostFilterInput } from "@/generated/graphql";
 
 interface HomePageProps {
   searchParams: Promise<{
@@ -46,50 +46,24 @@ function parseRegionParams(query: {
 export default async function HomePage({ searchParams }: HomePageProps) {
   const query = await searchParams;
   const { selectedSidos, selectedSigungus } = parseRegionParams(query);
-  const filter = {
-    ...(selectedSidos.length ? { sido: selectedSidos.join(",") } : {}),
-    ...(selectedSigungus.length ? { sigungu: selectedSigungus.join(",") } : {}),
-  };
-
-  const [health, jobs, regions] = await Promise.all([
-    fetchHealth(),
-    fetchJobPosts(1, 40, Object.keys(filter).length ? filter : null),
-    fetchJobRegions(),
-  ]);
-
-  const regionOptions = regions.map((region) => ({
-    sido: region.sido,
-    count: region.districts.reduce((sum, district) => sum + district.count, 0),
-    districts: region.districts,
-  }));
   const hasFilter = selectedSidos.length > 0 || selectedSigungus.length > 0;
+  const filter: JobPostFilterInput | null = hasFilter
+    ? {
+        ...(selectedSidos.length ? { sido: selectedSidos.join(",") } : {}),
+        ...(selectedSigungus.length ? { sigungu: selectedSigungus.join(",") } : {}),
+      }
+    : null;
 
   return (
-    <div className="min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
-      <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
+    <div className="home-surface min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
+      <MotionReveal index={0} variant="fade-in">
+        <SiteHeader />
+      </MotionReveal>
 
       <main className="mx-auto min-w-0 max-w-5xl px-4 py-8">
         <HomeBanner items={HOME_BANNERS} />
-
-        <Suspense fallback={<div className="mb-6 h-10" aria-hidden="true" />}>
-          <JobsFilterBar
-            regions={regionOptions}
-            selectedSidos={selectedSidos}
-            selectedSigungus={selectedSigungus}
-          />
-        </Suspense>
-
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-foreground">최신 공고</h3>
-          <p className="text-sm text-muted-foreground">
-            {jobs.pageInfo.total}건
-            {hasFilter ? " · 필터 적용" : ""}
-          </p>
-        </div>
-
-        <Suspense fallback={<HomeJobListFallback jobs={jobs.items} />}>
-          <HomeJobList jobs={jobs.items} />
-        </Suspense>
+        <HomeFiltersClient selectedSidos={selectedSidos} selectedSigungus={selectedSigungus} />
+        <HomeJobsClient filter={filter} hasFilter={hasFilter} />
       </main>
     </div>
   );

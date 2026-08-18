@@ -22,13 +22,58 @@ type TrackPage = {
 };
 
 export function HomeBanner({ items }: { items: HomeBannerItem[] }) {
+  const [variant, setVariant] = useState<"mobile" | "desktop" | null>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const sync = () => setVariant(media.matches ? "desktop" : "mobile");
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
   if (items.length === 0) return null;
 
   return (
-    <section className="motion-fade-up mb-6" aria-label="추천 배너" style={{ ["--motion-index" as string]: 0 }}>
-      <BannerCarousel items={items} pageSize={1} variant="mobile" />
-      <BannerCarousel items={items} pageSize={DESKTOP_PAGE_SIZE} variant="desktop" />
+    <section className="mb-6" aria-label="추천 배너">
+      {variant == null ? (
+        <BannerShellPlaceholder layout="mobile" bleed />
+      ) : (
+        <BannerCarousel
+          items={items}
+          pageSize={variant === "mobile" ? 1 : DESKTOP_PAGE_SIZE}
+          variant={variant}
+        />
+      )}
     </section>
+  );
+}
+
+function BannerShellPlaceholder({
+  layout,
+  bleed = false,
+}: {
+  layout: "mobile" | "desktop";
+  /** 바깥에 이미 -mx-4 가 있을 때 true */
+  bleed?: boolean;
+}) {
+  if (layout === "desktop") {
+    return (
+      <div className="grid grid-cols-3 gap-3 py-1" aria-hidden>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={index}
+            className="motion-shimmer aspect-3/4 w-full rounded-2xl bg-zinc-900"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${bleed ? "-mx-4 " : ""}px-[9%] py-1`} aria-hidden>
+      <div className="motion-shimmer aspect-4/5 w-full rounded-[1.35rem] bg-zinc-900" />
+    </div>
   );
 }
 
@@ -93,6 +138,35 @@ function BannerCarousel({
   const [pageIndex, setPageIndex] = useState(0);
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(true);
   const [layout, setLayout] = useState({ pageWidth: 0, pad: 0 });
+  const [imagesReady, setImagesReady] = useState(false);
+  const [positioned, setPositioned] = useState(false);
+  const loadedSrcsRef = useRef(new Set<string>());
+  const imagesReadyRef = useRef(false);
+
+  const uniqueSrcs = useMemo(
+    () => [...new Set(items.map((item) => item.imageSrc))],
+    [items],
+  );
+
+  /** 이미지 로드 + 1번 슬라이드 스크롤 안착 둘 다 끝나야 공개 (콜드스타트 클론 플래시 방지) */
+  const reveal = imagesReady && positioned;
+
+  function markImageReady(src: string) {
+    if (imagesReadyRef.current) return;
+    loadedSrcsRef.current.add(src);
+    if (!uniqueSrcs.every((item) => loadedSrcsRef.current.has(item))) return;
+    imagesReadyRef.current = true;
+    setImagesReady(true);
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (imagesReadyRef.current) return;
+      imagesReadyRef.current = true;
+      setImagesReady(true);
+    }, 4500);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // 스크롤 감시 루프가 최신 트랙 정보를 읽도록 렌더 후 동기화한다
   useEffect(() => {
@@ -133,8 +207,13 @@ function BannerCarousel({
     const logical = trackRef.current[trackIndex]?.logicalIndex ?? 0;
     setPageIndex((prev) => (prev === logical ? prev : logical));
 
-    // 좌우 패딩이 (viewport - page)/2 이므로 index * stride 가 곧 중앙 정렬 위치
-    scroller.scrollTo({ left: trackIndex * stride(), behavior });
+    const left = trackIndex * stride();
+    // 초기 점프는 scrollTo 애니메이션/비동기보다 scrollLeft 가 더 확실함
+    if (behavior === "auto") {
+      scroller.scrollLeft = left;
+    } else {
+      scroller.scrollTo({ left, behavior });
+    }
   }
 
   /** 클론 페이지에 멈추면 대응하는 실제 페이지로 순간 이동 */
@@ -204,6 +283,17 @@ function BannerCarousel({
     if (!root || !scroller) return;
 
     didInitRef.current = false;
+    setPositioned(false);
+
+    const snapToStart = () => {
+      if (pageWidthRef.current <= 0) return;
+      const startIndex = loop ? 1 : 0;
+      scrollToTrackIndex(startIndex, "auto");
+      if (!didInitRef.current) {
+        didInitRef.current = true;
+        setPositioned(true);
+      }
+    };
 
     const measure = () => {
       const viewportWidth = scroller.clientWidth || root.clientWidth;
@@ -218,16 +308,13 @@ function BannerCarousel({
       pageWidthRef.current = nextPageWidth;
       if (changed) setLayout({ pageWidth: nextPageWidth, pad: nextPad });
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (!didInitRef.current) {
-            didInitRef.current = true;
-            scrollToTrackIndex(loop ? 1 : 0, "auto");
-          } else if (changed) {
-            scrollToTrackIndex(trackIndexRef.current, "auto");
-          }
-        });
-      });
+      // 레이아웃이 잡히는 즉시 1번으로 맞춤 — rAF 두 번 기다리면 클론(마지막 장)이 먼저 보임
+      if (!didInitRef.current) {
+        snapToStart();
+        requestAnimationFrame(snapToStart);
+      } else if (changed) {
+        scrollToTrackIndex(trackIndexRef.current, "auto");
+      }
     };
 
     measure();
@@ -251,7 +338,7 @@ function BannerCarousel({
   }, [variant, pageCount, loop]);
 
   useEffect(() => {
-    if (!autoPlayEnabled || !loop || layout.pageWidth <= 0) return;
+    if (!reveal || !autoPlayEnabled || !loop || layout.pageWidth <= 0) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const timer = window.setInterval(() => {
@@ -262,13 +349,14 @@ function BannerCarousel({
 
     return () => window.clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPlayEnabled, loop, pageCount, layout.pageWidth]);
+  }, [reveal, autoPlayEnabled, loop, pageCount, layout.pageWidth]);
 
   if (pageCount === 0) return null;
 
   const { pageWidth: pageWidthPx, pad: padPx } = layout;
 
   const beginInteraction = () => {
+    if (!reveal) return;
     interactingRef.current = true;
     pauseAutoPlay();
     startWatch();
@@ -280,88 +368,97 @@ function BannerCarousel({
   };
 
   return (
-    <div
-      ref={rootRef}
-      className={
-        isMobile
-          ? "relative -mx-4 min-w-0 md:hidden"
-          : "relative hidden min-w-0 max-w-full md:block"
-      }
-    >
+    <div ref={rootRef} className="relative -mx-4 min-w-0 md:mx-0">
       <div
-        ref={scrollerRef}
-        className="relative flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x scrollbar-none py-1"
-        style={{
-          gap: GAP_PX,
-          ...(pageWidthPx > 0 && isMobile
-            ? { paddingInline: padPx, scrollPaddingInline: padPx }
-            : {}),
-        }}
-        onTouchStart={beginInteraction}
-        onTouchMove={startWatch}
-        onTouchEnd={finishInteraction}
-        onTouchCancel={finishInteraction}
-        onPointerDown={(event) => {
-          if (event.pointerType === "mouse") beginInteraction();
-        }}
-        onPointerUp={(event) => {
-          if (event.pointerType === "mouse") finishInteraction();
-        }}
-        onPointerCancel={(event) => {
-          if (event.pointerType === "mouse") finishInteraction();
-        }}
+        className={`pointer-events-none absolute inset-x-0 top-0 z-10 transition-opacity duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+          reveal ? "opacity-0" : "opacity-100"
+        }`}
+        aria-hidden={reveal}
       >
-        {track.map((page) => (
-          <div
-            key={page.key}
-            className={
-              isMobile ? "shrink-0" : "grid shrink-0 grid-cols-3 gap-3"
-            }
-            style={{
-              flex: pageWidthPx > 0 ? `0 0 ${pageWidthPx}px` : isMobile ? "0 0 82%" : "0 0 100%",
-              width: pageWidthPx > 0 ? pageWidthPx : isMobile ? "82%" : "100%",
-              scrollSnapAlign: "center",
-              scrollSnapStop: "always",
-            }}
-          >
-            {page.items.map((item, indexInPage) => (
-              <BannerCard
-                key={`${page.key}-${item.id}`}
-                item={item}
-                priority={!page.clone && page.logicalIndex === 0 && indexInPage === 0}
-                layout={variant}
-              />
-            ))}
-            {!isMobile &&
-              page.items.length < pageSize &&
-              Array.from({ length: pageSize - page.items.length }).map((_, filler) => (
-                <div key={`${page.key}-filler-${filler}`} aria-hidden="true" />
-              ))}
-          </div>
-        ))}
+        <BannerShellPlaceholder layout={variant} />
       </div>
 
-      {pageCount > 1 ? (
+      <div
+        className={`transition-[opacity,transform] duration-[520ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+          reveal ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
+        }`}
+        aria-busy={!reveal}
+      >
         <div
-          className={
-            isMobile
-              ? "pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2"
-              : "mt-3 flex justify-center"
-          }
+          ref={scrollerRef}
+          className="relative flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x scrollbar-none py-1"
+          style={{
+            gap: GAP_PX,
+            ...(pageWidthPx > 0 && isMobile
+              ? { paddingInline: padPx, scrollPaddingInline: padPx }
+              : {}),
+          }}
+          onTouchStart={beginInteraction}
+          onTouchMove={startWatch}
+          onTouchEnd={finishInteraction}
+          onTouchCancel={finishInteraction}
+          onPointerDown={(event) => {
+            if (event.pointerType === "mouse") beginInteraction();
+          }}
+          onPointerUp={(event) => {
+            if (event.pointerType === "mouse") finishInteraction();
+          }}
+          onPointerCancel={(event) => {
+            if (event.pointerType === "mouse") finishInteraction();
+          }}
         >
-          <span
+          {track.map((page) => (
+            <div
+              key={page.key}
+              className={isMobile ? "shrink-0" : "grid shrink-0 grid-cols-3 gap-3"}
+              style={{
+                flex: pageWidthPx > 0 ? `0 0 ${pageWidthPx}px` : isMobile ? "0 0 82%" : "0 0 100%",
+                width: pageWidthPx > 0 ? pageWidthPx : isMobile ? "82%" : "100%",
+                scrollSnapAlign: "center",
+                scrollSnapStop: "always",
+              }}
+            >
+              {page.items.map((item) => (
+                <BannerCard
+                  key={`${page.key}-${item.id}`}
+                  item={item}
+                  // 게이트 동안 고유 이미지를 모두 우선 로드
+                  priority={!page.clone}
+                  layout={variant}
+                  onReady={markImageReady}
+                />
+              ))}
+              {!isMobile &&
+                page.items.length < pageSize &&
+                Array.from({ length: pageSize - page.items.length }).map((_, filler) => (
+                  <div key={`${page.key}-filler-${filler}`} aria-hidden="true" />
+                ))}
+            </div>
+          ))}
+        </div>
+
+        {pageCount > 1 ? (
+          <div
             className={
               isMobile
-                ? "inline-flex items-center rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur-sm"
-                : "inline-flex items-center rounded-full bg-zinc-900/80 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white"
+                ? "pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2"
+                : "mt-3 flex justify-center"
             }
           >
-            {String(pageIndex + 1).padStart(2, "0")}
-            <span className="mx-1.5 opacity-50">|</span>
-            {String(pageCount).padStart(2, "0")}
-          </span>
-        </div>
-      ) : null}
+            <span
+              className={
+                isMobile
+                  ? "inline-flex items-center rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur-sm"
+                  : "inline-flex items-center rounded-full bg-zinc-900/80 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white"
+              }
+            >
+              {String(pageIndex + 1).padStart(2, "0")}
+              <span className="mx-1.5 opacity-50">|</span>
+              {String(pageCount).padStart(2, "0")}
+            </span>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -370,20 +467,37 @@ function BannerCard({
   item,
   priority,
   layout,
+  onReady,
 }: {
   item: HomeBannerItem;
   priority?: boolean;
   layout: "mobile" | "desktop";
+  onReady: (src: string) => void;
 }) {
+  const reportedRef = useRef(false);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  function reportReady() {
+    if (reportedRef.current) return;
+    reportedRef.current = true;
+    onReady(item.imageSrc);
+  }
+
+  useEffect(() => {
+    if (imageRef.current?.complete) reportReady();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.imageSrc]);
+
   return (
     <Link
       href={item.href}
       draggable={false}
-      className={`group relative block overflow-hidden bg-foreground shadow-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400 ${
+      className={`group relative block overflow-hidden bg-zinc-900 shadow-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400 ${
         layout === "mobile" ? "aspect-4/5 rounded-[1.35rem]" : "aspect-3/4 rounded-2xl"
       }`}
     >
       <Image
+        ref={imageRef}
         src={item.imageSrc}
         alt={item.imageAlt}
         fill
@@ -394,7 +508,9 @@ function BannerCard({
             ? "(max-width: 768px) 82vw, 0px"
             : "(min-width: 768px) 33vw, 0px"
         }
-        className="pointer-events-none object-cover transition duration-500 group-hover:scale-[1.03]"
+        onLoad={reportReady}
+        onError={reportReady}
+        className="pointer-events-none object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
       />
       <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-black/10" />
       <div

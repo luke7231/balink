@@ -52,7 +52,7 @@ export function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps) {
             </Suspense>
           </nav>
 
-          <Suspense fallback={<div className="h-9 w-20 rounded-full bg-surface-muted" aria-hidden="true" />}>
+          <Suspense fallback={<div className="h-9 w-20 rounded-full bg-surface-muted motion-shimmer" aria-hidden="true" />}>
             <SiteHeaderAuth />
           </Suspense>
         </div>
@@ -80,7 +80,7 @@ async function SiteHeaderAuth() {
 
   if (user) {
     return (
-      <div className="flex items-center gap-2 rounded-full border border-border bg-surface px-2 py-1.5">
+      <div className="motion-fade-in flex items-center gap-2 rounded-full border border-border bg-surface px-2 py-1.5">
         <Image
           src={user.image || DEFAULT_AVATAR_PATH}
           alt=""
@@ -103,7 +103,7 @@ async function SiteHeaderAuth() {
   return (
     <Link
       href="/login"
-      className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90"
+      className="motion-fade-in rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90"
     >
       로그인
     </Link>

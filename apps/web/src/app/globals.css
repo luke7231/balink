@@ -118,7 +118,7 @@ html.native-shell *::-webkit-scrollbar {
 @keyframes balink-fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -138,7 +138,7 @@ html.native-shell *::-webkit-scrollbar {
 @keyframes balink-soft-scale {
   from {
     opacity: 0;
-    transform: scale(0.96) translateY(6px);
+    transform: scale(0.985) translateY(10px);
   }
   to {
     opacity: 1;
@@ -166,8 +166,18 @@ html.native-shell *::-webkit-scrollbar {
 }
 
 .motion-soft-scale {
-  animation: balink-soft-scale 280ms var(--motion-ease-out) both;
+  animation: balink-soft-scale 380ms var(--motion-ease-out) both;
   animation-delay: calc(var(--motion-index, 0) * var(--motion-stagger));
+}
+
+/** 홈: 섹션이 순차로 부드럽게 뜨도록 조금 더 여유 있게 */
+.home-surface {
+  --motion-duration: 360ms;
+  --motion-stagger: 52ms;
+}
+
+.home-surface .motion-soft-scale {
+  animation-duration: 420ms;
 }
 
 .motion-shimmer {

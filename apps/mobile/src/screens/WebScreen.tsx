@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   AppState,
   BackHandler,
   Linking,
   StyleSheet,
-  View,
 } from "react-native";
 import { useFocusEffect, useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -17,6 +15,7 @@ import { parseWebMessage, serializeNativeMessage, type NativeToWebMessage } from
 import { playHaptic } from "../haptics";
 import { openAppPath } from "../navigation/open-path";
 import type { WebStackParamList } from "../navigation/types";
+import { InAppBrowserSheet } from "./InAppBrowserSheet";
 import { useNativeTheme } from "../theme-context";
 import {
   WEBVIEW_AUTH_HOSTS,
@@ -113,10 +112,23 @@ const NATIVE_NAV_INTERCEPT = `
       var el = event.target;
       while (el && el.tagName !== 'A') el = el.parentElement;
       if (!el || !el.href) return;
-      if (el.target && el.target !== '_self') return;
       try {
         var url = new URL(el.href, location.href);
-        if (url.origin !== location.origin) return;
+        if (url.origin !== location.origin) {
+          if (url.protocol === 'http:' || url.protocol === 'https:') {
+            event.preventDefault();
+            event.stopPropagation();
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'OPEN_IN_APP_BROWSER',
+                url: url.toString(),
+                title: (el.getAttribute('data-browser-title') || el.textContent || '원문').replace(/\s+/g, ' ').trim().slice(0, 40)
+              }));
+            }
+          }
+          return;
+        }
+        if (el.target && el.target !== '_self') return;
         var path = url.pathname + url.search;
         if (!shouldNative(url.pathname)) return;
         event.preventDefault();
@@ -140,10 +152,10 @@ export function WebScreen() {
   const webViewRef = useRef<WebView>(null);
   const currentUrlRef = useRef(uri);
   const [canGoBackInWeb, setCanGoBackInWeb] = useState(false);
+  const [inAppBrowser, setInAppBrowser] = useState<{ url: string; title?: string } | null>(null);
   const { buildPermissionMessages, requestPushPermission, openNotificationSettings } = useBridge();
   const { preference, resolvedTheme, isDark, setPreference } = useNativeTheme();
   const backgroundColor = isDark ? "#09090b" : "#ffffff";
-  const indicatorColor = isDark ? "#fafafa" : "#111827";
 
   const sendToWeb = useCallback((message: NativeToWebMessage) => {
     if (!isTrustedWebUrl(currentUrlRef.current)) return;
@@ -214,6 +226,8 @@ export function WebScreen() {
         void playHaptic(message.style);
       } else if (message.type === "NATIVE_NAV") {
         openAppPath(navigation, message.path);
+      } else if (message.type === "OPEN_IN_APP_BROWSER") {
+        setInAppBrowser({ url: message.url, title: message.title });
       } else if (message.type === "SET_THEME") {
         setPreference(message.preference);
       } else if (message.type === "REQUEST_PUSH_PERMISSION") {
@@ -240,6 +254,10 @@ export function WebScreen() {
         const parsed = new URL(url);
         if (WEBVIEW_AUTH_HOSTS.has(parsed.hostname)) return true;
         if (parsed.origin !== WEB_ORIGIN) {
+          if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+            setInAppBrowser({ url });
+            return false;
+          }
           void Linking.openURL(url);
           return false;
         }
@@ -284,19 +302,13 @@ export function WebScreen() {
         thirdPartyCookiesEnabled
         javaScriptEnabled
         domStorageEnabled
-        cacheEnabled={!__DEV__}
-        cacheMode={__DEV__ ? "LOAD_NO_CACHE" : "LOAD_DEFAULT"}
+        cacheEnabled
+        cacheMode="LOAD_DEFAULT"
         style={{ backgroundColor }}
         containerStyle={{ backgroundColor }}
-        startInLoadingState
         allowsBackForwardNavigationGestures={false}
         injectedJavaScriptBeforeContentLoaded={nativeShellBefore(isDark)}
         injectedJavaScript={NATIVE_NAV_INTERCEPT}
-        renderLoading={() => (
-          <View style={[styles.loading, { backgroundColor }]}>
-            <ActivityIndicator color={indicatorColor} />
-          </View>
-        )}
         onLoadEnd={() => {
           webViewRef.current?.injectJavaScript(NATIVE_NAV_INTERCEPT);
           void syncPermission();
@@ -308,6 +320,31 @@ export function WebScreen() {
           setCanGoBackInWeb(state.canGoBack);
         }}
         onShouldStartLoadWithRequest={handleNavigation}
+        onOpenWindow={({ nativeEvent }) => {
+          const targetUrl = nativeEvent.targetUrl;
+          try {
+            const parsed = new URL(targetUrl);
+            if (parsed.origin === WEB_ORIGIN) {
+              const appPath = toAppPath(targetUrl);
+              if (appPath) openAppPath(navigation, appPath);
+              return;
+            }
+            if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+              setInAppBrowser({ url: targetUrl });
+              return;
+            }
+            void Linking.openURL(targetUrl);
+          } catch {
+            /* ignore */
+          }
+        }}
+        setSupportMultipleWindows
+      />
+      <InAppBrowserSheet
+        url={inAppBrowser?.url ?? null}
+        title={inAppBrowser?.title}
+        isDark={isDark}
+        onClose={() => setInAppBrowser(null)}
       />
     </SafeAreaView>
   );
@@ -316,11 +353,5 @@ export function WebScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  loading: {
-    position: "absolute",
-    inset: 0,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });
