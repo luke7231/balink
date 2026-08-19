@@ -19,6 +19,15 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
    - Vercel 프리뷰(필요 시): `https://<deployment>.vercel.app/api/auth/callback/kakao`
    - 커스텀 도메인: `https://<your-domain>/api/auth/callback/kakao`
 5. 동의 항목: 프로필 사진(선택). 닉네임·이메일은 앱에서 요청하지 않음(닉네임은 랜덤 부여)
+6. **네이티브 앱 키** → `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` (실기기에서 카카오톡 로그인 후 앱으로 돌아오는 URL 스킴 `kakao{네이티브앱키}://`)
+7. **앱 설정 > 플랫폼**
+   - iOS Bundle ID: `com.luke7231.balink`
+   - Android 패키지명: `com.luke7231.balink`
+   - Android 키 해시: 디버그/스토어 서명 키 해시를 등록해야 카카오톡이 앱으로 돌아옵니다.
+     ```bash
+     keytool -exportcert -alias androiddebugkey -keystore ~/.android/debug.keystore -storepass android -keypass android | openssl sha1 -binary | openssl base64
+     ```
+8. iOS 시뮬레이터·Android 에뮬레이터에는 카카오톡을 설치할 수 없어 계정 웹 로그인이 뜹니다. 카카오톡 전환은 실기기에서 확인하세요.
 
 ## Vercel 배포
 

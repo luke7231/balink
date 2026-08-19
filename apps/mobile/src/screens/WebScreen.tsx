@@ -17,6 +17,7 @@ import { openAppPath } from "../navigation/open-path";
 import type { WebStackParamList } from "../navigation/types";
 import { InAppBrowserSheet } from "./InAppBrowserSheet";
 import { useNativeTheme } from "../theme-context";
+import { isKakaoAppUrl, openKakaoAppUrl, WEBVIEW_APP_NAME } from "../kakao-app-url";
 import {
   WEBVIEW_AUTH_HOSTS,
   WEB_ORIGIN,
@@ -272,6 +273,10 @@ export function WebScreen() {
     (request: { url: string }) => {
       const { url } = request;
       if (url === "about:blank") return true;
+      if (isKakaoAppUrl(url)) {
+        openKakaoAppUrl(url);
+        return false;
+      }
       if (url.startsWith("tel:") || url.startsWith("mailto:")) {
         void Linking.openURL(url);
         return false;
@@ -331,6 +336,8 @@ export function WebScreen() {
         domStorageEnabled
         cacheEnabled
         cacheMode="LOAD_DEFAULT"
+        originWhitelist={["*"]}
+        applicationNameForUserAgent={WEBVIEW_APP_NAME}
         style={{ backgroundColor }}
         containerStyle={{ backgroundColor }}
         allowsBackForwardNavigationGestures={false}
@@ -350,6 +357,10 @@ export function WebScreen() {
         onOpenWindow={({ nativeEvent }) => {
           const targetUrl = nativeEvent.targetUrl;
           try {
+            if (isKakaoAppUrl(targetUrl)) {
+              openKakaoAppUrl(targetUrl);
+              return;
+            }
             const parsed = new URL(targetUrl);
             if (parsed.origin === WEB_ORIGIN) {
               const appPath = toAppPath(targetUrl);

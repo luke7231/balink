@@ -1,8 +1,34 @@
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { networkInterfaces } from "node:os";
 import type { ExpoConfig, ConfigContext } from "expo/config";
 
+function applyEnvFile(filePath: string) {
+  if (!existsSync(filePath)) return;
+  for (const rawLine of readFileSync(filePath, "utf8").split("\n")) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eq = line.indexOf("=");
+    if (eq <= 0) continue;
+    const key = line.slice(0, eq).trim();
+    let value = line.slice(eq + 1).trim();
+    if (
+      (value.startsWith("'") && value.endsWith("'")) ||
+      (value.startsWith('"') && value.endsWith('"'))
+    ) {
+      value = value.slice(1, -1);
+    }
+    if (!process.env[key]) process.env[key] = value;
+  }
+}
+
+applyEnvFile(resolve(__dirname, "../../.env"));
+applyEnvFile(resolve(__dirname, ".env"));
+
 const PRODUCTION_WEB_URL = "https://balink-web.vercel.app";
 const LOCAL_WEB_PORT = 3100;
+const kakaoNativeAppKey = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim();
+const kakaoScheme = kakaoNativeAppKey ? `kakao${kakaoNativeAppKey}` : null;
 
 function getLanIPv4(): string | null {
   const nets = networkInterfaces();
@@ -44,7 +70,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   owner: "luke7299",
   version: "0.1.0",
   orientation: "portrait",
-  scheme: "balink",
+  scheme: kakaoScheme ? ["balink", kakaoScheme] : "balink",
   userInterfaceStyle: "automatic",
   icon: "./assets/icon.png",
   ios: {
@@ -52,6 +78,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: "com.luke7231.balink",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      LSApplicationQueriesSchemes: [
+        "kakaotalk",
+        "kakaokompassauth",
+        "kakaolink",
+        "kakaoplus",
+      ],
       ...(allowCleartext
         ? {
             NSAppTransportSecurity: {
@@ -67,6 +99,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#ffffff",
     },
+    ...(kakaoScheme
+      ? {
+          intentFilters: [
+            {
+              action: "VIEW",
+              category: ["BROWSABLE", "DEFAULT"],
+              data: [{ scheme: kakaoScheme }],
+            },
+          ],
+        }
+      : {}),
     ...(allowCleartext ? { usesCleartextTraffic: true } : {}),
   },
   plugins: [
@@ -87,6 +130,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         enableFullScreenImage_legacy: true,
       },
     ],
+    "./plugins/with-kakao-android",
   ],
   extra: {
     webUrl,

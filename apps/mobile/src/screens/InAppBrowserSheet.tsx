@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { WebView, type WebViewNavigation } from "react-native-webview";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { isKakaoAppUrl, openKakaoAppUrl, WEBVIEW_APP_NAME } from "../kakao-app-url";
 
 interface InAppBrowserSheetProps {
   url: string | null;
@@ -125,7 +126,16 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
                 domStorageEnabled
                 sharedCookiesEnabled
                 thirdPartyCookiesEnabled
+                originWhitelist={["*"]}
+                applicationNameForUserAgent={WEBVIEW_APP_NAME}
                 setSupportMultipleWindows={false}
+                onShouldStartLoadWithRequest={({ url: nextUrl }) => {
+                  if (isKakaoAppUrl(nextUrl)) {
+                    openKakaoAppUrl(nextUrl);
+                    return false;
+                  }
+                  return true;
+                }}
                 onLoadEnd={() => setLoading(false)}
                 onNavigationStateChange={(state: WebViewNavigation) => {
                   setCanGoBack(state.canGoBack);
