@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { FilterChipBar } from "@/components/filter-chip-bar";
+import { setFilterUrl } from "@/lib/filter-url";
+import { buildJobsFilterHref } from "@/lib/job-filter-params";
 
 interface DistrictOption {
   sigungu: string;
@@ -22,14 +22,6 @@ interface JobsFilterBarProps {
   selectedSigungus: string[];
 }
 
-function buildJobsHref(sidos: string[], sigungus: string[]): string {
-  const params = new URLSearchParams();
-  for (const sido of sidos) params.append("sido", sido);
-  for (const sigungu of sigungus) params.append("sigungu", sigungu);
-  const query = params.toString();
-  return query ? `/?${query}` : "/";
-}
-
 function toggleValue(values: string[], value: string): string[] {
   return values.includes(value) ? values.filter((entry) => entry !== value) : [...values, value];
 }
@@ -43,7 +35,6 @@ function optionClass(selected: boolean): string {
 }
 
 export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: JobsFilterBarProps) {
-  const router = useRouter();
   const selectionKey = `${selectedSidos.join("\0")}|${selectedSigungus.join("\0")}`;
   const [draftKey, setDraftKey] = useState(selectionKey);
   const [draftSidos, setDraftSidos] = useState(selectedSidos);
@@ -74,12 +65,16 @@ export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: Jobs
       return !region.districts.some((district) => selectedSigungus.includes(district.sigungu));
     }).length + selectedSigungus.length;
 
+  function apply(sidos: string[], sigungus: string[]) {
+    setFilterUrl(buildJobsFilterHref(sidos, sigungus));
+  }
+
   const chips = [
     {
       key: "all",
       label: "전체 지역",
-      href: "/",
       selected: selectedSidos.length === 0 && selectedSigungus.length === 0,
+      onSelect: () => apply([], []),
     },
     ...regions.map((region) => {
       const hasDistrictSelection = region.districts.some((district) =>
@@ -88,25 +83,26 @@ export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: Jobs
       return {
         key: region.sido,
         label: region.sido,
-        href: buildJobsHref(
-          toggleValue(selectedSidos, region.sido),
-          selectedSidos.includes(region.sido)
-            ? selectedSigungus.filter(
-                (sigungu) => !region.districts.some((district) => district.sigungu === sigungu),
-              )
-            : selectedSigungus,
-        ),
-        // 구가 선택된 시·도는 "시 전체" 칩으로 강조하지 않는다.
+        onSelect: () =>
+          apply(
+            toggleValue(selectedSidos, region.sido),
+            selectedSidos.includes(region.sido)
+              ? selectedSigungus.filter(
+                  (sigungu) => !region.districts.some((district) => district.sigungu === sigungu),
+                )
+              : selectedSigungus,
+          ),
         selected: selectedSidos.includes(region.sido) && !hasDistrictSelection,
       };
     }),
     ...selectedSigungus.map((sigungu) => ({
       key: `sigungu-${sigungu}`,
       label: sigungu,
-      href: buildJobsHref(
-        selectedSidos,
-        selectedSigungus.filter((entry) => entry !== sigungu),
-      ),
+      onSelect: () =>
+        apply(
+          selectedSidos,
+          selectedSigungus.filter((entry) => entry !== sigungu),
+        ),
       selected: true,
     })),
   ];
@@ -122,7 +118,7 @@ export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: Jobs
           className="space-y-5"
           onSubmit={(event) => {
             event.preventDefault();
-            router.push(buildJobsHref(draftSidos, draftSigungus));
+            apply(draftSidos, draftSigungus);
           }}
         >
           <div>
@@ -192,12 +188,14 @@ export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: Jobs
           </div>
 
           <div className="flex gap-2 pt-2">
-            <Link
-              href="/"
+            <button
+              type="button"
+              data-close-sheet
+              onClick={() => apply([], [])}
               className="flex-1 rounded-2xl border border-border px-4 py-3 text-center text-sm font-semibold text-muted-foreground"
             >
               초기화
-            </Link>
+            </button>
             <button
               type="submit"
               className="flex-2 rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-background hover:opacity-90"

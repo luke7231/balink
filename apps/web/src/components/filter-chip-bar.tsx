@@ -1,14 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { BottomSheet } from "@/components/bottom-sheet";
 
 export interface FilterChipItem {
   key: string;
   label: string;
-  href: string;
   selected: boolean;
+  onSelect: () => void;
 }
 
 interface FilterChipBarProps {
@@ -49,10 +48,11 @@ export function FilterChipBar({
 
           <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto overscroll-x-contain scrollbar-none">
             {chips.map((chip) => (
-              <Link
+              <button
                 key={chip.key}
-                href={chip.href}
-                aria-current={chip.selected ? "page" : undefined}
+                type="button"
+                aria-pressed={chip.selected}
+                onClick={chip.onSelect}
                 className={`inline-flex h-10 shrink-0 items-center rounded-xl px-3.5 text-sm font-semibold whitespace-nowrap transition ${
                   chip.selected
                     ? "bg-accent-subtle text-accent"
@@ -60,7 +60,7 @@ export function FilterChipBar({
                 }`}
               >
                 {chip.label}
-              </Link>
+              </button>
             ))}
           </div>
         </div>
@@ -69,7 +69,7 @@ export function FilterChipBar({
       <BottomSheet open={open} title={sheetTitle} onClose={() => setOpen(false)}>
         <div
           onClick={(event) => {
-            if ((event.target as Element).closest("a")) setOpen(false);
+            if ((event.target as Element).closest("[data-close-sheet]")) setOpen(false);
           }}
           onSubmit={() => setOpen(false)}
         >

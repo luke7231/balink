@@ -1,7 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { SubstitutesClient } from "@/components/substitutes-client";
-
-type DateFilter = "today" | "tomorrow" | "week";
+import { toParamList } from "@/lib/job-filter-params";
+import { parseSubstituteDateFilters } from "@/lib/substitute-filter-params";
 
 interface SubstitutesPageProps {
   searchParams: Promise<{
@@ -10,25 +10,9 @@ interface SubstitutesPageProps {
   }>;
 }
 
-function toParamList(value?: string | string[]): string[] {
-  if (!value) return [];
-  const entries = Array.isArray(value) ? value : [value];
-  return entries
-    .flatMap((entry) => entry.split(","))
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-}
-
-function parseDateFilters(value?: string | string[]): DateFilter[] {
-  const allowed = new Set<DateFilter>(["today", "tomorrow", "week"]);
-  return toParamList(value).filter((entry): entry is DateFilter =>
-    allowed.has(entry as DateFilter),
-  );
-}
-
 export default async function SubstitutesPage({ searchParams }: SubstitutesPageProps) {
   const query = await searchParams;
-  const dateFilters = parseDateFilters(query.date);
+  const dateFilters = parseSubstituteDateFilters(query.date);
   const selectedRegions = toParamList(query.region);
 
   return (

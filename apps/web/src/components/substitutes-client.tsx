@@ -13,8 +13,14 @@ import {
 } from "@/generated/graphql";
 import { browserGraphqlRequest } from "@/lib/graphql/browser-client";
 import { readListCache, writeListCache } from "@/lib/list-cache";
+import {
+  buildSubstituteFilterHref,
+  parseSubstituteDateFilters,
+  type SubstituteDateFilter,
+} from "@/lib/substitute-filter-params";
+import { hrefSearch, useFilterSearch } from "@/lib/use-filter-search";
 
-type DateFilter = "today" | "tomorrow" | "week";
+type DateFilter = SubstituteDateFilter;
 
 function toRegionValue(sido?: string | null, sigungu?: string | null): string {
   return [sido, sigungu].filter(Boolean).join("::");
@@ -82,12 +88,18 @@ type CachedSubstitutes = {
 const CACHE_KEY = "substitute-posts-open";
 
 export function SubstitutesClient({
-  dateFilters,
-  selectedRegions,
+  dateFilters: initialDateFilters,
+  selectedRegions: initialSelectedRegions,
 }: {
   dateFilters: DateFilter[];
   selectedRegions: string[];
 }) {
+  const search = useFilterSearch(
+    hrefSearch(buildSubstituteFilterHref(initialDateFilters, initialSelectedRegions)),
+  );
+  const params = new URLSearchParams(search);
+  const dateFilters = parseSubstituteDateFilters(params.getAll("date"));
+  const selectedRegions = params.getAll("region");
   const hasFilter = dateFilters.length > 0 || selectedRegions.length > 0;
   const [raw, setRaw] = useState<CachedSubstitutes | null>(null);
 

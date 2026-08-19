@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { JobList } from "@balink/ui/job-list";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { HomeJobsSectionFallback } from "@/components/home-fallbacks";
@@ -32,25 +32,31 @@ export function HomeJobsClient({
   filter: JobPostFilterInput | null;
   hasFilter: boolean;
 }) {
-  const key = useMemo(() => cacheKey(filter), [filter]);
+  const sido = filter?.sido ?? "";
+  const sigungu = filter?.sigungu ?? "";
+  const key = cacheKey(filter);
   const [data, setData] = useState<CachedJobs | null>(null);
 
   useEffect(() => {
-    setData(readListCache<CachedJobs>(key));
+    const cached = readListCache<CachedJobs>(key);
+    if (cached) setData(cached);
     let cancelled = false;
+    const requestFilter = sido || sigungu ? { ...(sido ? { sido } : {}), ...(sigungu ? { sigungu } : {}) } : null;
     void (async () => {
       try {
         const result = await browserGraphqlRequest<JobPostsQuery>(JobPostsDocument, {
           pagination: { page: 1, limit: 40 },
-          filter,
+          filter: requestFilter,
         });
         if (cancelled) return;
         const next = {
           items: result.jobPosts.items,
           total: result.jobPosts.pageInfo.total,
         };
-        setData(next);
         writeListCache(key, next);
+        startTransition(() => {
+          setData(next);
+        });
       } catch {
         // keep cached
       }
@@ -58,18 +64,18 @@ export function HomeJobsClient({
     return () => {
       cancelled = true;
     };
-  }, [filter, key]);
+  }, [key, sido, sigungu]);
 
   if (!data) {
     return (
-      <MotionReveal index={3} variant="fade-in" remountKey={`jobs-loading-${key}`}>
+      <MotionReveal index={3} variant="fade-in">
         <HomeJobsSectionFallback hasFilter={hasFilter} />
       </MotionReveal>
     );
   }
 
   return (
-    <MotionReveal index={3} variant="soft-scale" remountKey={`jobs-ready-${key}-${data.total}`}>
+    <MotionReveal index={3} variant="soft-scale">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-foreground">최신 공고</h3>
         <p className="motion-fade-in text-sm text-muted-foreground" style={{ ["--motion-index" as string]: 0 }}>
