@@ -21,7 +21,7 @@ export default async function AccountPage() {
   return (
     <main className="page-bg-radial flex min-h-full flex-1 flex-col">
       <div className="mx-auto w-full max-w-lg px-6 py-8">
-        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <section className="pb-8">
           <h1 className="text-xl font-bold tracking-tight text-foreground">내 계정</h1>
           <p className="mt-1 text-sm text-muted-foreground">프로필과 바로가기</p>
 
@@ -43,56 +43,63 @@ export default async function AccountPage() {
 
         <ThemeSelector />
 
-        <section className="mt-4 space-y-3 rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <section className="border-t border-border py-7">
           <h2 className="text-base font-semibold text-foreground">바로가기</h2>
-          <Link
-            href="/notifications"
-            className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
-          >
-            알림함
-            <span aria-hidden>→</span>
-          </Link>
-          <Link
-            href="/notifications/rules"
-            className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
-          >
-            알림 조건 설정
-            <span aria-hidden>→</span>
-          </Link>
+          <div className="mt-3">
+            <Link
+              href="/notifications"
+              className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+            >
+              알림함
+              <span aria-hidden>→</span>
+            </Link>
+            <Link
+              href="/notifications/rules"
+              className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+            >
+              알림 조건 설정
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
         </section>
 
-        <section className="mt-4 space-y-3 rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <section className="border-t border-border py-7">
           <h2 className="text-base font-semibold text-foreground">약관 및 정책</h2>
-          <Link
-            href="/terms"
-            className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
-          >
-            이용약관
-            <span aria-hidden>→</span>
-          </Link>
-          <Link
-            href="/privacy"
-            className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
-          >
-            개인정보처리방침
-            <span aria-hidden>→</span>
-          </Link>
+          <div className="mt-3">
+            <Link
+              href="/terms"
+              className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+            >
+              이용약관
+              <span aria-hidden>→</span>
+            </Link>
+            <Link
+              href="/privacy"
+              className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+            >
+              개인정보처리방침
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
         </section>
 
-        <section className="mt-4 space-y-3 rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <section className="border-t border-border py-7">
           <h2 className="text-base font-semibold text-foreground">고객지원 및 계정</h2>
-          <OriginalSourceLink
-            href="https://forms.gle/a4souo2Cz6bDb3BA8"
-            embedHref="https://docs.google.com/forms/d/e/1FAIpQLSecIVjSi1jOypLKZyIn8h4WuJGk28nG_nFulo97iNcbk5o6Eg/viewform?embedded=true"
-            title="발링크 문의"
-            className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
-          >
-            문의하기
-            <span aria-hidden>→</span>
-          </OriginalSourceLink>
-          <MobileAwareSignOutForm
-            buttonClassName="flex w-full items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
-          />
+          <div className="mt-3">
+            <OriginalSourceLink
+              href="https://forms.gle/a4souo2Cz6bDb3BA8"
+              embedHref="https://docs.google.com/forms/d/e/1FAIpQLSecIVjSi1jOypLKZyIn8h4WuJGk28nG_nFulo97iNcbk5o6Eg/viewform?embedded=true"
+              title="발링크 문의"
+              className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+            >
+              문의하기
+              <span aria-hidden>→</span>
+            </OriginalSourceLink>
+            <MobileAwareSignOutForm
+              className="-mx-2"
+              buttonClassName="flex w-full items-center px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+            />
+          </div>
         </section>
 
         <AccountDeletion />
