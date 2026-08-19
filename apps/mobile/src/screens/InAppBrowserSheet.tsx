@@ -12,6 +12,12 @@ import {
 import { WebView, type WebViewNavigation } from "react-native-webview";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { isKakaoAppUrl, openKakaoAppUrl, WEBVIEW_APP_NAME } from "../kakao-app-url";
+import {
+  isSourceSessionUrl,
+  persistSourceCookies,
+  persistSourceCookiesSoon,
+  restoreSourceCookies,
+} from "../source-session-cookies";
 
 interface InAppBrowserSheetProps {
   url: string | null;
@@ -33,6 +39,7 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
   const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [cookiesReady, setCookiesReady] = useState(false);
   const backgroundColor = isDark ? "#18181b" : "#ffffff";
   const mutedColor = isDark ? "#a1a1aa" : "#71717a";
   const textColor = isDark ? "#fafafa" : "#18181b";
@@ -41,15 +48,31 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
   const heading = title?.trim() || "원문";
 
   const handleClose = useCallback(() => {
+    if (url) void persistSourceCookies(url);
     setCanGoBack(false);
     setLoading(true);
+    setCookiesReady(false);
     onClose();
-  }, [onClose]);
+  }, [onClose, url]);
 
   useEffect(() => {
-    if (!url) return;
+    if (!url) {
+      setCookiesReady(false);
+      return;
+    }
+    let cancelled = false;
     setLoading(true);
     setCanGoBack(false);
+    setCookiesReady(false);
+    const prepare = isSourceSessionUrl(url)
+      ? restoreSourceCookies(url)
+      : Promise.resolve();
+    void prepare.finally(() => {
+      if (!cancelled) setCookiesReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [url]);
 
   useEffect(() => {
@@ -116,7 +139,7 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
             </Text>
           ) : null}
           <View style={styles.webWrap}>
-            {url ? (
+            {url && cookiesReady ? (
               <WebView
                 key={url}
                 ref={webViewRef}
@@ -126,6 +149,7 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
                 domStorageEnabled
                 sharedCookiesEnabled
                 thirdPartyCookiesEnabled
+                cacheEnabled
                 originWhitelist={["*"]}
                 applicationNameForUserAgent={WEBVIEW_APP_NAME}
                 setSupportMultipleWindows={false}
@@ -136,9 +160,13 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
                   }
                   return true;
                 }}
-                onLoadEnd={() => setLoading(false)}
+                onLoadEnd={() => {
+                  setLoading(false);
+                  if (isSourceSessionUrl(url)) persistSourceCookiesSoon(url);
+                }}
                 onNavigationStateChange={(state: WebViewNavigation) => {
                   setCanGoBack(state.canGoBack);
+                  if (isSourceSessionUrl(state.url)) persistSourceCookiesSoon(state.url);
                 }}
               />
             ) : null}

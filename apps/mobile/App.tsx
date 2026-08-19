@@ -6,6 +6,7 @@ import * as Notifications from "expo-notifications";
 import { enableScreens } from "react-native-screens";
 import { BridgeProvider } from "./src/bridge-context";
 import { RootNavigator } from "./src/navigation/RootNavigator";
+import { useSourceSessionCookies } from "./src/source-session-cookies";
 import { NativeThemeProvider, useNativeTheme } from "./src/theme-context";
 
 enableScreens(true);
@@ -33,6 +34,7 @@ export default function App() {
 
 function ThemedApp() {
   const { isDark } = useNativeTheme();
+  useSourceSessionCookies();
   return (
     <>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
