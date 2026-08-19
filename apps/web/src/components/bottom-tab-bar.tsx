@@ -32,7 +32,11 @@ const tabs = [
   {
     href: "/account",
     label: "마이",
-    match: (pathname: string) => pathname.startsWith("/account") || pathname === "/login",
+    match: (pathname: string) =>
+      pathname.startsWith("/account") ||
+      pathname === "/login" ||
+      pathname === "/privacy" ||
+      pathname === "/terms",
     icon: UserIcon,
   },
 ] as const;

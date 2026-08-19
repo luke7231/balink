@@ -101,6 +101,24 @@ export function LoginScreen({
                 Apple 로그인은 설정 후 활성화됩니다.
               </p>
             )}
+
+            <p
+              className="motion-fade-in px-4 pt-1 text-center text-xs leading-5 text-muted-foreground"
+              style={motionIndexStyle(5)}
+            >
+              계속하면 발링크의{" "}
+              <Link href="/terms" className="font-medium text-foreground underline underline-offset-2">
+                이용약관
+              </Link>
+              과{" "}
+              <Link
+                href="/privacy"
+                className="font-medium text-foreground underline underline-offset-2"
+              >
+                개인정보처리방침
+              </Link>
+              에 동의하는 것으로 봅니다.
+            </p>
           </div>
         </div>
       </div>

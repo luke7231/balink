@@ -85,7 +85,9 @@ const NATIVE_NAV_INTERCEPT = `
       if (
         pathname.indexOf('/account') === 0 ||
         pathname === '/login' ||
-        pathname.indexOf('/login/') === 0
+        pathname.indexOf('/login/') === 0 ||
+        pathname === '/privacy' ||
+        pathname === '/terms'
       ) return 'Account';
       return 'Jobs';
     }
@@ -106,6 +108,7 @@ const NATIVE_NAV_INTERCEPT = `
       if (pathname.indexOf('/substitutes/') === 0 && pathname !== '/substitutes') return true;
       if (pathname.indexOf('/notifications/') === 0 && pathname !== '/notifications') return true;
       if (pathname.indexOf('/saved/') === 0 && pathname !== '/saved') return true;
+      if (pathname === '/privacy' || pathname === '/terms') return true;
       return false;
     }
 

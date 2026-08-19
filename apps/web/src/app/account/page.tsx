@@ -59,6 +59,24 @@ export default async function AccountPage() {
           </Link>
         </section>
 
+        <section className="mt-4 space-y-3 rounded-3xl border border-border bg-surface p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-foreground">약관 및 정책</h2>
+          <Link
+            href="/terms"
+            className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
+          >
+            이용약관
+            <span aria-hidden>→</span>
+          </Link>
+          <Link
+            href="/privacy"
+            className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
+          >
+            개인정보처리방침
+            <span aria-hidden>→</span>
+          </Link>
+        </section>
+
         <section className="mt-4 rounded-3xl border border-accent-border bg-accent-subtle p-6">
           <h2 className="text-base font-semibold text-accent">계정 삭제</h2>
           <p className="mt-2 text-sm leading-relaxed text-accent">
