@@ -89,11 +89,12 @@ export function SubstitutesClient({
   selectedRegions: string[];
 }) {
   const hasFilter = dateFilters.length > 0 || selectedRegions.length > 0;
-  const [raw, setRaw] = useState<CachedSubstitutes | null>(() =>
-    readListCache<CachedSubstitutes>(CACHE_KEY),
-  );
+  const [raw, setRaw] = useState<CachedSubstitutes | null>(null);
 
   useEffect(() => {
+    const cached = readListCache<CachedSubstitutes>(CACHE_KEY);
+    if (cached) setRaw(cached);
+
     let cancelled = false;
     void (async () => {
       try {

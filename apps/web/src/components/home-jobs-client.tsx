@@ -33,7 +33,7 @@ export function HomeJobsClient({
   hasFilter: boolean;
 }) {
   const key = useMemo(() => cacheKey(filter), [filter]);
-  const [data, setData] = useState<CachedJobs | null>(() => readListCache<CachedJobs>(key));
+  const [data, setData] = useState<CachedJobs | null>(null);
 
   useEffect(() => {
     setData(readListCache<CachedJobs>(key));

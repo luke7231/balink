@@ -34,11 +34,12 @@ export function HomeFiltersClient({
   selectedSidos: string[];
   selectedSigungus: string[];
 }) {
-  const [regions, setRegions] = useState<RegionOption[] | null>(() =>
-    readListCache<RegionOption[]>(CACHE_KEY),
-  );
+  const [regions, setRegions] = useState<RegionOption[] | null>(null);
 
   useEffect(() => {
+    const cached = readListCache<RegionOption[]>(CACHE_KEY);
+    if (cached) setRegions(cached);
+
     let cancelled = false;
     void (async () => {
       try {
