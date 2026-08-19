@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/auth";
-import { deleteAccountAction } from "@/components/account-actions";
+import { AccountDeletion } from "@/components/account-deletion";
 import { LoginScreen } from "@/components/login-screen";
+import { MobileAwareSignOutForm } from "@/components/mobile-aware-sign-out-form";
 import { ThemeSelector } from "@/components/theme-selector";
 import { DEFAULT_AVATAR_PATH } from "@/lib/profile-image";
 
@@ -77,22 +78,21 @@ export default async function AccountPage() {
           </Link>
         </section>
 
-        <section className="mt-4 rounded-3xl border border-accent-border bg-accent-subtle p-6">
-          <h2 className="text-base font-semibold text-accent">계정 삭제</h2>
-          <p className="mt-2 text-sm leading-relaxed text-accent">
-            발링크 회원 정보가 삭제되고, 카카오 연결도 해제(unlink)를 시도합니다.
-            삭제 후에는 같은 카카오로 다시 가입할 수 있습니다.
-          </p>
-
-          <form action={deleteAccountAction} className="mt-5">
-            <button
-              type="submit"
-              className="rounded-full bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-800"
-            >
-              계정 삭제하기
-            </button>
-          </form>
+        <section className="mt-4 space-y-3 rounded-3xl border border-border bg-surface p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-foreground">고객지원 및 계정</h2>
+          <a
+            href="mailto:lukelab.studio@gmail.com?subject=%5B%EB%B0%9C%EB%A7%81%ED%81%AC%20%EB%AC%B8%EC%9D%98%5D"
+            className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
+          >
+            이메일로 문의하기
+            <span aria-hidden>→</span>
+          </a>
+          <MobileAwareSignOutForm
+            buttonClassName="flex w-full items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
+          />
         </section>
+
+        <AccountDeletion />
       </div>
     </main>
   );

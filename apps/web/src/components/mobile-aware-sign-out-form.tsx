@@ -3,7 +3,13 @@
 import { useRef } from "react";
 import { signOutAction } from "@/components/login-actions";
 
-export function MobileAwareSignOutForm({ className }: { className?: string }) {
+export function MobileAwareSignOutForm({
+  className,
+  buttonClassName,
+}: {
+  className?: string;
+  buttonClassName?: string;
+}) {
   const submittingRef = useRef(false);
 
   return (
@@ -26,7 +32,10 @@ export function MobileAwareSignOutForm({ className }: { className?: string }) {
     >
       <button
         type="submit"
-        className="rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground"
+        className={
+          buttonClassName ??
+          "rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground"
+        }
       >
         로그아웃
       </button>
