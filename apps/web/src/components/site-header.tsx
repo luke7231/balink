@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { auth } from "@/auth";
 import { MobileAwareSignOutForm } from "@/components/mobile-aware-sign-out-form";
-import { DEFAULT_AVATAR_PATH } from "@/lib/profile-image";
+import { ProfileAvatar } from "@/components/profile-avatar";
 
 interface SiteHeaderProps {
   jobCount?: number;
@@ -81,13 +81,10 @@ async function SiteHeaderAuth() {
   if (user) {
     return (
       <div className="motion-fade-in flex items-center gap-2 rounded-full border border-border bg-surface px-2 py-1.5">
-        <Image
-          src={user.image || DEFAULT_AVATAR_PATH}
-          alt=""
-          width={28}
-          height={28}
+        <ProfileAvatar
+          src={user.image}
+          size={28}
           className="h-7 w-7 rounded-full object-cover"
-          unoptimized
         />
         <Link
           href="/account"

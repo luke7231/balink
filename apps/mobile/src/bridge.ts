@@ -1,3 +1,5 @@
+import { isAccentPalette, type AccentPalette } from "./accent-palette";
+
 export type PushPermission = "granted" | "denied" | "undetermined" | "unavailable";
 
 export interface PushPermissionPayload {
@@ -14,6 +16,7 @@ export interface InstallationCredential {
 export type HapticStyle = "selection" | "light" | "medium" | "success" | "warning" | "error";
 export type ThemePreference = "system" | "light" | "dark";
 export type ResolvedTheme = "light" | "dark";
+export type { AccentPalette };
 
 const HAPTIC_STYLES = new Set<HapticStyle>([
   "selection",
@@ -32,7 +35,8 @@ export type WebToNativeMessage =
   | { type: "HAPTIC"; style: HapticStyle }
   | { type: "NATIVE_NAV"; path: string }
   | { type: "OPEN_IN_APP_BROWSER"; url: string; title?: string }
-  | { type: "SET_THEME"; preference: ThemePreference };
+  | { type: "SET_THEME"; preference: ThemePreference }
+  | { type: "SET_ACCENT"; accent: AccentPalette };
 
 export type NativeToWebMessage =
   | ({ type: "PUSH_PERMISSION_STATUS" } & PushPermissionPayload)
@@ -46,6 +50,7 @@ export type NativeToWebMessage =
       type: "THEME_STATE";
       preference: ThemePreference;
       resolvedTheme: ResolvedTheme;
+      accent: AccentPalette;
     };
 
 function isThemePreference(value: unknown): value is ThemePreference {
@@ -95,6 +100,11 @@ export function parseWebMessage(value: string): WebToNativeMessage | null {
         const preference = (message as { preference?: unknown }).preference;
         if (!isThemePreference(preference)) return null;
         return { type: "SET_THEME", preference };
+      }
+      case "SET_ACCENT": {
+        const accent = (message as { accent?: unknown }).accent;
+        if (!isAccentPalette(accent)) return null;
+        return { type: "SET_ACCENT", accent };
       }
       default:
         return null;

@@ -1,10 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
 import { auth } from "@/auth";
 import { LoginScreen } from "@/components/login-screen";
+import { ProfileAvatar } from "@/components/profile-avatar";
 import { SupportInquirySheet } from "@/components/support-inquiry-sheet";
 import { ThemeSelector } from "@/components/theme-selector";
-import { DEFAULT_AVATAR_PATH } from "@/lib/profile-image";
 
 export default async function AccountPage() {
   const session = await auth();
@@ -24,13 +23,10 @@ export default async function AccountPage() {
           <p className="mt-1 text-sm text-muted-foreground">프로필과 바로가기</p>
 
           <div className="mt-6 flex items-center gap-3">
-            <Image
-              src={user.image || DEFAULT_AVATAR_PATH}
-              alt=""
-              width={48}
-              height={48}
+            <ProfileAvatar
+              src={user.image}
+              size={48}
               className="h-12 w-12 rounded-full object-cover"
-              unoptimized
             />
             <div>
               <p className="font-semibold text-foreground">{user.name ?? "회원"}</p>

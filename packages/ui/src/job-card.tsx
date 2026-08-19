@@ -57,7 +57,7 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
       >
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div
-            className={`flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-rose-100 via-rose-50 to-zinc-100 ${
+            className={`flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-accent-subtle via-accent-subtle/70 to-surface-muted ${
               job.academyThumbnailType === "logo" || !job.academyThumbnailUrl ? "p-1.5" : ""
             }`}
           >
@@ -72,7 +72,7 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
                 }
               />
             ) : (
-              <span className="text-xl font-bold text-rose-300" aria-hidden="true">
+              <span className="text-xl font-bold text-accent/35" aria-hidden="true">
                 B
               </span>
             )}

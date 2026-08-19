@@ -10,14 +10,22 @@ import {
 import { useColorScheme } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import type { ResolvedTheme, ThemePreference } from "./bridge";
+import {
+  DEFAULT_ACCENT_PALETTE,
+  isAccentPalette,
+  type AccentPalette,
+} from "./accent-palette";
 
 const THEME_STORAGE_KEY = "balink.theme-preference";
+const THEME_ACCENT_STORAGE_KEY = "balink.theme-accent";
 
 interface ThemeContextValue {
   preference: ThemePreference;
   resolvedTheme: ResolvedTheme;
+  accent: AccentPalette;
   isDark: boolean;
   setPreference: (preference: ThemePreference) => void;
+  setAccent: (accent: AccentPalette) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -29,16 +37,26 @@ function isThemePreference(value: string | null): value is ThemePreference {
 export function NativeThemeProvider({ children }: { children: ReactNode }) {
   const systemTheme = useColorScheme();
   const [preference, setPreferenceState] = useState<ThemePreference>("system");
+  const [accent, setAccentState] = useState<AccentPalette>(DEFAULT_ACCENT_PALETTE);
 
   useEffect(() => {
-    void SecureStore.getItemAsync(THEME_STORAGE_KEY).then((stored) => {
-      if (isThemePreference(stored)) setPreferenceState(stored);
+    void Promise.all([
+      SecureStore.getItemAsync(THEME_STORAGE_KEY),
+      SecureStore.getItemAsync(THEME_ACCENT_STORAGE_KEY),
+    ]).then(([storedPreference, storedAccent]) => {
+      if (isThemePreference(storedPreference)) setPreferenceState(storedPreference);
+      if (isAccentPalette(storedAccent)) setAccentState(storedAccent);
     });
   }, []);
 
   const setPreference = useCallback((nextPreference: ThemePreference) => {
     setPreferenceState(nextPreference);
     void SecureStore.setItemAsync(THEME_STORAGE_KEY, nextPreference);
+  }, []);
+
+  const setAccent = useCallback((nextAccent: AccentPalette) => {
+    setAccentState(nextAccent);
+    void SecureStore.setItemAsync(THEME_ACCENT_STORAGE_KEY, nextAccent);
   }, []);
 
   const resolvedTheme: ResolvedTheme =
@@ -48,10 +66,12 @@ export function NativeThemeProvider({ children }: { children: ReactNode }) {
     () => ({
       preference,
       resolvedTheme,
+      accent,
       isDark: resolvedTheme === "dark",
       setPreference,
+      setAccent,
     }),
-    [preference, resolvedTheme, setPreference],
+    [preference, resolvedTheme, accent, setPreference, setAccent],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

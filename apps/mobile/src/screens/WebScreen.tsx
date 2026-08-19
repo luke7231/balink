@@ -172,7 +172,7 @@ export function WebScreen() {
   const [canGoBackInWeb, setCanGoBackInWeb] = useState(false);
   const [inAppBrowser, setInAppBrowser] = useState<{ url: string; title?: string } | null>(null);
   const { buildPermissionMessages, requestPushPermission, openNotificationSettings } = useBridge();
-  const { preference, resolvedTheme, isDark, setPreference } = useNativeTheme();
+  const { preference, resolvedTheme, accent, isDark, setPreference, setAccent } = useNativeTheme();
   const backgroundColor = isDark ? "#09090b" : "#ffffff";
 
   const sendToWeb = useCallback((message: NativeToWebMessage) => {
@@ -193,18 +193,19 @@ export function WebScreen() {
   }, [buildPermissionMessages, sendToWeb]);
 
   const syncTheme = useCallback(() => {
-    sendToWeb({ type: "THEME_STATE", preference, resolvedTheme });
+    sendToWeb({ type: "THEME_STATE", preference, resolvedTheme, accent });
     webViewRef.current?.injectJavaScript(`
       (function () {
         var root = document.documentElement;
         root.classList.toggle('dark', ${isDark});
         root.style.colorScheme = '${resolvedTheme}';
+        root.setAttribute('data-accent', '${accent}');
         root.style.backgroundColor = '${backgroundColor}';
         if (document.body) document.body.style.backgroundColor = '${backgroundColor}';
       })();
       true;
     `);
-  }, [backgroundColor, isDark, preference, resolvedTheme, sendToWeb]);
+  }, [accent, backgroundColor, isDark, preference, resolvedTheme, sendToWeb]);
 
   useEffect(() => {
     syncTheme();
@@ -247,6 +248,8 @@ export function WebScreen() {
         setInAppBrowser({ url: message.url, title: message.title });
       } else if (message.type === "SET_THEME") {
         setPreference(message.preference);
+      } else if (message.type === "SET_ACCENT") {
+        setAccent(message.accent);
       } else if (message.type === "REQUEST_PUSH_PERMISSION") {
         void requestPushPermission().then(() => syncPermission());
       } else if (message.type === "OPEN_NOTIFICATION_SETTINGS") {
@@ -255,7 +258,14 @@ export function WebScreen() {
         void syncPermission();
       }
     },
-    [navigation, openNotificationSettings, requestPushPermission, setPreference, syncPermission],
+    [
+      navigation,
+      openNotificationSettings,
+      requestPushPermission,
+      setAccent,
+      setPreference,
+      syncPermission,
+    ],
   );
 
   const handleNavigation = useCallback(

@@ -41,6 +41,136 @@
   color-scheme: dark;
 }
 
+/* Accent palettes — light */
+html[data-accent="coral"] {
+  --accent: #f43f5e;
+  --accent-subtle: #fff1f2;
+  --accent-border: #fecdd3;
+  --page-gradient: linear-gradient(180deg, #fff7f8 0%, #ffffff 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #fff1f3, #ffffff 42%);
+}
+
+html[data-accent="amber"] {
+  --accent: #d97706;
+  --accent-subtle: #fffbeb;
+  --accent-border: #fde68a;
+  --page-gradient: linear-gradient(180deg, #fffdf5 0%, #ffffff 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #fff8e7, #ffffff 42%);
+}
+
+html[data-accent="green"] {
+  --accent: #059669;
+  --accent-subtle: #ecfdf5;
+  --accent-border: #a7f3d0;
+  --page-gradient: linear-gradient(180deg, #f7fffb 0%, #ffffff 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #ecfdf5, #ffffff 42%);
+}
+
+html[data-accent="teal"] {
+  --accent: #0d9488;
+  --accent-subtle: #f0fdfa;
+  --accent-border: #99f6e4;
+  --page-gradient: linear-gradient(180deg, #f5fffd 0%, #ffffff 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #ccfbf1, #ffffff 42%);
+}
+
+html[data-accent="blue"] {
+  --accent: #2563eb;
+  --accent-subtle: #eff6ff;
+  --accent-border: #bfdbfe;
+  --page-gradient: linear-gradient(180deg, #f7faff 0%, #ffffff 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #eff6ff, #ffffff 42%);
+}
+
+html[data-accent="indigo"] {
+  --accent: #4f46e5;
+  --accent-subtle: #eef2ff;
+  --accent-border: #c7d2fe;
+  --page-gradient: linear-gradient(180deg, #f8f8ff 0%, #ffffff 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #eef2ff, #ffffff 42%);
+}
+
+html[data-accent="violet"] {
+  --accent: #7c3aed;
+  --accent-subtle: #f5f3ff;
+  --accent-border: #ddd6fe;
+  --page-gradient: linear-gradient(180deg, #fbf9ff 0%, #ffffff 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #f5f3ff, #ffffff 42%);
+}
+
+html[data-accent="neutral"] {
+  --accent: #52525b;
+  --accent-subtle: #f4f4f5;
+  --accent-border: #d4d4d8;
+  --page-gradient: linear-gradient(180deg, #fafafa 0%, #ffffff 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #f4f4f5, #ffffff 42%);
+}
+
+/* Accent palettes — dark */
+html.dark[data-accent="coral"] {
+  --accent: #fb7185;
+  --accent-subtle: #4c0519;
+  --accent-border: #9f1239;
+  --page-gradient: linear-gradient(180deg, #140a0e 0%, #09090b 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #2a1218, #09090b 42%);
+}
+
+html.dark[data-accent="amber"] {
+  --accent: #fcd34d;
+  --accent-subtle: #451a03;
+  --accent-border: #b45309;
+  --page-gradient: linear-gradient(180deg, #14100a 0%, #09090b 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #2a1f0d, #09090b 42%);
+}
+
+html.dark[data-accent="green"] {
+  --accent: #6ee7b7;
+  --accent-subtle: #022c22;
+  --accent-border: #047857;
+  --page-gradient: linear-gradient(180deg, #0a1411 0%, #09090b 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #10241c, #09090b 42%);
+}
+
+html.dark[data-accent="teal"] {
+  --accent: #5eead4;
+  --accent-subtle: #042f2e;
+  --accent-border: #0f766e;
+  --page-gradient: linear-gradient(180deg, #0a1313 0%, #09090b 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #0f2423, #09090b 42%);
+}
+
+html.dark[data-accent="blue"] {
+  --accent: #93c5fd;
+  --accent-subtle: #172554;
+  --accent-border: #1d4ed8;
+  --page-gradient: linear-gradient(180deg, #0a1018 0%, #09090b 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #132038, #09090b 42%);
+}
+
+html.dark[data-accent="indigo"] {
+  --accent: #a5b4fc;
+  --accent-subtle: #1e1b4b;
+  --accent-border: #4338ca;
+  --page-gradient: linear-gradient(180deg, #0d0c18 0%, #09090b 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #1a1838, #09090b 42%);
+}
+
+html.dark[data-accent="violet"] {
+  --accent: #c4b5fd;
+  --accent-subtle: #2e1065;
+  --accent-border: #6d28d9;
+  --page-gradient: linear-gradient(180deg, #100c18 0%, #09090b 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #22153a, #09090b 42%);
+}
+
+html.dark[data-accent="neutral"] {
+  --accent: #a1a1aa;
+  --accent-subtle: #18181b;
+  --accent-border: #52525b;
+  --page-gradient: linear-gradient(180deg, #111113 0%, #09090b 140px);
+  --page-gradient-radial: radial-gradient(circle at top, #1c1c1f, #09090b 42%);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

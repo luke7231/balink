@@ -41,6 +41,10 @@ const themeScript = `
       (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', dark);
     document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+    var accents = ['rose','coral','amber','green','teal','blue','indigo','violet','neutral'];
+    var accent = localStorage.getItem('balink.theme-accent') || 'rose';
+    if (accents.indexOf(accent) === -1) accent = 'rose';
+    document.documentElement.setAttribute('data-accent', accent);
   } catch (error) {}
 })();
 `;
