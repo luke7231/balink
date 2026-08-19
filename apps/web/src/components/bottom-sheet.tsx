@@ -107,9 +107,11 @@ export function BottomSheet({
           </div>
         </div>
         {fill ? (
-          <div className="min-h-0 flex-1 pb-[env(safe-area-inset-bottom)]">{children}</div>
+          <div className="relative min-h-0 flex-1 overflow-hidden pb-[env(safe-area-inset-bottom)]">
+            {children}
+          </div>
         ) : (
-          <div className="max-h-[calc(85vh-5rem)] overflow-y-auto px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <div className="max-h-[calc(85vh-5rem)] overflow-y-auto overscroll-contain px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
             {children}
           </div>
         )}

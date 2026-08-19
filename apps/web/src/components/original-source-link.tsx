@@ -30,6 +30,8 @@ export function OriginalSourceLink({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const host = hostnameOf(href);
+  const frameSrc = embedHref ?? href;
+  const scrollParent = isGoogleFormUrl(frameSrc);
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
@@ -74,12 +76,23 @@ export function OriginalSourceLink({
           </a>
         }
       >
-        <div className="relative h-full">
+        <div
+          className={
+            scrollParent
+              ? "relative h-full min-h-0 overflow-y-auto overscroll-contain"
+              : "relative h-full min-h-0 overflow-hidden"
+          }
+        >
           <iframe
-            key={embedHref ?? href}
-            src={open ? (embedHref ?? href) : undefined}
+            key={frameSrc}
+            src={open ? frameSrc : undefined}
             title={title}
-            className="h-full w-full border-0 bg-surface"
+            className={
+              scrollParent
+                ? "block w-full border-0 bg-surface"
+                : "absolute inset-0 h-full w-full border-0 bg-surface"
+            }
+            style={scrollParent ? { height: 2400 } : undefined}
             referrerPolicy="no-referrer-when-downgrade"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
             onLoad={() => setLoading(false)}
@@ -94,6 +107,15 @@ export function OriginalSourceLink({
       </BottomSheet>
     </>
   );
+}
+
+function isGoogleFormUrl(url: string) {
+  try {
+    const host = new URL(url).hostname;
+    return host === "forms.gle" || host.endsWith("docs.google.com");
+  } catch {
+    return false;
+  }
 }
 
 function InAppBrowserSkeleton() {
