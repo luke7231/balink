@@ -164,7 +164,7 @@ export function SubstitutesFilterBar({
             </Link>
             <button
               type="submit"
-              className="flex-2 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-700"
+              className="flex-2 rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-background hover:opacity-90"
             >
               적용하기
             </button>

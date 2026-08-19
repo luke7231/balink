@@ -19,7 +19,7 @@ export function AccountDeletion() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-5 rounded-full bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-800"
+        className="mt-5 rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-background hover:opacity-90"
       >
         계정 삭제하기
       </button>
@@ -56,7 +56,7 @@ function DeleteButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full bg-rose-700 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-50"
+      className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-background hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {pending ? "삭제 중..." : "삭제하기"}
     </button>

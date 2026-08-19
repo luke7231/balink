@@ -91,7 +91,7 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
               <OriginalSourceLink
                 href={post.sourceUrl}
                 title="원문"
-                className="inline-flex rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-700"
+                className="inline-flex rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background hover:opacity-90"
               >
                 원문 보기
               </OriginalSourceLink>
@@ -185,7 +185,7 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
             <OriginalSourceLink
               href={post.sourceUrl}
               title="원문"
-              className="inline-flex rounded-full bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700"
+              className="inline-flex rounded-full bg-accent px-4 py-2 text-sm font-medium text-background hover:opacity-90"
             >
               발레매니아 원문 보기
             </OriginalSourceLink>
@@ -198,7 +198,7 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
           <OriginalSourceLink
             href={post.sourceUrl}
             title="원문"
-            className="flex-1 rounded-full bg-rose-600 px-4 py-3 text-center text-sm font-semibold text-white"
+            className="flex-1 rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-background"
           >
             원문 보기
           </OriginalSourceLink>
