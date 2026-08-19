@@ -792,6 +792,7 @@ export type MatchNotificationInsert = {
   href: string;
   jobPostId?: string | null;
   substitutePostId?: string | null;
+  createdAt?: Date;
 };
 
 export class UserNotificationRepository {
@@ -806,6 +807,7 @@ export class UserNotificationRepository {
         href: row.href,
         jobPostId: row.jobPostId ?? null,
         substitutePostId: row.substitutePostId ?? null,
+        ...(row.createdAt ? { createdAt: row.createdAt } : {}),
       })),
       skipDuplicates: true,
     });

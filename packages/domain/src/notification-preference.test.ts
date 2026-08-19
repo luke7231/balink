@@ -157,6 +157,48 @@ test("legacy preference expands with interest regions", () => {
   );
 });
 
+test("any-day regular rules match existing Gangnam/Songpa/Gangdong jobs", () => {
+  const preference = parseNotificationPreference({
+    enabled: true,
+    rulesJson: [
+      { id: "1", enabled: true, jobType: "regular", sido: "서울특별시", sigungu: "강남구", days: [], timeSlots: [] },
+      { id: "2", enabled: true, jobType: "regular", sido: "서울특별시", sigungu: "송파구", days: [], timeSlots: [] },
+      { id: "3", enabled: true, jobType: "regular", sido: "서울특별시", sigungu: "강동구", days: [], timeSlots: [] },
+    ],
+  });
+
+  assert.equal(
+    matchesNotificationPreference(preference, {
+      jobType: "regular",
+      sido: "서울특별시",
+      sigungu: "강동구",
+      days: ["수", "금"],
+      timeSlots: ["evening"],
+    }),
+    true,
+  );
+  assert.equal(
+    matchesNotificationPreference(preference, {
+      jobType: "regular",
+      sido: "서울특별시",
+      sigungu: "구로구",
+      days: ["월"],
+      timeSlots: ["evening"],
+    }),
+    false,
+  );
+  assert.equal(
+    matchesNotificationPreference(preference, {
+      jobType: "substitute",
+      sido: "서울특별시",
+      sigungu: "강남구",
+      days: ["목"],
+      timeSlots: ["morning"],
+    }),
+    false,
+  );
+});
+
 test("empty days/timeSlots mean allow all", () => {
   assert.equal(matchesDays(["금"], { days: [] }), true);
   assert.equal(matchesTimeSlots(["evening"], { timeSlots: [] }), true);

@@ -132,7 +132,10 @@ export async function persistNormalizedSubstitute(input: PersistSubstituteInput)
 
   if (shouldFanOutInbox({ created, fanOutInbox: input.fanOutInbox })) {
     try {
-      await fanOutSubstituteMatch(post);
+      const summary = await fanOutSubstituteMatch(post);
+      console.info(
+        `[substitute-import] fanOutInbox substitutePostId=${post.id} matched=${summary.matched} inserted=${summary.inserted}`,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[substitute-import] fanOutInbox failed substitutePostId=${post.id}: ${message}`);

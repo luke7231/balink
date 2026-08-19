@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { MAX_INTEREST_REGIONS } from "@/lib/interest-regions";
 import { unlinkKakaoAccount } from "@/lib/kakao-unlink";
+import { backfillInboxMatchesForUser } from "@/lib/notification-inbox-backfill";
 
 export type InterestRegionActionResult =
   | { ok: true; region?: { id: string; sido: string; sigungu: string } }
@@ -126,6 +127,12 @@ export async function saveNotificationPreferenceAction(
       substituteJson: {},
     },
   });
+
+  try {
+    await backfillInboxMatchesForUser(userId, parsed);
+  } catch (error) {
+    console.error("[notification-inbox] backfill failed", error);
+  }
 
   revalidatePath("/account");
   revalidatePath("/notifications");

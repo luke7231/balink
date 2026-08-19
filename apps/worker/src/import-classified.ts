@@ -107,7 +107,10 @@ async function importClassifiedItem(
   }
 
   try {
-    await fanOutJobMatch(result.jobPost);
+    const summary = await fanOutJobMatch(result.jobPost);
+    console.info(
+      `[import-classified] fanOutInbox jobPostId=${result.jobPostId} matched=${summary.matched} inserted=${summary.inserted}`,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[import-classified] fanOutInbox failed jobPostId=${result.jobPostId}: ${message}`);
