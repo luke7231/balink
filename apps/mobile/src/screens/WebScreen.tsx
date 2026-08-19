@@ -14,6 +14,7 @@ import { useBridge } from "../bridge-context";
 import { parseWebMessage, serializeNativeMessage, type NativeToWebMessage } from "../bridge";
 import { playHaptic } from "../haptics";
 import { openAppPath } from "../navigation/open-path";
+import { useTabSwipeAtRoot } from "../navigation/use-tab-swipe-at-root";
 import type { WebStackParamList } from "../navigation/types";
 import { InAppBrowserSheet } from "./InAppBrowserSheet";
 import { useNativeTheme } from "../theme-context";
@@ -175,6 +176,8 @@ export function WebScreen() {
   const { buildPermissionMessages, requestPushPermission, openNotificationSettings } = useBridge();
   const { preference, resolvedTheme, accent, isDark, setPreference, setAccent } = useNativeTheme();
   const backgroundColor = isDark ? "#09090b" : "#ffffff";
+
+  useTabSwipeAtRoot();
 
   const sendToWeb = useCallback((message: NativeToWebMessage) => {
     if (!isTrustedWebUrl(currentUrlRef.current)) return;
@@ -341,6 +344,8 @@ export function WebScreen() {
         style={{ backgroundColor }}
         containerStyle={{ backgroundColor }}
         allowsBackForwardNavigationGestures={false}
+        directionalLockEnabled
+        nestedScrollEnabled
         injectedJavaScriptBeforeContentLoaded={nativeShellBefore(isDark)}
         injectedJavaScript={NATIVE_NAV_INTERCEPT}
         onLoadEnd={() => {
