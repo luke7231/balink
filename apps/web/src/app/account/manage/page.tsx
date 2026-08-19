@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AccountDeletion } from "@/components/account-deletion";
 import { AccountSignOut } from "@/components/account-sign-out";
+import { AccountSourceLoginClear } from "@/components/account-source-login-clear";
 import { MotionReveal } from "@/components/motion-reveal";
 
 export default async function AccountManagePage() {
@@ -36,6 +37,9 @@ export default async function AccountManagePage() {
           <AccountSignOut />
         </MotionReveal>
         <MotionReveal index={3} variant="fade-up">
+          <AccountSourceLoginClear />
+        </MotionReveal>
+        <MotionReveal index={4} variant="fade-up">
           <AccountDeletion />
         </MotionReveal>
       </div>

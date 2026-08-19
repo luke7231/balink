@@ -50,6 +50,13 @@ export function openInAppBrowser(url: string, title?: string): boolean {
   return true;
 }
 
+export function clearSourceLoginOnDevice(): boolean {
+  if (typeof window === "undefined") return false;
+  if (!window.ReactNativeWebView) return false;
+  window.ReactNativeWebView.postMessage(JSON.stringify({ type: "CLEAR_SOURCE_LOGIN" }));
+  return true;
+}
+
 export function useNativeShell(): boolean {
   const [nativeShell, setNativeShell] = useState(false);
 

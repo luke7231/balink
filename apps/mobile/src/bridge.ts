@@ -35,6 +35,7 @@ export type WebToNativeMessage =
   | { type: "HAPTIC"; style: HapticStyle }
   | { type: "NATIVE_NAV"; path: string }
   | { type: "OPEN_IN_APP_BROWSER"; url: string; title?: string }
+  | { type: "CLEAR_SOURCE_LOGIN" }
   | { type: "SET_THEME"; preference: ThemePreference }
   | { type: "SET_ACCENT"; accent: AccentPalette };
 
@@ -74,6 +75,7 @@ export function parseWebMessage(value: string): WebToNativeMessage | null {
       case "GET_PUSH_PERMISSION":
       case "REQUEST_PUSH_PERMISSION":
       case "OPEN_NOTIFICATION_SETTINGS":
+      case "CLEAR_SOURCE_LOGIN":
         return message as WebToNativeMessage;
       case "HAPTIC": {
         if (!message.style || !HAPTIC_STYLES.has(message.style as HapticStyle)) return null;

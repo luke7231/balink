@@ -10,14 +10,32 @@ import {
   View,
 } from "react-native";
 import { WebView, type WebViewNavigation } from "react-native-webview";
+import type { WebViewMessageEvent } from "react-native-webview";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { playHaptic } from "../haptics";
 import { isKakaoAppUrl, openKakaoAppUrl, WEBVIEW_APP_NAME } from "../kakao-app-url";
+import { SourceLoginAssistOverlay } from "../source-login-assist-overlay";
+import {
+  declineSourceLogin,
+  deleteSourceLogin,
+  fillSourceLoginScript,
+  getSavedSourceLogin,
+  isSourceLoginDeclined,
+  parseSourceLoginMessage,
+  saveSourceLogin,
+  SOURCE_LOGIN_BEFORE_SCRIPT,
+  SOURCE_LOGIN_DETECT_SCRIPT,
+  type SourceLoginCredential,
+} from "../source-login-assist";
 import {
   isSourceSessionUrl,
   persistSourceCookies,
   persistSourceCookiesSoon,
   restoreSourceCookies,
 } from "../source-session-cookies";
+import { accentColorFor } from "../accent-palette";
+import { isSourceLoginPageUrl, sourceLoginSite, type SourceLoginSite } from "../source-session-hosts";
+import { useNativeTheme } from "../theme-context";
 
 interface InAppBrowserSheetProps {
   url: string | null;
@@ -35,35 +53,69 @@ function hostnameOf(url: string): string | null {
 }
 
 export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserSheetProps) {
+  const { accent } = useNativeTheme();
   const insets = useSafeAreaInsets();
   const webViewRef = useRef<WebView>(null);
+  const pendingLoginRef = useRef<SourceLoginCredential | null>(null);
+  const currentUrlRef = useRef<string | null>(url);
+  const returnToUrlRef = useRef<string | null>(null);
+  const didRedirectToLoginRef = useRef(false);
   const [canGoBack, setCanGoBack] = useState(false);
   const [loading, setLoading] = useState(true);
   const [cookiesReady, setCookiesReady] = useState(false);
+  const [loginFormVisible, setLoginFormVisible] = useState(false);
+  const [savedLogin, setSavedLogin] = useState<SourceLoginCredential | null>(null);
+  const [savePrompt, setSavePrompt] = useState<SourceLoginCredential | null>(null);
   const backgroundColor = isDark ? "#18181b" : "#ffffff";
   const mutedColor = isDark ? "#a1a1aa" : "#71717a";
   const textColor = isDark ? "#fafafa" : "#18181b";
-  const accentColor = isDark ? "#fb7185" : "#e11d48";
+  const accentColor = accentColorFor(accent, isDark);
   const host = url ? hostnameOf(url) : null;
   const heading = title?.trim() || "원문";
+  const loginSite = url ? sourceLoginSite(url) : null;
+
+  const resetLoginAssist = useCallback(() => {
+    pendingLoginRef.current = null;
+    returnToUrlRef.current = null;
+    didRedirectToLoginRef.current = false;
+    setLoginFormVisible(false);
+    setSavedLogin(null);
+    setSavePrompt(null);
+  }, []);
 
   const handleClose = useCallback(() => {
     if (url) void persistSourceCookies(url);
     setCanGoBack(false);
     setLoading(true);
     setCookiesReady(false);
+    resetLoginAssist();
     onClose();
-  }, [onClose, url]);
+  }, [onClose, resetLoginAssist, url]);
 
   useEffect(() => {
     if (!url) {
       setCookiesReady(false);
+      resetLoginAssist();
       return;
     }
     let cancelled = false;
     setLoading(true);
     setCanGoBack(false);
     setCookiesReady(false);
+    pendingLoginRef.current = null;
+    returnToUrlRef.current = null;
+    didRedirectToLoginRef.current = false;
+    currentUrlRef.current = url;
+    setLoginFormVisible(false);
+    setSavePrompt(null);
+    const site = sourceLoginSite(url);
+    if (site) {
+      void getSavedSourceLogin(site).then((credential) => {
+        if (!cancelled) setSavedLogin(credential);
+      });
+    } else {
+      setSavedLogin(null);
+    }
     const prepare = isSourceSessionUrl(url)
       ? restoreSourceCookies(url)
       : Promise.resolve();
@@ -73,7 +125,99 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
     return () => {
       cancelled = true;
     };
-  }, [url]);
+  }, [resetLoginAssist, url]);
+
+  const navigateWeb = useCallback((targetUrl: string) => {
+    webViewRef.current?.injectJavaScript(
+      `location.replace(${JSON.stringify(targetUrl)}); true;`,
+    );
+  }, []);
+
+  const handleLoginGone = useCallback(async (site: SourceLoginSite) => {
+    setLoginFormVisible(false);
+    const pending = pendingLoginRef.current;
+    if (!pending) return;
+    const current = currentUrlRef.current;
+    if (current && isSourceLoginPageUrl(current)) return;
+    pendingLoginRef.current = null;
+    const returnTo = returnToUrlRef.current;
+    if (returnTo && didRedirectToLoginRef.current && currentUrlRef.current !== returnTo) {
+      returnToUrlRef.current = null;
+      navigateWeb(returnTo);
+    }
+    try {
+      const existing = await getSavedSourceLogin(site);
+      if (existing?.username === pending.username) {
+        if (existing.password !== pending.password) {
+          await saveSourceLogin(site, pending);
+          setSavedLogin(pending);
+        }
+        return;
+      }
+      if (await isSourceLoginDeclined(site)) return;
+      setSavePrompt(pending);
+    } catch (error) {
+      console.warn("원문 로그인 저장 확인 실패", error);
+    }
+  }, [navigateWeb]);
+
+  const handleWebMessage = useCallback(
+    (event: WebViewMessageEvent) => {
+      if (!loginSite) return;
+      const message = parseSourceLoginMessage(event.nativeEvent.data);
+      if (!message) return;
+      if (message.type === "SOURCE_LOGIN_FORM") {
+        setLoginFormVisible(true);
+        return;
+      }
+      if (message.type === "SOURCE_LOGIN_SUBMIT") {
+        pendingLoginRef.current = {
+          username: message.username,
+          password: message.password,
+        };
+        return;
+      }
+      if (message.type === "SOURCE_LOGIN_REQUIRED") {
+        if (didRedirectToLoginRef.current) return;
+        didRedirectToLoginRef.current = true;
+        returnToUrlRef.current = message.returnUrl || url;
+        setLoginFormVisible(false);
+        setLoading(true);
+        navigateWeb(message.loginUrl);
+        return;
+      }
+      void handleLoginGone(loginSite);
+    },
+    [handleLoginGone, loginSite, navigateWeb, url],
+  );
+
+  const handleFillLogin = useCallback(() => {
+    if (!savedLogin) return;
+    void playHaptic("selection");
+    webViewRef.current?.injectJavaScript(
+      fillSourceLoginScript(savedLogin.username, savedLogin.password),
+    );
+  }, [savedLogin]);
+
+  const handleForgetLogin = useCallback(() => {
+    if (!loginSite) return;
+    void deleteSourceLogin(loginSite);
+    setSavedLogin(null);
+  }, [loginSite]);
+
+  const handleRememberLogin = useCallback(() => {
+    if (!loginSite || !savePrompt) return;
+    void saveSourceLogin(loginSite, savePrompt);
+    setSavedLogin(savePrompt);
+    setSavePrompt(null);
+    void playHaptic("success");
+  }, [loginSite, savePrompt]);
+
+  const handleDeclineLogin = useCallback(() => {
+    if (!loginSite) return;
+    void declineSourceLogin(loginSite);
+    setSavePrompt(null);
+  }, [loginSite]);
 
   useEffect(() => {
     if (!url) return;
@@ -153,6 +297,9 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
                 originWhitelist={["*"]}
                 applicationNameForUserAgent={WEBVIEW_APP_NAME}
                 setSupportMultipleWindows={false}
+                injectedJavaScriptBeforeContentLoaded={
+                  loginSite ? SOURCE_LOGIN_BEFORE_SCRIPT : undefined
+                }
                 onShouldStartLoadWithRequest={({ url: nextUrl }) => {
                   if (isKakaoAppUrl(nextUrl)) {
                     openKakaoAppUrl(nextUrl);
@@ -162,18 +309,36 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
                 }}
                 onLoadEnd={() => {
                   setLoading(false);
-                  if (isSourceSessionUrl(url)) persistSourceCookiesSoon(url);
+                  if (!isSourceSessionUrl(url)) return;
+                  persistSourceCookiesSoon(url);
+                  webViewRef.current?.injectJavaScript(SOURCE_LOGIN_DETECT_SCRIPT);
                 }}
                 onNavigationStateChange={(state: WebViewNavigation) => {
+                  currentUrlRef.current = state.url;
                   setCanGoBack(state.canGoBack);
                   if (isSourceSessionUrl(state.url)) persistSourceCookiesSoon(state.url);
                 }}
+                onMessage={handleWebMessage}
               />
             ) : null}
             {loading ? (
               <View style={[styles.loading, { backgroundColor }]} pointerEvents="none">
                 <ActivityIndicator color={accentColor} />
               </View>
+            ) : null}
+            {loginSite ? (
+              <SourceLoginAssistOverlay
+                isDark={isDark}
+                accentColor={accentColor}
+                site={loginSite}
+                savedLogin={savedLogin}
+                loginFormVisible={loginFormVisible}
+                savePrompt={savePrompt}
+                onFill={handleFillLogin}
+                onForget={handleForgetLogin}
+                onRemember={handleRememberLogin}
+                onDecline={handleDeclineLogin}
+              />
             ) : null}
           </View>
         </View>

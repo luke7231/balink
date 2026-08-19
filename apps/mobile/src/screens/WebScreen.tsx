@@ -17,6 +17,7 @@ import { openAppPath } from "../navigation/open-path";
 import { useTabSwipeAtRoot } from "../navigation/use-tab-swipe-at-root";
 import type { WebStackParamList } from "../navigation/types";
 import { InAppBrowserSheet } from "./InAppBrowserSheet";
+import { clearAllSourceLogins } from "../source-login-assist";
 import { useNativeTheme } from "../theme-context";
 import { isKakaoAppUrl, openKakaoAppUrl, WEBVIEW_APP_NAME } from "../kakao-app-url";
 import {
@@ -258,6 +259,8 @@ export function WebScreen() {
         void requestPushPermission().then(() => syncPermission());
       } else if (message.type === "OPEN_NOTIFICATION_SETTINGS") {
         openNotificationSettings();
+      } else if (message.type === "CLEAR_SOURCE_LOGIN") {
+        void clearAllSourceLogins();
       } else {
         void syncPermission();
       }
