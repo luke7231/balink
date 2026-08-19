@@ -1,10 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/auth";
-import { AccountDeletion } from "@/components/account-deletion";
 import { LoginScreen } from "@/components/login-screen";
-import { MobileAwareSignOutForm } from "@/components/mobile-aware-sign-out-form";
-import { OriginalSourceLink } from "@/components/original-source-link";
+import { SupportInquirySheet } from "@/components/support-inquiry-sheet";
 import { ThemeSelector } from "@/components/theme-selector";
 import { DEFAULT_AVATAR_PATH } from "@/lib/profile-image";
 
@@ -84,25 +82,27 @@ export default async function AccountPage() {
         </section>
 
         <section className="border-t border-border py-7">
-          <h2 className="text-base font-semibold text-foreground">고객지원 및 계정</h2>
+          <h2 className="text-base font-semibold text-foreground">고객지원</h2>
           <div className="mt-3">
-            <OriginalSourceLink
-              href="https://forms.gle/a4souo2Cz6bDb3BA8"
-              embedHref="https://docs.google.com/forms/d/e/1FAIpQLSecIVjSi1jOypLKZyIn8h4WuJGk28nG_nFulo97iNcbk5o6Eg/viewform?embedded=true"
-              title="발링크 문의"
-              className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
-            >
-              문의하기
-              <span aria-hidden>→</span>
-            </OriginalSourceLink>
-            <MobileAwareSignOutForm
-              className="-mx-2"
-              buttonClassName="flex w-full items-center px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+            <SupportInquirySheet
+              javascriptKey={process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY?.trim()}
+              channelPublicId={process.env.NEXT_PUBLIC_KAKAO_CHANNEL_PUBLIC_ID?.trim()}
             />
           </div>
         </section>
 
-        <AccountDeletion />
+        <section className="border-t border-border py-7">
+          <h2 className="text-base font-semibold text-foreground">계정</h2>
+          <div className="mt-3">
+            <Link
+              href="/account/manage"
+              className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+            >
+              계정 관리
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
+        </section>
       </div>
     </main>
   );

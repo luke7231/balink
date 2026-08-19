@@ -68,6 +68,7 @@ export function isStackPath(pathname: string): boolean {
   if (pathname.startsWith("/substitutes/") && pathname !== "/substitutes") return true;
   if (pathname.startsWith("/notifications/") && pathname !== "/notifications") return true;
   if (pathname.startsWith("/saved/") && pathname !== "/saved") return true;
+  if (pathname.startsWith("/account/") && pathname !== "/account") return true;
   if (pathname === "/privacy" || pathname === "/terms") return true;
   return false;
 }
