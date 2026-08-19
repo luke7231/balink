@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { AccountDeletion } from "@/components/account-deletion";
 import { LoginScreen } from "@/components/login-screen";
 import { MobileAwareSignOutForm } from "@/components/mobile-aware-sign-out-form";
+import { OriginalSourceLink } from "@/components/original-source-link";
 import { ThemeSelector } from "@/components/theme-selector";
 import { DEFAULT_AVATAR_PATH } from "@/lib/profile-image";
 
@@ -80,13 +81,15 @@ export default async function AccountPage() {
 
         <section className="mt-4 space-y-3 rounded-3xl border border-border bg-surface p-6 shadow-sm">
           <h2 className="text-base font-semibold text-foreground">고객지원 및 계정</h2>
-          <a
-            href="mailto:lukelab.studio@gmail.com?subject=%5B%EB%B0%9C%EB%A7%81%ED%81%AC%20%EB%AC%B8%EC%9D%98%5D"
+          <OriginalSourceLink
+            href="https://forms.gle/a4souo2Cz6bDb3BA8"
+            embedHref="https://docs.google.com/forms/d/e/1FAIpQLSecIVjSi1jOypLKZyIn8h4WuJGk28nG_nFulo97iNcbk5o6Eg/viewform?embedded=true"
+            title="발링크 문의"
             className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
           >
-            이메일로 문의하기
+            문의하기
             <span aria-hidden>→</span>
-          </a>
+          </OriginalSourceLink>
           <MobileAwareSignOutForm
             buttonClassName="flex w-full items-center justify-between rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground hover:border-accent-border hover:text-accent"
           />

@@ -6,6 +6,7 @@ import { isSafeHttpUrl, openInAppBrowser } from "@/lib/native-shell";
 
 interface OriginalSourceLinkProps {
   href: string;
+  embedHref?: string;
   title?: string;
   className?: string;
   children: ReactNode;
@@ -21,11 +22,13 @@ function hostnameOf(url: string): string | null {
 
 export function OriginalSourceLink({
   href,
+  embedHref,
   title = "원문",
   className,
   children,
 }: OriginalSourceLinkProps) {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const host = hostnameOf(href);
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
@@ -39,6 +42,7 @@ export function OriginalSourceLink({
       return;
     }
     event.preventDefault();
+    setLoading(true);
     setOpen(true);
   }
 
@@ -70,14 +74,18 @@ export function OriginalSourceLink({
           </a>
         }
       >
-        <iframe
-          key={href}
-          src={open ? href : undefined}
-          title={title}
-          className="h-full w-full border-0 bg-surface"
-          referrerPolicy="no-referrer-when-downgrade"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-        />
+        <div className="relative h-full">
+          <iframe
+            key={embedHref ?? href}
+            src={open ? (embedHref ?? href) : undefined}
+            title={title}
+            className="h-full w-full border-0 bg-surface"
+            referrerPolicy="no-referrer-when-downgrade"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+            onLoad={() => setLoading(false)}
+          />
+          {loading ? <InAppBrowserSkeleton /> : null}
+        </div>
         {host ? (
           <p className="sr-only">
             {host} 원문을 인앱으로 표시합니다. 보이지 않으면 브라우저에서 열어 주세요.
@@ -85,5 +93,31 @@ export function OriginalSourceLink({
         ) : null}
       </BottomSheet>
     </>
+  );
+}
+
+function InAppBrowserSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="페이지 불러오는 중"
+      className="absolute inset-0 animate-pulse bg-background px-5 py-6"
+    >
+      <div className="mx-auto w-full max-w-2xl">
+        <div className="h-28 rounded-2xl bg-surface-muted" />
+        <div className="mt-4 space-y-3 rounded-2xl bg-surface p-5">
+          <div className="h-4 w-24 rounded-full bg-surface-muted" />
+          <div className="h-12 rounded-xl bg-surface-muted" />
+        </div>
+        <div className="mt-4 space-y-3 rounded-2xl bg-surface p-5">
+          <div className="h-4 w-32 rounded-full bg-surface-muted" />
+          <div className="h-24 rounded-xl bg-surface-muted" />
+        </div>
+        <div className="mt-4 space-y-3 rounded-2xl bg-surface p-5">
+          <div className="h-4 w-20 rounded-full bg-surface-muted" />
+          <div className="h-12 rounded-xl bg-surface-muted" />
+        </div>
+      </div>
+    </div>
   );
 }
