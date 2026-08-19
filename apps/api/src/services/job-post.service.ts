@@ -4,6 +4,7 @@ import {
   normalizePagination,
   type JobPostDetail,
   type JobPostFilterInput,
+  type JobPostSort,
   type JobPostSourceLink,
   type JobPostSummary,
   type JobRegionGroup,
@@ -24,6 +25,7 @@ export class JobPostService {
   async findMany(
     filter: JobPostFilterInput | null | undefined,
     pagination: PaginationInput | null | undefined,
+    sort: JobPostSort | null | undefined = "LATEST",
   ): Promise<PaginatedResult<JobPostSummary>> {
     const { page, limit, skip } = normalizePagination(pagination, {
       defaultLimit: this.options.defaultPageSize,
@@ -32,7 +34,7 @@ export class JobPostService {
 
     const where = this.jobPostRepository.buildWhere(filter ?? null);
     const [items, total] = await Promise.all([
-      this.jobPostRepository.findMany(where, skip, limit),
+      this.jobPostRepository.findMany(where, skip, limit, sort ?? "LATEST"),
       this.jobPostRepository.count(where),
     ]);
 

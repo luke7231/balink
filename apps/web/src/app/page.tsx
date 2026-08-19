@@ -11,12 +11,13 @@ interface HomePageProps {
     sido?: string | string[];
     sigungu?: string | string[];
     region?: string | string[];
+    sort?: string | string[];
   }>;
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const query = await searchParams;
-  const { selectedSidos, selectedSigungus } = parseJobFilterParams(query);
+  const { selectedSidos, selectedSigungus, sort } = parseJobFilterParams(query);
 
   return (
     <div className="home-surface home-motion min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
@@ -26,7 +27,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       <main className="mx-auto min-w-0 max-w-5xl px-4 py-8">
         <HomeBanner items={HOME_BANNERS} />
-        <HomeFeedClient selectedSidos={selectedSidos} selectedSigungus={selectedSigungus} />
+        <HomeFeedClient
+          selectedSidos={selectedSidos}
+          selectedSigungus={selectedSigungus}
+          sort={sort}
+        />
         <SubstitutesListWarmup />
       </main>
     </div>

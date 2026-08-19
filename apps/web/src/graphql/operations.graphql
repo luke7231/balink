@@ -7,8 +7,8 @@ query Health {
   }
 }
 
-query JobPosts($filter: JobPostFilterInput, $pagination: PaginationInput) {
-  jobPosts(filter: $filter, pagination: $pagination) {
+query JobPosts($filter: JobPostFilterInput, $pagination: PaginationInput, $sort: JobPostSort) {
+  jobPosts(filter: $filter, pagination: $pagination, sort: $sort) {
     items {
       id
       title

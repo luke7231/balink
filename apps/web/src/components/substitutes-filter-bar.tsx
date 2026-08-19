@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FilterChipBar } from "@/components/filter-chip-bar";
 import { setFilterUrl } from "@/lib/filter-url";
+import type { SubstituteSort } from "@/lib/list-sort";
 import {
   buildSubstituteFilterHref,
   type SubstituteDateFilter,
@@ -12,6 +13,7 @@ interface SubstitutesFilterBarProps {
   dateFilters: SubstituteDateFilter[];
   selectedRegions: string[];
   regionOptions: Array<[string, string]>;
+  sort: SubstituteSort;
 }
 
 const DATE_OPTIONS: Array<{ value: SubstituteDateFilter; label: string }> = [
@@ -36,6 +38,7 @@ export function SubstitutesFilterBar({
   dateFilters,
   selectedRegions,
   regionOptions,
+  sort,
 }: SubstitutesFilterBarProps) {
   const selectionKey = `${dateFilters.join("\0")}|${selectedRegions.join("\0")}`;
   const [draftKey, setDraftKey] = useState(selectionKey);
@@ -51,7 +54,7 @@ export function SubstitutesFilterBar({
   const activeCount = dateFilters.length + selectedRegions.length;
 
   function apply(dates: SubstituteDateFilter[], regions: string[]) {
-    setFilterUrl(buildSubstituteFilterHref(dates, regions));
+    setFilterUrl(buildSubstituteFilterHref(dates, regions, sort));
   }
 
   const chips = [

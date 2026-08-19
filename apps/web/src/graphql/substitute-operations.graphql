@@ -1,5 +1,5 @@
-query SubstitutePosts($filter: SubstitutePostFilterInput, $pagination: PaginationInput) {
-  substitutePosts(filter: $filter, pagination: $pagination) {
+query SubstitutePosts($filter: SubstitutePostFilterInput, $pagination: PaginationInput, $sort: SubstitutePostSort) {
+  substitutePosts(filter: $filter, pagination: $pagination, sort: $sort) {
     items {
       id
       title

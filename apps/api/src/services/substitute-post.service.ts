@@ -5,6 +5,7 @@ import {
   type PaginationInput,
   type SubstitutePostDetail,
   type SubstitutePostFilterInput,
+  type SubstitutePostSort,
   type SubstitutePostSummary,
 } from "@balink/domain";
 import { SubstitutePostRepository } from "@balink/db";
@@ -21,6 +22,7 @@ export class SubstitutePostService {
   async findMany(
     filter: SubstitutePostFilterInput | null | undefined,
     pagination: PaginationInput | null | undefined,
+    sort: SubstitutePostSort | null | undefined = "LATEST",
   ): Promise<PaginatedResult<SubstitutePostSummary>> {
     const { page, limit, skip } = normalizePagination(pagination, {
       defaultLimit: this.options.defaultPageSize,
@@ -29,7 +31,7 @@ export class SubstitutePostService {
 
     const where = this.substitutePostRepository.buildWhere(filter ?? null);
     const [items, total] = await Promise.all([
-      this.substitutePostRepository.findMany(where, skip, limit),
+      this.substitutePostRepository.findMany(where, skip, limit, sort ?? "LATEST"),
       this.substitutePostRepository.count(where),
     ]);
 

@@ -14,6 +14,9 @@ export const substitutePostFilterSchema = z.object({
   source: sourceNameSchema.optional().nullable(),
 });
 
+export const jobPostSortSchema = z.enum(["LATEST", "PAY_HIGH"]);
+export const substitutePostSortSchema = z.enum(["SOON", "LATEST"]);
+
 export const jobPostFilterSchema = z.object({
   sido: z.string().trim().min(1).optional().nullable(),
   sigungu: z.string().trim().min(1).optional().nullable(),
@@ -50,6 +53,8 @@ export const classifiedPayloadSchema = z.object({
 
 export type JobPostFilterInput = z.infer<typeof jobPostFilterSchema>;
 export type SubstitutePostFilterInput = z.infer<typeof substitutePostFilterSchema>;
+export type JobPostSort = z.infer<typeof jobPostSortSchema>;
+export type SubstitutePostSort = z.infer<typeof substitutePostSortSchema>;
 export type PaginationInput = z.infer<typeof paginationSchema>;
 export type WorkerRunRequestInput = z.infer<typeof workerRunRequestSchema>;
 export type ClassifiedPayloadInput = z.infer<typeof classifiedPayloadSchema>;

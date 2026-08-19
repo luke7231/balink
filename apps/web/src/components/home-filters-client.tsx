@@ -30,9 +30,11 @@ function toRegionOptions(regions: JobRegionsQuery["jobRegions"]): RegionOption[]
 export function HomeFiltersClient({
   selectedSidos,
   selectedSigungus,
+  sort,
 }: {
   selectedSidos: string[];
   selectedSigungus: string[];
+  sort: import("@/lib/list-sort").JobSort;
 }) {
   const [regions, setRegions] = useState<RegionOption[] | null>(null);
 
@@ -71,6 +73,7 @@ export function HomeFiltersClient({
         regions={regions}
         selectedSidos={selectedSidos}
         selectedSigungus={selectedSigungus}
+        sort={sort}
       />
     </MotionReveal>
   );

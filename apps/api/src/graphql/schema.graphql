@@ -27,11 +27,11 @@ enum OrganizationType {
 type Query {
   health: Health!
   jobPost(id: ID!): JobPost
-  jobPosts(filter: JobPostFilterInput, pagination: PaginationInput): JobPostConnection!
+  jobPosts(filter: JobPostFilterInput, pagination: PaginationInput, sort: JobPostSort): JobPostConnection!
   jobRegions: [JobRegionGroup!]!
   organization(id: ID!): Organization
   substitutePost(id: ID!): SubstitutePost
-  substitutePosts(filter: SubstitutePostFilterInput, pagination: PaginationInput): SubstitutePostConnection!
+  substitutePosts(filter: SubstitutePostFilterInput, pagination: PaginationInput, sort: SubstitutePostSort): SubstitutePostConnection!
   scraperRuns(limit: Int = 20): [ScraperRun!]!
 }
 
@@ -355,6 +355,16 @@ input JobPostFilterInput {
   sigungu: String
   jobType: String
   source: SourceName
+}
+
+enum JobPostSort {
+  LATEST
+  PAY_HIGH
+}
+
+enum SubstitutePostSort {
+  SOON
+  LATEST
 }
 
 input PaginationInput {

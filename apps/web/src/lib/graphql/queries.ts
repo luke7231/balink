@@ -2,10 +2,12 @@ import {
   HealthDocument,
   JobPostDocument,
   JobPostsDocument,
+  JobPostSort,
   JobRegionsDocument,
   OrganizationDocument,
   SubstitutePostDocument,
   SubstitutePostsDocument,
+  SubstitutePostSort,
   type HealthQuery,
   type JobPostFilterInput,
   type JobPostQuery,
@@ -21,10 +23,11 @@ export async function fetchJobPosts(
   page = 1,
   limit = 20,
   filter?: JobPostFilterInput | null,
+  sort: JobPostSort = JobPostSort.Latest,
 ): Promise<JobPostsQuery["jobPosts"]> {
   const data = await graphqlRequest<JobPostsQuery>(
     JobPostsDocument,
-    { pagination: { page, limit }, filter: filter ?? null },
+    { pagination: { page, limit }, filter: filter ?? null, sort },
     { revalidate: 30 },
   );
   return data.jobPosts;
@@ -49,12 +52,14 @@ export async function fetchSubstitutePosts(
   page = 1,
   limit = 20,
   filter?: { status?: "OPEN" | "EXPIRED" | "DELETED" | null },
+  sort: SubstitutePostSort = SubstitutePostSort.Latest,
 ): Promise<SubstitutePostsQuery["substitutePosts"]> {
   const data = await graphqlRequest<SubstitutePostsQuery>(
     SubstitutePostsDocument,
     {
       pagination: { page, limit },
       filter,
+      sort,
     },
     { revalidate: 30 },
   );

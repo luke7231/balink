@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { FilterChipBar } from "@/components/filter-chip-bar";
 import { setFilterUrl } from "@/lib/filter-url";
 import { buildJobsFilterHref } from "@/lib/job-filter-params";
+import type { JobSort } from "@/lib/list-sort";
 
 interface DistrictOption {
   sigungu: string;
@@ -20,6 +21,7 @@ interface JobsFilterBarProps {
   regions: RegionOption[];
   selectedSidos: string[];
   selectedSigungus: string[];
+  sort: JobSort;
 }
 
 function toggleValue(values: string[], value: string): string[] {
@@ -34,7 +36,12 @@ function optionClass(selected: boolean): string {
   }`;
 }
 
-export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: JobsFilterBarProps) {
+export function JobsFilterBar({
+  regions,
+  selectedSidos,
+  selectedSigungus,
+  sort,
+}: JobsFilterBarProps) {
   const selectionKey = `${selectedSidos.join("\0")}|${selectedSigungus.join("\0")}`;
   const [draftKey, setDraftKey] = useState(selectionKey);
   const [draftSidos, setDraftSidos] = useState(selectedSidos);
@@ -66,7 +73,7 @@ export function JobsFilterBar({ regions, selectedSidos, selectedSigungus }: Jobs
     }).length + selectedSigungus.length;
 
   function apply(sidos: string[], sigungus: string[]) {
-    setFilterUrl(buildJobsFilterHref(sidos, sigungus));
+    setFilterUrl(buildJobsFilterHref(sidos, sigungus, sort));
   }
 
   const chips = [

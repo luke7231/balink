@@ -1,6 +1,7 @@
 import { JobsFilterBar } from "@/components/jobs-filter-bar";
 import { SkeletonChip } from "@/components/skeleton-block";
 import { fetchJobRegions } from "@/lib/graphql/queries";
+import { JOB_SORT_DEFAULT } from "@/lib/list-sort";
 
 export function HomeFiltersFallback() {
   return (
@@ -32,6 +33,7 @@ export async function HomeFilters({
       regions={regionOptions}
       selectedSidos={selectedSidos}
       selectedSigungus={selectedSigungus}
+      sort={JOB_SORT_DEFAULT}
     />
   );
 }

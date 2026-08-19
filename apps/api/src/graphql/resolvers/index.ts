@@ -1,6 +1,13 @@
 import { DateTimeResolver, JSONResolver } from "graphql-scalars";
 import type { JobPostDetail } from "@balink/domain";
-import { jobPostFilterSchema, paginationSchema, parseOrThrow, substitutePostFilterSchema } from "@balink/validation";
+import {
+  jobPostFilterSchema,
+  jobPostSortSchema,
+  paginationSchema,
+  parseOrThrow,
+  substitutePostFilterSchema,
+  substitutePostSortSchema,
+} from "@balink/validation";
 import type { GraphQLContext } from "../../context/types.js";
 
 export const resolvers = {
@@ -18,14 +25,17 @@ export const resolvers = {
 
     jobPosts: (
       _: unknown,
-      args: { filter?: unknown; pagination?: unknown },
+      args: { filter?: unknown; pagination?: unknown; sort?: unknown },
       { services }: GraphQLContext,
     ) => {
       const filter = args.filter ? parseOrThrow(jobPostFilterSchema, args.filter, "Invalid job post filter") : null;
       const pagination = args.pagination
         ? parseOrThrow(paginationSchema, args.pagination, "Invalid pagination")
         : null;
-      return services.jobPost.findMany(filter, pagination);
+      const sort = args.sort
+        ? parseOrThrow(jobPostSortSchema, args.sort, "Invalid job post sort")
+        : "LATEST";
+      return services.jobPost.findMany(filter, pagination, sort);
     },
 
     jobRegions: (_: unknown, __: unknown, { services }: GraphQLContext) => {
@@ -46,7 +56,7 @@ export const resolvers = {
 
     substitutePosts: (
       _: unknown,
-      args: { filter?: unknown; pagination?: unknown },
+      args: { filter?: unknown; pagination?: unknown; sort?: unknown },
       { services }: GraphQLContext,
     ) => {
       const filter = args.filter
@@ -55,7 +65,10 @@ export const resolvers = {
       const pagination = args.pagination
         ? parseOrThrow(paginationSchema, args.pagination, "Invalid pagination")
         : null;
-      return services.substitutePost.findMany(filter, pagination);
+      const sort = args.sort
+        ? parseOrThrow(substitutePostSortSchema, args.sort, "Invalid substitute post sort")
+        : "LATEST";
+      return services.substitutePost.findMany(filter, pagination, sort);
     },
   },
 

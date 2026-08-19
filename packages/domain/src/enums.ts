@@ -1,6 +1,11 @@
 export type SourceName = "balletmania" | "esangdance";
 export type ScraperRunStatus = "running" | "success" | "failed";
 export type LlmMode = "off" | "fallback" | "all";
+export type JobPostSort = "LATEST" | "PAY_HIGH";
+export type SubstitutePostSort = "SOON" | "LATEST";
+
+export const JOB_POST_SORT_DEFAULT: JobPostSort = "LATEST";
+export const SUBSTITUTE_POST_SORT_DEFAULT: SubstitutePostSort = "LATEST";
 
 export const SOURCE_LABELS: Record<SourceName, string> = {
   balletmania: "발레매니아",

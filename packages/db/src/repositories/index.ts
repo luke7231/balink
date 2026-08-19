@@ -64,10 +64,24 @@ export class JobPostRepository {
     };
   }
 
-  async findMany(where: Prisma.JobPostWhereInput, skip: number, take: number) {
+  async findMany(
+    where: Prisma.JobPostWhereInput,
+    skip: number,
+    take: number,
+    sort: import("@balink/domain").JobPostSort = "LATEST",
+  ) {
+    const orderBy: Prisma.JobPostOrderByWithRelationInput[] =
+      sort === "PAY_HIGH"
+        ? [
+            { payMaxManwon: { sort: "desc", nulls: "last" } },
+            { postedAt: "desc" },
+            { createdAt: "desc" },
+          ]
+        : [{ postedAt: "desc" }, { createdAt: "desc" }];
+
     const items = await prisma.jobPost.findMany({
       where,
-      orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
+      orderBy,
       skip,
       take,
     });
@@ -594,10 +608,24 @@ export class SubstitutePostRepository {
     };
   }
 
-  async findMany(where: Prisma.SubstitutePostWhereInput, skip: number, take: number) {
+  async findMany(
+    where: Prisma.SubstitutePostWhereInput,
+    skip: number,
+    take: number,
+    sort: import("@balink/domain").SubstitutePostSort = "LATEST",
+  ) {
+    const orderBy: Prisma.SubstitutePostOrderByWithRelationInput[] =
+      sort === "SOON"
+        ? [
+            { nextLessonAt: { sort: "asc", nulls: "last" } },
+            { postedAt: "desc" },
+            { createdAt: "desc" },
+          ]
+        : [{ postedAt: "desc" }, { createdAt: "desc" }];
+
     const items = await prisma.substitutePost.findMany({
       where,
-      orderBy: [{ nextLessonAt: { sort: "asc", nulls: "last" } }, { postedAt: "desc" }, { createdAt: "desc" }],
+      orderBy,
       skip,
       take,
     });

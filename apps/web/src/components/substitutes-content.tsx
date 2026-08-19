@@ -127,6 +127,7 @@ export async function SubstitutesContent({
         dateFilters={dateFilters}
         selectedRegions={selectedRegions}
         regionOptions={regionOptions}
+        sort="latest"
       />
 
       <div className="mb-4 flex items-center justify-between">

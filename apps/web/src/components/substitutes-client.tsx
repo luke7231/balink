@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { resolveSubstituteUrgency } from "@balink/domain";
+import { ListSortControl } from "@/components/list-sort-control";
 import { SoftContentSwap } from "@/components/soft-content-swap";
 import { SubstituteList, type SubstituteCardData } from "@/components/substitute-list";
 import { SubstitutesFallback } from "@/components/substitutes-fallback";
@@ -11,11 +12,17 @@ import {
   SubstitutePostsDocument,
   type SubstitutePostsQuery,
 } from "@/generated/graphql";
+import { setFilterUrl } from "@/lib/filter-url";
 import { browserGraphqlRequest } from "@/lib/graphql/browser-client";
 import { readListCache, writeListCache } from "@/lib/list-cache";
 import {
+  SUBSTITUTE_SORT_OPTIONS,
+  toSubstitutePostSortEnum,
+  type SubstituteSort,
+} from "@/lib/list-sort";
+import {
   buildSubstituteFilterHref,
-  parseSubstituteDateFilters,
+  parseSubstituteFilterSearchParams,
   type SubstituteDateFilter,
 } from "@/lib/substitute-filter-params";
 import { hrefSearch, useFilterSearch } from "@/lib/use-filter-search";
@@ -80,31 +87,47 @@ function sortByNextLesson(posts: SubstituteCardData[]): SubstituteCardData[] {
   });
 }
 
+function sortByLatest(posts: SubstituteCardData[]): SubstituteCardData[] {
+  return posts.slice().sort((a, b) => {
+    const aPosted = a.postedAt ? Date.parse(a.postedAt) : 0;
+    const bPosted = b.postedAt ? Date.parse(b.postedAt) : 0;
+    if (aPosted !== bPosted) return bPosted - aPosted;
+    const aCreated = a.createdAt ? Date.parse(a.createdAt) : 0;
+    const bCreated = b.createdAt ? Date.parse(b.createdAt) : 0;
+    return bCreated - aCreated;
+  });
+}
+
 type CachedSubstitutes = {
   items: SubstituteCardData[];
   total: number;
 };
 
-const CACHE_KEY = "substitute-posts-open";
+function cacheKey(sort: SubstituteSort): string {
+  return `substitute-posts-open:${sort}`;
+}
 
 export function SubstitutesClient({
   dateFilters: initialDateFilters,
   selectedRegions: initialSelectedRegions,
+  sort: initialSort,
 }: {
   dateFilters: DateFilter[];
   selectedRegions: string[];
+  sort: SubstituteSort;
 }) {
   const search = useFilterSearch(
-    hrefSearch(buildSubstituteFilterHref(initialDateFilters, initialSelectedRegions)),
+    hrefSearch(buildSubstituteFilterHref(initialDateFilters, initialSelectedRegions, initialSort)),
   );
-  const params = new URLSearchParams(search);
-  const dateFilters = parseSubstituteDateFilters(params.getAll("date"));
-  const selectedRegions = params.getAll("region");
+  const { dateFilters, selectedRegions, sort } = parseSubstituteFilterSearchParams(
+    new URLSearchParams(search),
+  );
   const hasFilter = dateFilters.length > 0 || selectedRegions.length > 0;
   const [raw, setRaw] = useState<CachedSubstitutes | null>(null);
+  const key = cacheKey(sort);
 
   useEffect(() => {
-    const cached = readListCache<CachedSubstitutes>(CACHE_KEY);
+    const cached = readListCache<CachedSubstitutes>(key);
     if (cached) setRaw(cached);
 
     let cancelled = false;
@@ -113,13 +136,14 @@ export function SubstitutesClient({
         const result = await browserGraphqlRequest<SubstitutePostsQuery>(SubstitutePostsDocument, {
           pagination: { page: 1, limit: 100 },
           filter: { status: "OPEN" },
+          sort: toSubstitutePostSortEnum(sort),
         });
         if (cancelled) return;
         const next = {
           items: result.substitutePosts.items as SubstituteCardData[],
           total: result.substitutePosts.pageInfo.total,
         };
-        writeListCache(CACHE_KEY, next);
+        writeListCache(key, next);
         // 무거운 리스트 커밋이 쉬머를 멈추지 않게 전환을 낮춤
         startTransition(() => {
           setRaw(next);
@@ -131,7 +155,7 @@ export function SubstitutesClient({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [key, sort]);
 
   const view = useMemo(() => {
     if (!raw) return null;
@@ -155,9 +179,9 @@ export function SubstitutesClient({
     if (dateFilters.length > 0) {
       items = items.filter((post) => dateFilters.some((filter) => matchesDateFilter(post, filter)));
     }
-    items = sortByNextLesson(items);
+    items = sort === "latest" ? sortByLatest(items) : sortByNextLesson(items);
     return { items, total: raw.total, regionOptions };
-  }, [raw, dateFilters, selectedRegions]);
+  }, [raw, dateFilters, selectedRegions, sort]);
 
   const skeleton = useMemo(
     () => <SubstitutesFallback hasFilter={hasFilter} />,
@@ -172,13 +196,25 @@ export function SubstitutesClient({
             dateFilters={dateFilters}
             selectedRegions={selectedRegions}
             regionOptions={view.regionOptions}
+            sort={sort}
           />
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className="text-lg font-semibold text-foreground">모집 중</h3>
-            <p className="text-sm text-muted-foreground">
-              {view.items.length}건
-              {view.items.length !== view.total ? ` / 전체 ${view.total}건` : ""}
-            </p>
+            <div className="flex shrink-0 items-center gap-2">
+              <ListSortControl
+                value={sort}
+                options={SUBSTITUTE_SORT_OPTIONS}
+                sheetTitle="정렬"
+                ariaLabel="대강 공고 정렬"
+                onChange={(nextSort) => {
+                  setFilterUrl(buildSubstituteFilterHref(dateFilters, selectedRegions, nextSort));
+                }}
+              />
+              <p className="text-sm text-muted-foreground">
+                {view.items.length}건
+                {view.items.length !== view.total ? ` / 전체 ${view.total}건` : ""}
+              </p>
+            </div>
           </div>
           <SubstituteList
             posts={view.items}

@@ -102,6 +102,11 @@ export type JobPostFilterInput = {
   source?: InputMaybe<SourceName>;
 };
 
+export enum JobPostSort {
+  Latest = 'LATEST',
+  PayHigh = 'PAY_HIGH'
+}
+
 export type JobPostSourceLink = {
   __typename?: 'JobPostSourceLink';
   confidence?: Maybe<Scalars['String']['output']>;
@@ -224,6 +229,7 @@ export type QueryJobPostArgs = {
 export type QueryJobPostsArgs = {
   filter?: InputMaybe<JobPostFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
+  sort?: InputMaybe<JobPostSort>;
 };
 
 
@@ -245,6 +251,7 @@ export type QuerySubstitutePostArgs = {
 export type QuerySubstitutePostsArgs = {
   filter?: InputMaybe<SubstitutePostFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
+  sort?: InputMaybe<SubstitutePostSort>;
 };
 
 export type RepresentativePay = {
@@ -348,6 +355,11 @@ export type SubstitutePostFilterInput = {
   source?: InputMaybe<SourceName>;
   status?: InputMaybe<SubstitutePostStatus>;
 };
+
+export enum SubstitutePostSort {
+  Latest = 'LATEST',
+  Soon = 'SOON'
+}
 
 export enum SubstitutePostStatus {
   Deleted = 'DELETED',
@@ -518,6 +530,7 @@ export type ResolversTypes = {
   JobPost: ResolverTypeWrapper<JobPost>;
   JobPostConnection: ResolverTypeWrapper<JobPostConnection>;
   JobPostFilterInput: JobPostFilterInput;
+  JobPostSort: JobPostSort;
   JobPostSourceLink: ResolverTypeWrapper<JobPostSourceLink>;
   JobPostSummary: ResolverTypeWrapper<JobPostSummary>;
   JobRegionCount: ResolverTypeWrapper<JobRegionCount>;
@@ -537,6 +550,7 @@ export type ResolversTypes = {
   SubstitutePost: ResolverTypeWrapper<SubstitutePost>;
   SubstitutePostConnection: ResolverTypeWrapper<SubstitutePostConnection>;
   SubstitutePostFilterInput: SubstitutePostFilterInput;
+  SubstitutePostSort: SubstitutePostSort;
   SubstitutePostStatus: SubstitutePostStatus;
   SubstitutePostSummary: ResolverTypeWrapper<SubstitutePostSummary>;
   SubstituteRecurrence: ResolverTypeWrapper<SubstituteRecurrence>;

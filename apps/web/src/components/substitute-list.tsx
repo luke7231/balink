@@ -52,6 +52,8 @@ export interface SubstituteCardData {
   urgency?: string | null;
   status: string;
   nextLessonAt?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 interface SubstituteListProps {
