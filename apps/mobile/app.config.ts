@@ -25,7 +25,7 @@ function applyEnvFile(filePath: string) {
 applyEnvFile(resolve(__dirname, "../../.env"));
 applyEnvFile(resolve(__dirname, ".env"));
 
-const PRODUCTION_WEB_URL = "https://balink-web.vercel.app";
+const PRODUCTION_WEB_URL = "https://www.balink.co.kr";
 const LOCAL_WEB_PORT = 3100;
 const kakaoNativeAppKey = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim();
 const kakaoScheme = kakaoNativeAppKey ? `kakao${kakaoNativeAppKey}` : null;

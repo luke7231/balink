@@ -2,7 +2,7 @@ import Constants from "expo-constants";
 
 export const WEB_BASE_URL = (
   (Constants.expoConfig?.extra?.webUrl as string | undefined) ||
-  "https://balink-web.vercel.app"
+  "https://www.balink.co.kr"
 ).replace(/\/$/, "");
 
 export const WEB_ORIGIN = new URL(WEB_BASE_URL).origin;

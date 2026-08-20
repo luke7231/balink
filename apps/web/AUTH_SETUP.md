@@ -15,9 +15,8 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
 3. **카카오 로그인 > 보안** → Client Secret 활성화 → `AUTH_KAKAO_SECRET`
 4. **카카오 로그인 > Redirect URI**
    - 로컬: `http://localhost:3100/api/auth/callback/kakao`
-   - Vercel 프로덕션: `https://balink-web.vercel.app/api/auth/callback/kakao`
+   - 프로덕션: `https://www.balink.co.kr/api/auth/callback/kakao`
    - Vercel 프리뷰(필요 시): `https://<deployment>.vercel.app/api/auth/callback/kakao`
-   - 커스텀 도메인: `https://<your-domain>/api/auth/callback/kakao`
 5. 동의 항목: 프로필 사진(선택). 닉네임·이메일은 앱에서 요청하지 않음(닉네임은 랜덤 부여)
 6. **네이티브 앱 키** → `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` (실기기에서 카카오톡 로그인 후 앱으로 돌아오는 URL 스킴 `kakao{네이티브앱키}://`)
 7. **앱 설정 > 플랫폼**
@@ -32,7 +31,8 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
 ## Vercel 배포
 
 - 프로젝트: `balink-web` (Root Directory `apps/web`)
-- `AUTH_URL`: `https://balink-web.vercel.app` (프로덕션 오리진)
+- 프로덕션 도메인: `https://www.balink.co.kr` (`balink.co.kr`은 www로 리다이렉트)
+- `AUTH_URL`: `https://www.balink.co.kr`
 - 채용/대강 목록용 `API_URL`: 공개 GraphQL 전체 URL (예: `https://<api-host>/graphql`)
   - 로컬 `.env`에 없으면 Vercel에도 등록되지 않습니다.
   - 등록 예: `printf '%s' 'https://YOUR_API/graphql' | vercel env add API_URL production`
@@ -44,7 +44,7 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
 1. Apple Developer → Identifiers
    - App ID: Sign In with Apple 활성화
    - Services ID (`AUTH_APPLE_ID`): Sign In with Apple 구성
-2. Return URLs: `https://<your-domain>/api/auth/callback/apple`
+2. Return URLs: `https://www.balink.co.kr/api/auth/callback/apple`
 3. Keys → Sign in with Apple 키 생성 후 `.p8`로 client secret JWT 발급
 4. 생성된 JWT를 `AUTH_APPLE_SECRET`에 넣습니다 (보통 6개월 유효)
 5. `AUTH_APPLE_ID` + `AUTH_APPLE_SECRET`이 둘 다 있으면 로그인 화면에 Apple 버튼이 노출됩니다

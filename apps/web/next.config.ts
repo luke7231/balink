@@ -40,6 +40,16 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "balink.co.kr" }],
+        destination: "https://www.balink.co.kr/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
