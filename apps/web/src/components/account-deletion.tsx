@@ -12,8 +12,8 @@ export function AccountDeletion() {
     <section className="border-t border-border py-7">
       <h2 className="text-base font-semibold text-accent">계정 삭제</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        발링크 회원 정보가 삭제되고, 카카오 연결도 해제(unlink)를 시도합니다. 삭제 후에는
-        같은 카카오로 다시 가입할 수 있습니다.
+        발링크 회원 정보가 삭제되고, 카카오·Apple 연결 해제를 시도합니다. 삭제 후에는
+        같은 소셜 계정으로 다시 가입할 수 있습니다.
       </p>
 
       <button

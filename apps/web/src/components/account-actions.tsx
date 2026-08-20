@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { MAX_INTEREST_REGIONS } from "@/lib/interest-regions";
+import { revokeAppleAccount } from "@/lib/apple-revoke";
 import { unlinkKakaoAccount } from "@/lib/kakao-unlink";
 import { backfillInboxMatchesForUser } from "@/lib/notification-inbox-backfill";
 
@@ -153,6 +154,7 @@ export async function deleteAccountAction() {
     select: {
       provider: true,
       access_token: true,
+      refresh_token: true,
     },
   });
 
@@ -161,6 +163,19 @@ export async function deleteAccountAction() {
       const result = await unlinkKakaoAccount(account.access_token);
       if (!result.ok) {
         console.warn("[delete-account] kakao unlink failed", result.detail);
+      }
+    }
+
+    if (account.provider === "apple") {
+      const token = account.refresh_token || account.access_token;
+      const hint = account.refresh_token ? "refresh_token" : "access_token";
+      if (!token) {
+        console.warn("[delete-account] apple revoke skipped: no token");
+        continue;
+      }
+      const result = await revokeAppleAccount(token, hint);
+      if (!result.ok) {
+        console.warn("[delete-account] apple revoke failed", result.detail);
       }
     }
   }
