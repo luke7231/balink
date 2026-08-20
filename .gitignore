@@ -1,4 +1,6 @@
 .env
+*.p8
+AuthKey_*.p8
 node_modules/
 dist/
 apps/*/dist/
