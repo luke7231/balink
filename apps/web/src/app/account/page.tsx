@@ -22,17 +22,21 @@ export default async function AccountPage() {
           <h1 className="text-xl font-bold tracking-tight text-foreground">내 계정</h1>
           <p className="mt-1 text-sm text-muted-foreground">프로필과 바로가기</p>
 
-          <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/account/profile"
+            className="mt-6 flex items-center gap-3 rounded-2xl outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent"
+          >
             <ProfileAvatar
               src={user.image}
               size={48}
               className="h-12 w-12 rounded-full object-cover"
             />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="font-semibold text-foreground">{user.name ?? "회원"}</p>
               <p className="text-sm text-muted-foreground">{user.email ?? "이메일 없음"}</p>
             </div>
-          </div>
+            <span className="text-sm font-semibold text-accent">편집</span>
+          </Link>
         </section>
 
         <ThemeSelector />

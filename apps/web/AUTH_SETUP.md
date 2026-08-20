@@ -49,6 +49,16 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
 4. 생성된 JWT를 `AUTH_APPLE_SECRET`에 넣습니다 (보통 6개월 유효)
 5. `AUTH_APPLE_ID` + `AUTH_APPLE_SECRET`이 둘 다 있으면 로그인 화면에 Apple 버튼이 노출됩니다
 
+## Resend (이메일 변경 인증)
+
+1. Vercel Marketplace에서 Resend 설치: `vercel integration add resend`
+   - 팀 약관 동의가 필요하면 대시보드에서 Accept 후 다시 실행
+2. 발신 도메인 `balink.co.kr`에 SPF/DKIM 레코드를 Resend 안내에 따라 등록
+3. Vercel Production에 `RESEND_API_KEY`가 생겼는지 확인
+4. (선택) `RESEND_FROM_EMAIL=발링크 <noreply@balink.co.kr>`
+5. 로컬도 동일 키를 `.env`에 넣습니다
+6. 확인 링크: `https://www.balink.co.kr/account/email/confirm?token=...`
+
 ## 계정 연동
 
 이메일이 같은 카카오·Apple 계정은 `allowDangerousEmailAccountLinking`으로 한 User에 연결됩니다.

@@ -340,6 +340,9 @@ export function WebScreen() {
         thirdPartyCookiesEnabled
         javaScriptEnabled
         domStorageEnabled
+        allowFileAccess
+        allowFileAccessFromFileURLs
+        allowsLinkPreview={false}
         cacheEnabled
         cacheMode="LOAD_DEFAULT"
         originWhitelist={["*"]}
