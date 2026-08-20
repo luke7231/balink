@@ -15,7 +15,7 @@ import {
   resolveSubstituteUrgency,
 } from "@balink/domain";
 import { Badge } from "@balink/ui/badge";
-import { OriginalSourceLink } from "@/components/original-source-link";
+import { DirectApplyControls } from "@/components/direct-apply-controls";
 import { fetchSubstitutePost } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -87,15 +87,13 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
                 <p className="mt-1 font-bold text-accent">{payLabel}</p>
               </div>
             </div>
-            <div className="mt-5 hidden sm:block">
-              <OriginalSourceLink
-                href={post.sourceUrl}
-                title="원문"
-                className="inline-flex rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background hover:opacity-90"
-              >
-                원문 보기
-              </OriginalSourceLink>
-            </div>
+            <DirectApplyControls
+              postTitle={post.title}
+              contactPhones={post.contactPhones}
+              contactEmails={post.contactEmails}
+              contactMethods={post.contactMethods}
+              sourceLinks={[{ href: post.sourceUrl, label: "원문", title: "원문" }]}
+            />
           </section>
 
           <h1 className="text-2xl font-bold leading-tight text-foreground">{post.title}</h1>
@@ -181,29 +179,8 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
             </section>
           ) : null}
 
-          <div className="mt-8">
-            <OriginalSourceLink
-              href={post.sourceUrl}
-              title="원문"
-              className="inline-flex rounded-full bg-accent px-4 py-2 text-sm font-medium text-background hover:opacity-90"
-            >
-              발레매니아 원문 보기
-            </OriginalSourceLink>
-          </div>
         </article>
       </main>
-
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur sm:hidden">
-        <div className="mx-auto flex max-w-3xl gap-2">
-          <OriginalSourceLink
-            href={post.sourceUrl}
-            title="원문"
-            className="flex-1 rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-background"
-          >
-            원문 보기
-          </OriginalSourceLink>
-        </div>
-      </div>
     </div>
   );
 }

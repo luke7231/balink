@@ -283,7 +283,7 @@ export function WebScreen() {
         openKakaoAppUrl(url);
         return false;
       }
-      if (url.startsWith("tel:") || url.startsWith("mailto:")) {
+      if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("sms:")) {
         void Linking.openURL(url);
         return false;
       }

@@ -15,6 +15,7 @@ import {
 import { Badge } from "@balink/ui/badge";
 import { auth } from "@/auth";
 import { BookmarkButton } from "@/components/bookmark-button";
+import { DirectApplyControls } from "@/components/direct-apply-controls";
 import { OriginalDescription } from "@/components/original-description";
 import { OriginalSourceLink } from "@/components/original-source-link";
 import { AcademyGallery } from "@/components/academy-gallery";
@@ -53,8 +54,14 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     job.representativePayText ?? job.representativePay?.displayText ?? null,
   );
 
+  const sourceLinks = job.sources.map((source) => ({
+    href: source.sourceUrl,
+    label: formatSource(source.source),
+    title: formatSource(source.source),
+  }));
+
   return (
-    <div className="min-h-full bg-surface-muted">
+    <div className="min-h-full bg-surface-muted pb-24 sm:pb-0">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-5">
           <Link href="/" className="text-sm font-medium text-accent hover:text-accent">
@@ -162,6 +169,13 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 </OriginalSourceLink>
               ))}
             </div>
+            <DirectApplyControls
+              postTitle={job.title}
+              contactPhones={job.contactPhones}
+              contactEmails={job.contactEmails}
+              contactMethods={job.contactMethods}
+              sourceLinks={sourceLinks}
+            />
           </section>
         </article>
       </main>
