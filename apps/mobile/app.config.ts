@@ -95,6 +95,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: "com.luke7231.balink",
+    googleServicesFile: "./google-services.json",
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#ffffff",

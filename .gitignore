@@ -10,3 +10,6 @@ apps/web/.next/
 pnpm-debug.log
 npm-debug.log
 .DS_Store
+*firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
