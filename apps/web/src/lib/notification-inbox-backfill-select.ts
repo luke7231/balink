@@ -12,7 +12,10 @@ import {
 } from "@balink/domain";
 
 export const INBOX_BACKFILL_DAYS = 14;
-export const INBOX_BACKFILL_LIMIT = 20;
+/** How many matching posts to drop into the inbox when saving alert rules. */
+export const INBOX_BACKFILL_LIMIT = 1;
+/** Region candidates to scan before preference matching (keep > LIMIT). */
+export const INBOX_BACKFILL_FETCH_LIMIT = 60;
 
 export type InboxBackfillRow = {
   userId: string;

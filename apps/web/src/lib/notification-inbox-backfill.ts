@@ -2,6 +2,7 @@ import { prisma, UserNotificationRepository } from "@balink/db";
 import { isBlankNotificationPreference, type NotificationPreference } from "@balink/domain";
 import {
   INBOX_BACKFILL_DAYS,
+  INBOX_BACKFILL_FETCH_LIMIT,
   INBOX_BACKFILL_LIMIT,
   pickMatchingBackfillRows,
   regionsFromPreference,
@@ -9,6 +10,7 @@ import {
 
 export {
   INBOX_BACKFILL_DAYS,
+  INBOX_BACKFILL_FETCH_LIMIT,
   INBOX_BACKFILL_LIMIT,
   pickMatchingBackfillRows,
   regionsFromPreference,
@@ -25,7 +27,6 @@ export async function backfillInboxMatchesForUser(
   }
 
   const since = new Date(Date.now() - INBOX_BACKFILL_DAYS * 24 * 60 * 60 * 1000);
-  const fetchLimit = INBOX_BACKFILL_LIMIT * 3;
   const regularRegions = regionsFromPreference(preference, "regular");
   const substituteRegions = regionsFromPreference(preference, "substitute");
 
@@ -47,7 +48,7 @@ export async function backfillInboxMatchesForUser(
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
-          take: fetchLimit,
+          take: INBOX_BACKFILL_FETCH_LIMIT,
         }),
     substituteRegions.length === 0
       ? Promise.resolve([])
@@ -66,11 +67,17 @@ export async function backfillInboxMatchesForUser(
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
-          take: fetchLimit,
+          take: INBOX_BACKFILL_FETCH_LIMIT,
         }),
   ]);
 
-  const rows = pickMatchingBackfillRows(userId, preference, jobs, substitutes);
+  const rows = pickMatchingBackfillRows(
+    userId,
+    preference,
+    jobs,
+    substitutes,
+    INBOX_BACKFILL_LIMIT,
+  );
   if (rows.length === 0) return { inserted: 0 };
 
   const result = await userNotificationRepository.createManyForMatch(rows);

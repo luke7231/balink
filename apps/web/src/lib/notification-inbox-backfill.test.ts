@@ -48,7 +48,7 @@ test("regionsFromPreference keeps unique enabled regular districts", () => {
   assert.deepEqual(regionsFromPreference(preference, "substitute"), []);
 });
 
-test("pickMatchingBackfillRows fills inbox from existing regular posts", () => {
+test("pickMatchingBackfillRows keeps only the newest matching post", () => {
   const rows = pickMatchingBackfillRows(
     "user-1",
     preference,
@@ -92,7 +92,7 @@ test("pickMatchingBackfillRows fills inbox from existing regular posts", () => {
 
   assert.deepEqual(
     rows.map((row) => row.jobPostId ?? row.substitutePostId),
-    ["job-gangnam", "job-songpa"],
+    ["job-gangnam"],
   );
   assert.equal(rows[0]?.href, "/jobs/job-gangnam");
   assert.equal(rows[0]?.type, "job_match");
