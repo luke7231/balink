@@ -23,6 +23,9 @@ const INITIAL_STATE: PushState = {
   attached: false,
 };
 
+const UNAVAILABLE_DISMISS_KEY = "balink.push-unavailable-callout-dismissed";
+const UNAVAILABLE_DISMISS_EVENT = "balink:push-unavailable-dismissed";
+
 export function PushPermissionCallout({
   loggedIn,
   serverEnabled,
@@ -36,6 +39,11 @@ export function PushPermissionCallout({
     subscribeToPushState,
     getPushStateSnapshot,
     getServerPushStateSnapshot,
+  );
+  const unavailableDismissed = useSyncExternalStore(
+    subscribeUnavailableDismissed,
+    getUnavailableDismissedSnapshot,
+    () => false,
   );
 
   useEffect(() => {
@@ -98,11 +106,13 @@ export function PushPermissionCallout({
     );
   }
   if (state.permissionStatus === "unavailable") {
+    if (unavailableDismissed) return null;
     return (
       <PushPanel
         tone="neutral"
         title="이 디바이스에서는 푸시를 사용할 수 없어요"
         description={`${rules} 조건은 켜져 있으며 알림함에서는 계속 확인할 수 있어요.`}
+        onDismiss={dismissUnavailableCallout}
       />
     );
   }
@@ -130,8 +140,41 @@ function getServerPushStateSnapshot(): PushState {
   return INITIAL_STATE;
 }
 
+function subscribeUnavailableDismissed(onStoreChange: () => void) {
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === UNAVAILABLE_DISMISS_KEY || event.key === null)
+      onStoreChange();
+  };
+  window.addEventListener("storage", onStorage);
+  window.addEventListener(UNAVAILABLE_DISMISS_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener(UNAVAILABLE_DISMISS_EVENT, onStoreChange);
+  };
+}
+
+function getUnavailableDismissedSnapshot(): boolean {
+  try {
+    return window.localStorage.getItem(UNAVAILABLE_DISMISS_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function dismissUnavailableCallout() {
+  try {
+    window.localStorage.setItem(UNAVAILABLE_DISMISS_KEY, "1");
+  } catch {
+    // ignore quota / private mode
+  }
+  window.dispatchEvent(new Event(UNAVAILABLE_DISMISS_EVENT));
+}
+
 function permissionAction(state: PushState) {
-  const action = getPushPermissionAction(state.permissionStatus, state.canAskAgain);
+  const action = getPushPermissionAction(
+    state.permissionStatus,
+    state.canAskAgain,
+  );
   if (!action) return null;
   return (
     <button
@@ -153,12 +196,14 @@ function PushPanel({
   description,
   action,
   children,
+  onDismiss,
 }: {
   tone: "success" | "warning" | "neutral";
   title: string;
   description: string;
   action?: React.ReactNode;
   children?: React.ReactNode;
+  onDismiss?: () => void;
 }) {
   const colors = {
     success: "border-emerald-200 bg-emerald-50 text-emerald-950",
@@ -166,9 +211,27 @@ function PushPanel({
     neutral: "border-border bg-surface-muted text-foreground",
   };
   return (
-    <section className={`mb-6 rounded-2xl border px-4 py-4 ${colors[tone]}`}>
-      <p className="text-sm font-semibold">{title}</p>
-      <p className="mt-1 text-xs leading-5 opacity-75">{description}</p>
+    <section
+      className={`relative mb-6 rounded-2xl border px-4 py-4 ${colors[tone]}`}
+    >
+      {onDismiss ? (
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="다시 보지 않기"
+          className="absolute top-3 right-3 rounded-full p-1.5 text-muted-foreground transition hover:bg-surface hover:text-foreground"
+        >
+          <DismissIcon />
+        </button>
+      ) : null}
+      <p className={`text-sm font-semibold ${onDismiss ? "pr-8" : ""}`}>
+        {title}
+      </p>
+      <p
+        className={`mt-1 text-xs leading-5 opacity-75 ${onDismiss ? "pr-8" : ""}`}
+      >
+        {description}
+      </p>
       {action || children ? (
         <div className="mt-3 flex flex-wrap items-center gap-3">
           {action}
@@ -176,5 +239,23 @@ function PushPanel({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function DismissIcon() {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className="h-3.5 w-3.5"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M4 4l8 8M12 4l-8 8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
