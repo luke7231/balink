@@ -64,7 +64,8 @@ export function DirectApplyControls({
   );
 
   const primarySource = sourceLinks[0] ?? null;
-  const sourceIsPrimary = !canApply && Boolean(primarySource);
+  /** 바로 지원이 없고 원문만/원문+저장일 때 full 원문 보기 CTA */
+  const sourceAsFullCta = !canApply && Boolean(primarySource);
 
   async function copyValue(key: string, value: string) {
     try {
@@ -88,27 +89,27 @@ export function DirectApplyControls({
     )
   ) : null;
 
-  const sourceControl = primarySource ? (
+  const sourceFullControl = primarySource ? (
     <OriginalSourceLink
       href={primarySource.href}
       title={primarySource.title ?? "원문"}
-      className={
-        sourceIsPrimary
-          ? `${barIconClass} border-transparent bg-accent text-background hover:opacity-90`
-          : `${barIconClass} border-border bg-surface text-muted-foreground hover:border-accent-border hover:text-foreground`
-      }
+      className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-accent px-4 text-sm font-semibold text-background hover:opacity-90"
     >
-      <span className="sr-only">원문 보기</span>
-      <ExternalLinkIcon className="h-5 w-5" />
+      자세히 보기
     </OriginalSourceLink>
   ) : null;
 
-  const sideControls = (
-    <>
-      {bookmarkControl}
-      {sourceControl}
-    </>
-  );
+  const sourceIconControl =
+    primarySource && !sourceAsFullCta ? (
+      <OriginalSourceLink
+        href={primarySource.href}
+        title={primarySource.title ?? "원문"}
+        className={`${barIconClass} border-border bg-surface text-muted-foreground hover:border-accent-border hover:text-foreground`}
+      >
+        <span className="sr-only">원문 보기</span>
+        <ExternalLinkIcon className="h-5 w-5" />
+      </OriginalSourceLink>
+    ) : null;
 
   return (
     <>
@@ -124,7 +125,9 @@ export function DirectApplyControls({
             바로 지원하기
           </button>
         ) : null}
-        {sideControls}
+        {sourceAsFullCta ? sourceFullControl : null}
+        {bookmarkControl}
+        {sourceIconControl}
       </div>
 
       {/* Mobile sticky bar */}
@@ -140,7 +143,9 @@ export function DirectApplyControls({
               바로 지원하기
             </button>
           ) : null}
-          {sideControls}
+          {sourceAsFullCta ? sourceFullControl : null}
+          {bookmarkControl}
+          {sourceIconControl}
         </div>
       </div>
 

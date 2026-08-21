@@ -226,7 +226,7 @@ export default async function SubstituteDetailPage({
                 title="원문"
                 className="flex items-center justify-between gap-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm font-semibold text-foreground transition hover:opacity-90"
               >
-                <span>원문 보기</span>
+                <span>자세히 보기</span>
                 <span aria-hidden className="shrink-0 text-muted-foreground">
                   <ExternalLinkIcon />
                 </span>
