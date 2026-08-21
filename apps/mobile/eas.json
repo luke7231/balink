@@ -15,6 +15,20 @@
       "ios": {
         "simulator": false
       }
+    },
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_WEB_URL": "https://www.balink.co.kr",
+        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY": "f676c347248c2ca57fe9b0d5318c6146",
+        "EAS_BUILD": "true"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6803830145"
+      }
     }
   }
 }

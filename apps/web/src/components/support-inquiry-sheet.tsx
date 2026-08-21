@@ -68,7 +68,6 @@ export function SupportInquirySheet({
             </p>
             <OriginalSourceLink
               href="https://forms.gle/a4souo2Cz6bDb3BA8"
-              embedHref="https://docs.google.com/forms/d/e/1FAIpQLSecIVjSi1jOypLKZyIn8h4WuJGk28nG_nFulo97iNcbk5o6Eg/viewform?embedded=true"
               title="발링크 문의"
               className="mt-4 flex w-full items-center justify-between rounded-full bg-violet-600 px-4 py-3 text-sm font-semibold text-white hover:bg-violet-700"
             >
