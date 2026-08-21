@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   MAX_NOTIFICATION_RULES,
   defaultNotificationRule,
@@ -21,20 +21,27 @@ export function NotificationRulesOverview({
 }) {
   const router = useRouter();
   const [preference, setPreference] = useState(initialPreference);
-  const [deleteTarget, setDeleteTarget] = useState<NotificationRule | null>(null);
+  const [preferenceSnapshot, setPreferenceSnapshot] =
+    useState(initialPreference);
+  const [deleteTarget, setDeleteTarget] = useState<NotificationRule | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const blank = isBlankNotificationPreference(preference);
   const canAdd = preference.rules.length < MAX_NOTIFICATION_RULES;
 
-  useEffect(() => {
+  if (initialPreference !== preferenceSnapshot) {
+    setPreferenceSnapshot(initialPreference);
     setPreference(initialPreference);
-  }, [initialPreference]);
+  }
 
   function confirmDelete() {
     if (!deleteTarget) return;
     const prev = preference;
-    const remaining = preference.rules.filter((rule) => rule.id !== deleteTarget.id);
+    const remaining = preference.rules.filter(
+      (rule) => rule.id !== deleteTarget.id,
+    );
     const next: NotificationPreference =
       remaining.length === 0
         ? {
@@ -72,18 +79,28 @@ export function NotificationRulesOverview({
   }
 
   return (
-    <section id="alert-rules" className="mb-6 scroll-mt-20" aria-label="알림 조건">
+    <section
+      id="alert-rules"
+      className="mb-6 scroll-mt-20"
+      aria-label="알림 조건"
+    >
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-base font-semibold text-foreground">알림 조건</h3>
         {!blank ? (
           <div className="flex shrink-0 items-center gap-3">
             <p className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent-subtle0" aria-hidden />
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-accent-subtle0"
+                  aria-hidden
+                />
                 정규
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-amber-500"
+                  aria-hidden
+                />
                 대강
               </span>
             </p>
@@ -99,7 +116,9 @@ export function NotificationRulesOverview({
 
       {blank ? (
         <div className="rounded-2xl border border-dashed border-border bg-surface px-4 py-5 text-center">
-          <p className="text-sm text-muted-foreground">아직 알림 조건이 없습니다</p>
+          <p className="text-sm text-muted-foreground">
+            아직 알림 조건이 없습니다
+          </p>
           <Link
             href="/notifications/settings?new=1"
             className="mt-3 inline-flex rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background hover:opacity-90"
@@ -108,7 +127,7 @@ export function NotificationRulesOverview({
           </Link>
         </div>
       ) : (
-        <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-1 scrollbar-none">
+        <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain py-1 scrollbar-none">
           {preference.rules.map((rule) => {
             const on = preference.enabled && rule.enabled;
             const title = formatNotificationRuleTitle(rule);
@@ -139,7 +158,9 @@ export function NotificationRulesOverview({
                     aria-hidden
                   />
                   {title}
-                  {!on ? <span className="text-[11px] font-medium">꺼짐</span> : null}
+                  {!on ? (
+                    <span className="text-[11px] font-medium">꺼짐</span>
+                  ) : null}
                 </Link>
                 <button
                   type="button"
@@ -203,7 +224,8 @@ export function NotificationRulesOverview({
             <span className="font-semibold text-foreground">
               {formatNotificationRuleTitle(deleteTarget)}
             </span>
-            조건을 삭제할까요? 삭제하면 이 조건으로는 더 이상 알림이 오지 않습니다.
+            조건을 삭제할까요? 삭제하면 이 조건으로는 더 이상 알림이 오지
+            않습니다.
           </>
         ) : null}
       </Modal>
@@ -213,7 +235,13 @@ export function NotificationRulesOverview({
 
 function ChipCloseIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M3 3l6 6M9 3L3 9"
         stroke="currentColor"
