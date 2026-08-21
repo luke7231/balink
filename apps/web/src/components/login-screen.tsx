@@ -36,16 +36,16 @@ export function LoginScreen({
             <Image
               src="/brand/logo-horizontal.png"
               alt="balink"
-              width={1024}
-              height={341}
+              width={614}
+              height={175}
               priority
               className="h-10 w-auto dark:hidden"
             />
             <Image
               src="/brand/logo-horizontal-dark.png"
               alt="balink"
-              width={1024}
-              height={341}
+              width={611}
+              height={169}
               priority
               className="hidden h-10 w-auto dark:block"
             />

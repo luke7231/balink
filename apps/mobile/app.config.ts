@@ -129,6 +129,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         backgroundColor: "#faf7f6",
         resizeMode: "cover",
         enableFullScreenImage_legacy: true,
+        dark: {
+          image: "./assets/splash-dark.png",
+          backgroundColor: "#09090b",
+        },
       },
     ],
     "./plugins/with-kakao-android",
