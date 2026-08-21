@@ -170,16 +170,13 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         {cleanedSections.length > 0 ? (
           <MotionReveal index={3} variant="fade-up">
             <section className="border-t border-border py-7">
-              <h2 className="text-base font-semibold text-foreground">
-                정돈된 공고
-              </h2>
-              <div className="mt-5 space-y-5">
+              <div className="space-y-8">
                 {cleanedSections.map((section) => (
                   <div key={section.title}>
-                    <h3 className="text-sm font-semibold text-foreground">
+                    <h2 className="text-base font-semibold text-foreground">
                       {section.title}
-                    </h3>
-                    <p className="mt-2 whitespace-break-spaces text-sm leading-7 text-foreground">
+                    </h2>
+                    <p className="mt-3 whitespace-break-spaces text-sm leading-7 text-foreground">
                       {section.content}
                     </p>
                   </div>
