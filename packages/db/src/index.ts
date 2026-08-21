@@ -3,6 +3,7 @@ export type {
   Prisma,
   PushPermissionStatus,
   PushPlatform,
+  EmailAuthPurpose,
   SourceName as PrismaSourceName,
   ScraperRunStatus as PrismaScraperRunStatus,
 } from "@prisma/client";

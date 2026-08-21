@@ -11,5 +11,7 @@ export async function signInWithApple() {
 }
 
 export async function signOutAction() {
-  await signOut({ redirectTo: "/" });
+  // Stay on account so the native Account tab shows LoginScreen (not Jobs home).
+  // Use a path; Auth.js still prefixes AUTH_URL — mobile rewrites localhost↔LAN.
+  await signOut({ redirectTo: "/account" });
 }

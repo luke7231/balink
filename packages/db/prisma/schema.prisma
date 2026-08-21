@@ -247,6 +247,8 @@ model User {
   name             String?
   email            String?              @unique
   emailVerified    DateTime?
+  /// scrypt hash; null for social-only accounts
+  passwordHash     String?
   image            String?
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
@@ -271,6 +273,39 @@ model EmailChangeRequest {
 
   @@index([userId, createdAt])
   @@index([expiresAt])
+}
+
+enum EmailAuthPurpose {
+  signup
+  reset
+}
+
+/// Pending email OTP before User exists (signup) or before password reset/attach.
+model EmailAuthChallenge {
+  id           String           @id @default(cuid())
+  email        String
+  purpose      EmailAuthPurpose
+  codeHash     String
+  expiresAt    DateTime
+  verifiedAt   DateTime?
+  attemptCount Int              @default(0)
+  sentAt       DateTime         @default(now())
+  createdAt    DateTime         @default(now())
+
+  @@index([email, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+/// Rate limit windows for login attempts and OTP sends.
+model AuthThrottle {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  count     Int      @default(0)
+  windowStart DateTime
+  lockedUntil DateTime?
+  updatedAt DateTime @updatedAt
+
+  @@index([lockedUntil])
 }
 
 enum UserNotificationType {

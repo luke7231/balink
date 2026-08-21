@@ -102,25 +102,53 @@ export function LoginScreen({
               </p>
             )}
 
-            <p
-              className="motion-fade-in px-4 pt-1 text-center text-xs leading-5 text-muted-foreground"
+            <div
+              className="motion-fade-up relative my-1 flex items-center gap-3"
               style={motionIndexStyle(5)}
+              aria-hidden
             >
-              계속하면 발링크의{" "}
-              <Link href="/terms" className="font-medium text-foreground underline underline-offset-2">
-                이용약관
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">또는</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <Link
+              href="/login/email"
+              className="motion-fade-up flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted active:scale-[0.985]"
+              style={motionIndexStyle(6)}
+            >
+              이메일로 로그인
+            </Link>
+
+            <p
+              className="motion-fade-in px-1 pt-1 text-center text-sm text-muted-foreground"
+              style={motionIndexStyle(7)}
+            >
+              계정이 없다면{" "}
+              <Link href="/signup" className="font-medium text-foreground underline underline-offset-2">
+                회원가입
               </Link>
-              과{" "}
-              <Link
-                href="/privacy"
-                className="font-medium text-foreground underline underline-offset-2"
-              >
-                개인정보처리방침
-              </Link>
-              에 동의하는 것으로 봅니다.
             </p>
           </div>
         </div>
+
+        <p
+          className="motion-fade-in mt-auto px-4 pb-2 pt-6 text-center text-[11px] leading-4 text-muted-foreground"
+          style={motionIndexStyle(8)}
+        >
+          계속하면 발링크의{" "}
+          <Link href="/terms" className="font-medium text-foreground/80 underline underline-offset-2">
+            이용약관
+          </Link>
+          과{" "}
+          <Link
+            href="/privacy"
+            className="font-medium text-foreground/80 underline underline-offset-2"
+          >
+            개인정보처리방침
+          </Link>
+          에 동의합니다.
+        </p>
       </div>
     </main>
   );

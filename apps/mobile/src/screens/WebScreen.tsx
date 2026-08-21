@@ -291,7 +291,9 @@ export function WebScreen() {
       try {
         const parsed = new URL(url);
         if (WEBVIEW_AUTH_HOSTS.has(parsed.hostname)) return true;
-        if (parsed.origin !== WEB_ORIGIN) {
+
+        const appPath = toAppPath(url);
+        if (!appPath) {
           if (parsed.protocol === "http:" || parsed.protocol === "https:") {
             setInAppBrowser({ url });
             return false;
@@ -300,11 +302,14 @@ export function WebScreen() {
           return false;
         }
 
-        const appPath = toAppPath(url);
-        if (!appPath) return false;
         const pathname = appPath.split("?")[0] || "/";
         const currentPath = toAppPath(currentUrlRef.current);
         const currentPathname = currentPath?.split("?")[0] || "/";
+
+        // AUTH_URL(localhost) ↔ WebView(LAN) alias: load via native routing on WEB_ORIGIN.
+        if (parsed.origin !== WEB_ORIGIN) {
+          return !openAppPath(navigation, appPath);
+        }
 
         if (pathname === currentPathname) return true;
 
@@ -373,9 +378,9 @@ export function WebScreen() {
               return;
             }
             const parsed = new URL(targetUrl);
-            if (parsed.origin === WEB_ORIGIN) {
-              const appPath = toAppPath(targetUrl);
-              if (appPath) openAppPath(navigation, appPath);
+            const appPath = toAppPath(targetUrl);
+            if (appPath) {
+              openAppPath(navigation, appPath);
               return;
             }
             if (parsed.protocol === "http:" || parsed.protocol === "https:") {

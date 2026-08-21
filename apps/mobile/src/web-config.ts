@@ -17,6 +17,51 @@ export const ALLOWED_PUSH_PATHS = ["/jobs/", "/substitutes/", "/notifications"];
 
 export type TabName = "Jobs" | "Substitutes" | "Bookmarks" | "Notifications" | "Account";
 
+function isLoopbackHost(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+}
+
+function isPrivateLanHost(hostname: string): boolean {
+  return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(hostname);
+}
+
+function isLocalDevHost(hostname: string): boolean {
+  return isLoopbackHost(hostname) || isPrivateLanHost(hostname);
+}
+
+function urlPort(url: URL): string {
+  if (url.port) return url.port;
+  return url.protocol === "https:" ? "443" : "80";
+}
+
+/**
+ * Auth.js redirects use AUTH_URL (often http://localhost:3100) while the
+ * native WebView loads the LAN IP. Treat those as the same app in local
+ * dev so we don't open the in-app browser sheet.
+ */
+export function rewriteToWebOrigin(url: string): string | null {
+  try {
+    const parsed = new URL(url, WEB_BASE_URL);
+    if (parsed.origin === WEB_ORIGIN) {
+      return `${parsed.pathname}${parsed.search}${parsed.hash}` || "/";
+    }
+
+    const web = new URL(WEB_BASE_URL);
+    if (
+      parsed.protocol === web.protocol &&
+      urlPort(parsed) === urlPort(web) &&
+      isLocalDevHost(parsed.hostname) &&
+      isLocalDevHost(web.hostname)
+    ) {
+      return `${parsed.pathname}${parsed.search}${parsed.hash}` || "/";
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function withNativeShell(pathOrUrl: string): string {
   const url = new URL(pathOrUrl, WEB_BASE_URL);
   url.searchParams.set("nativeShell", "1");
@@ -24,13 +69,7 @@ export function withNativeShell(pathOrUrl: string): string {
 }
 
 export function toAppPath(url: string): string | null {
-  try {
-    const parsed = new URL(url, WEB_BASE_URL);
-    if (parsed.origin !== WEB_ORIGIN) return null;
-    return `${parsed.pathname}${parsed.search}`;
-  } catch {
-    return null;
-  }
+  return rewriteToWebOrigin(url);
 }
 
 export function isAllowedPushHref(href: string): boolean {
@@ -42,11 +81,7 @@ export function isAllowedPushHref(href: string): boolean {
 }
 
 export function isTrustedWebUrl(url: string): boolean {
-  try {
-    return new URL(url).origin === WEB_ORIGIN;
-  } catch {
-    return false;
-  }
+  return rewriteToWebOrigin(url) !== null;
 }
 
 /** Paths that should stay inside the current WebView (tab root + query). */
@@ -69,6 +104,8 @@ export function isStackPath(pathname: string): boolean {
   if (pathname.startsWith("/notifications/") && pathname !== "/notifications") return true;
   if (pathname.startsWith("/saved/") && pathname !== "/saved") return true;
   if (pathname.startsWith("/account/") && pathname !== "/account") return true;
+  if (pathname.startsWith("/login/")) return true;
+  if (pathname === "/signup") return true;
   if (pathname === "/privacy" || pathname === "/terms") return true;
   return false;
 }
@@ -81,6 +118,7 @@ export function tabForPath(pathname: string): TabName {
     pathname.startsWith("/account") ||
     pathname === "/login" ||
     pathname.startsWith("/login/") ||
+    pathname === "/signup" ||
     pathname === "/privacy" ||
     pathname === "/terms"
   ) {

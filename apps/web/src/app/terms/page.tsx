@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <LegalDocument title="이용약관" effectiveDate="2026년 8월 19일">
+    <LegalDocument title="이용약관" effectiveDate="2026년 8월 21일">
       <LegalSection title="제1조 (목적)">
         <p>
           이 약관은 발링크 운영자(이하 &quot;운영자&quot;)가 제공하는 발레 채용·대강 정보,
@@ -38,12 +38,14 @@ export default function TermsPage() {
 
       <LegalSection title="제4조 (회원가입 및 계정 관리)">
         <p>
-          회원은 카카오 또는 Apple 등 지원되는 소셜 계정으로 로그인하여 가입할 수 있습니다.
-          로그인 절차를 계속하면 이 약관과 개인정보처리방침을 확인하고 동의한 것으로 봅니다.
+          회원은 카카오 또는 Apple 등 지원되는 소셜 계정으로 로그인하여 가입하거나, 이메일
+          주소 인증 후 비밀번호를 설정하여 가입할 수 있습니다. 이메일 가입은 인증을 완료한
+          뒤에만 계정이 생성됩니다. 가입·로그인 절차를 계속하면 이 약관과 개인정보처리방침을
+          확인하고 동의한 것으로 봅니다.
         </p>
         <p>
-          회원은 자신의 소셜 계정을 안전하게 관리해야 하며, 계정의 무단 사용을 알게 된 경우
-          즉시 해당 소셜 로그인 제공자와 운영자에게 알려야 합니다.
+          회원은 자신의 소셜 계정과 비밀번호를 안전하게 관리해야 하며, 계정의 무단 사용을
+          알게 된 경우 즉시 해당 로그인 제공자와 운영자에게 알려야 합니다.
         </p>
       </LegalSection>
 

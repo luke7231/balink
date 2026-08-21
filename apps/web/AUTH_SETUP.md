@@ -1,6 +1,7 @@
-# 소셜 로그인 설정 (Kakao / Apple)
+# 로그인 설정 (Kakao / Apple / 이메일)
 
-Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
+Auth.js + Prisma. 소셜 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
+이메일은 OTP(6자리 코드)로 인증한 뒤 비밀번호를 설정·로그인합니다.
 
 ## 공통
 
@@ -49,7 +50,18 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
 4. 생성된 JWT를 `AUTH_APPLE_SECRET`에 넣습니다 (보통 6개월 유효)
 5. `AUTH_APPLE_ID` + `AUTH_APPLE_SECRET`이 둘 다 있으면 로그인 화면에 Apple 버튼이 노출됩니다
 
-## Resend (이메일 변경 인증)
+## 이메일 로그인 / 회원가입 (OTP)
+
+1. Resend가 설정되어 있어야 합니다 (아래 Resend 절).
+2. 흐름
+   - 회원가입: `/signup` → 이메일 → 6자리 코드 → 비밀번호 → **이때** `User` 생성 (`emailVerified` 설정)
+   - 로그인: `/login/email` → 이메일+비밀번호 (인증·비밀번호가 있는 계정만)
+   - 재설정: `/login/reset` → 동일 OTP 게이트 후 비밀번호 저장/추가
+3. 비밀번호는 Node `scrypt` 해시로 `User.passwordHash`에 저장합니다.
+4. 세션은 Auth.js와 동일하게 DB `Session` + `authjs.session-token` 쿠키입니다.
+5. 마이그레이션: `packages/db/prisma/migrations/20260821120000_email_password_auth`
+
+## Resend (이메일 변경·가입·재설정 인증)
 
 1. Vercel Marketplace에서 Resend 설치: `vercel integration add resend`
    - 팀 약관 동의가 필요하면 대시보드에서 Accept 후 다시 실행
@@ -57,17 +69,21 @@ Auth.js + Prisma. 콜백 경로는 `/api/auth/callback/{provider}` 입니다.
 3. Vercel Production에 `RESEND_API_KEY`가 생겼는지 확인
 4. (선택) `RESEND_FROM_EMAIL=발링크 <noreply@balink.co.kr>`
 5. 로컬도 동일 키를 `.env`에 넣습니다
-6. 확인 링크: `https://www.balink.co.kr/account/email/confirm?token=...`
+6. 확인 링크(이메일 변경): `https://www.balink.co.kr/account/email/confirm?token=...`
+7. 가입·재설정은 링크로 로그인하지 않고 **6자리 코드**를 메일로 보냅니다 (앱 WebView 세션 유지).
 
 ## 계정 연동
 
 이메일이 같은 카카오·Apple 계정은 `allowDangerousEmailAccountLinking`으로 한 User에 연결됩니다.
 카카오가 이메일을 주지 않으면 연동되지 않고 별도 계정으로 생성될 수 있습니다.
+소셜 계정에 인증된 이메일이 있으면 비밀번호 재설정·계정 관리에서 비밀번호를 붙여 이메일 로그인을 쓸 수 있습니다.
 
 ## 로컬 검증
 
 ```bash
 pnpm dev:web
 # http://localhost:3100/login → 카카오 로그인
-# DB User / Account 행 생성, 헤더에 이름·로그아웃 표시
+# http://localhost:3100/signup → 이메일 OTP 가입
+# http://localhost:3100/login/email → 이메일 로그인
+# DB User / Account·Session 행 생성, 헤더에 이름·로그아웃 표시
 ```

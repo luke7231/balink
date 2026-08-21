@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { prisma } from "@balink/db";
 import { auth } from "@/auth";
 import { AccountDeletion } from "@/components/account-deletion";
+import { AccountPasswordForm } from "@/components/account-password-form";
 import { AccountSignOut } from "@/components/account-sign-out";
 import { AccountSourceLoginClear } from "@/components/account-source-login-clear";
 import { MotionReveal } from "@/components/motion-reveal";
@@ -11,6 +13,22 @@ export default async function AccountManagePage() {
   if (!session?.user?.id) {
     redirect("/login");
   }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      email: true,
+      emailVerified: true,
+      passwordHash: true,
+    },
+  });
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const canManagePassword = Boolean(user.email && user.emailVerified);
+  const hasPassword = Boolean(user.passwordHash);
 
   return (
     <main className="page-bg-radial flex min-h-full flex-1 flex-col">
@@ -47,13 +65,43 @@ export default async function AccountManagePage() {
             </Link>
           </section>
         </MotionReveal>
+
         <MotionReveal index={3} variant="fade-up">
+          <section className="border-t border-border py-7">
+            <h2 className="text-base font-semibold text-foreground">
+              {hasPassword ? "비밀번호 변경" : "비밀번호 만들기"}
+            </h2>
+            {canManagePassword ? (
+              <>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {hasPassword
+                    ? "이메일 로그인에 쓰는 비밀번호를 변경합니다."
+                    : "이메일 로그인을 쓰려면 비밀번호를 만들어 주세요."}
+                </p>
+                <AccountPasswordForm hasPassword={hasPassword} />
+              </>
+            ) : (
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                비밀번호를 설정하려면{" "}
+                <Link
+                  href="/account/profile"
+                  className="font-medium text-foreground underline underline-offset-2"
+                >
+                  프로필 편집
+                </Link>
+                에서 이메일을 인증해 주세요.
+              </p>
+            )}
+          </section>
+        </MotionReveal>
+
+        <MotionReveal index={4} variant="fade-up">
           <AccountSignOut />
         </MotionReveal>
-        <MotionReveal index={4} variant="fade-up">
+        <MotionReveal index={5} variant="fade-up">
           <AccountSourceLoginClear />
         </MotionReveal>
-        <MotionReveal index={5} variant="fade-up">
+        <MotionReveal index={6} variant="fade-up">
           <AccountDeletion />
         </MotionReveal>
       </div>

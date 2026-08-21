@@ -129,7 +129,7 @@ export function ProfileEditForm({
             onChange={(event) => setName(event.target.value)}
             maxLength={20}
             required
-            className="h-12 flex-1 rounded-2xl border border-border bg-background px-4 text-sm text-foreground outline-none focus:border-accent"
+            className="h-12 flex-1 rounded-2xl border border-border bg-background px-4 text-base text-foreground outline-none focus:border-accent"
             placeholder="표시 이름"
           />
           <button
@@ -167,7 +167,7 @@ export function ProfileEditForm({
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
-            className="h-12 flex-1 rounded-2xl border border-border bg-background px-4 text-sm text-foreground outline-none focus:border-accent"
+            className="h-12 flex-1 rounded-2xl border border-border bg-background px-4 text-base text-foreground outline-none focus:border-accent"
             placeholder="새 이메일 주소"
             autoComplete="email"
           />
