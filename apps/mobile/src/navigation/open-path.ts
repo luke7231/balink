@@ -73,6 +73,13 @@ export function openAppPath(
   if (!tabNav) return false;
 
   if (isTabRootPath(pathname)) {
+    const activeTab = currentTabName(navigation);
+    const stackNav = findStackNavigation(navigation);
+    // Same tab stack screen → list: pop to Home so the tab-root WebView keeps scroll.
+    if (activeTab === tab && stackNav?.canGoBack()) {
+      stackNav.dispatch(StackActions.popToTop());
+      return true;
+    }
     tabNav.dispatch(
       CommonActions.navigate({
         name: tab,

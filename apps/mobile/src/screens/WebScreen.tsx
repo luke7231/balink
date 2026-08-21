@@ -131,6 +131,8 @@ const NATIVE_NAV_INTERCEPT = `
 
     function shouldNative(pathname) {
       if (isStack(pathname)) return true;
+      // Stack detail → tab root must pop native stack (don't SPA-replace inside detail WebView).
+      if (isTabRoot(pathname) && isStack(location.pathname)) return true;
       if (isTabRoot(pathname) && tabOf(pathname) !== tabOf(location.pathname)) return true;
       return false;
     }
@@ -283,6 +285,12 @@ export function WebScreen() {
         void playHaptic(message.style);
       } else if (message.type === "NATIVE_NAV") {
         openAppPath(navigation, message.path);
+      } else if (message.type === "NATIVE_BACK") {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else if (message.fallbackPath) {
+          openAppPath(navigation, message.fallbackPath);
+        }
       } else if (message.type === "OPEN_IN_APP_BROWSER") {
         setInAppBrowser({ url: message.url, title: message.title });
       } else if (message.type === "SET_THEME") {

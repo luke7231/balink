@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@balink/db";
 import { auth } from "@/auth";
+import { BackLink } from "@/components/back-link";
 import { MotionReveal } from "@/components/motion-reveal";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 
@@ -36,12 +36,12 @@ export default async function AccountProfilePage() {
     <main className="page-bg-radial flex min-h-full flex-1 flex-col">
       <div className="mx-auto w-full max-w-lg px-6 py-8">
         <MotionReveal index={0} variant="fade-in">
-          <Link
+          <BackLink
             href="/account"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
           >
             ← 마이페이지
-          </Link>
+          </BackLink>
         </MotionReveal>
 
         <MotionReveal index={1} variant="fade-up" className="mt-6 pb-8">

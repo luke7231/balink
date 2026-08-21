@@ -34,6 +34,7 @@ export type WebToNativeMessage =
   | { type: "OPEN_NOTIFICATION_SETTINGS" }
   | { type: "HAPTIC"; style: HapticStyle }
   | { type: "NATIVE_NAV"; path: string }
+  | { type: "NATIVE_BACK"; fallbackPath?: string }
   | { type: "OPEN_IN_APP_BROWSER"; url: string; title?: string }
   | { type: "CLEAR_SOURCE_LOGIN" }
   | { type: "SET_THEME"; preference: ThemePreference }
@@ -89,6 +90,18 @@ export function parseWebMessage(value: string): WebToNativeMessage | null {
           : "";
         if (!path.startsWith("/") || path.startsWith("//")) return null;
         return { type: "NATIVE_NAV", path };
+      }
+      case "NATIVE_BACK": {
+        const fallbackPath = typeof (message as { fallbackPath?: unknown }).fallbackPath === "string"
+          ? (message as { fallbackPath: string }).fallbackPath
+          : undefined;
+        if (
+          fallbackPath != null &&
+          (!fallbackPath.startsWith("/") || fallbackPath.startsWith("//"))
+        ) {
+          return null;
+        }
+        return { type: "NATIVE_BACK", fallbackPath };
       }
       case "OPEN_IN_APP_BROWSER": {
         const url = typeof (message as { url?: unknown }).url === "string"

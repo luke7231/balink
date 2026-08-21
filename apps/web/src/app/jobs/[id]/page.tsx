@@ -14,6 +14,7 @@ import {
 } from "@balink/domain";
 import { Badge } from "@balink/ui/badge";
 import { auth } from "@/auth";
+import { BackLink } from "@/components/back-link";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { DirectApplyControls } from "@/components/direct-apply-controls";
 import { OriginalDescription } from "@/components/original-description";
@@ -64,9 +65,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     <div className="min-h-full bg-surface-muted pb-24 sm:pb-0">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-5">
-          <Link href="/" className="text-sm font-medium text-accent hover:text-accent">
+          <BackLink href="/" className="text-sm font-medium text-accent hover:text-accent">
             ← 목록으로
-          </Link>
+          </BackLink>
           {session?.user ? (
             <BookmarkButton jobPostId={id} initialBookmarked={bookmarked} />
           ) : (

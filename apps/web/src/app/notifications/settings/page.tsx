@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@balink/db";
 import {
@@ -11,6 +10,7 @@ import {
   parseNotificationPreference,
 } from "@balink/domain";
 import { auth } from "@/auth";
+import { BackLink } from "@/components/back-link";
 import { NotificationSettingsPanel } from "@/components/notification-settings-panel";
 import { PushPermissionCallout } from "@/components/push-permission-callout";
 import { SiteHeader } from "@/components/site-header";
@@ -93,9 +93,12 @@ export default async function NotificationSettingsPage({
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-lg px-4 py-8">
-        <Link href="/notifications/rules" className="text-sm text-muted-foreground hover:text-foreground">
+        <BackLink
+          href="/notifications/rules"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
           ← 알림 조건
-        </Link>
+        </BackLink>
 
         <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
           {wantsNew ? "알림 조건 추가" : "알림 조건 수정"}

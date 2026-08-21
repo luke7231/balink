@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   createContext,
   useContext,
@@ -9,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { BackLink } from "@/components/back-link";
 import { MotionReveal } from "@/components/motion-reveal";
 
 const LegalSectionIndexContext = createContext<() => number>(() => 2);
@@ -37,12 +37,12 @@ export function LegalDocument({
       <main className="page-bg min-h-full flex-1">
         <div className="mx-auto w-full max-w-lg px-4 py-8">
           <MotionReveal index={0} variant="fade-in">
-            <Link
+            <BackLink
               href="/account"
               className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
             >
               ← 마이페이지
-            </Link>
+            </BackLink>
           </MotionReveal>
 
           <MotionReveal index={1} variant="fade-up" className="mt-6">

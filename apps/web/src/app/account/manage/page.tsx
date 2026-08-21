@@ -6,6 +6,7 @@ import { AccountDeletion } from "@/components/account-deletion";
 import { AccountPasswordForm } from "@/components/account-password-form";
 import { AccountSignOut } from "@/components/account-sign-out";
 import { AccountSourceLoginClear } from "@/components/account-source-login-clear";
+import { BackLink } from "@/components/back-link";
 import { MotionReveal } from "@/components/motion-reveal";
 
 export default async function AccountManagePage() {
@@ -34,12 +35,12 @@ export default async function AccountManagePage() {
     <main className="page-bg-radial flex min-h-full flex-1 flex-col">
       <div className="mx-auto w-full max-w-lg px-6 py-8">
         <MotionReveal index={0} variant="fade-in">
-          <Link
+          <BackLink
             href="/account"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
           >
             ← 마이페이지
-          </Link>
+          </BackLink>
         </MotionReveal>
 
         <MotionReveal index={1} variant="fade-up" className="mt-6 pb-8">

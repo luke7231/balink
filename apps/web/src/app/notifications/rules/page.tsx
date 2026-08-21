@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@balink/db";
 import { parseNotificationPreference } from "@balink/domain";
 import { auth } from "@/auth";
+import { BackLink } from "@/components/back-link";
 import { NotificationRulesList } from "@/components/notification-rules-list";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
@@ -34,9 +34,12 @@ export default async function NotificationRulesPage() {
       <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
 
       <main className="mx-auto max-w-lg px-4 py-8">
-        <Link href="/notifications" className="text-sm text-muted-foreground hover:text-foreground">
+        <BackLink
+          href="/notifications"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
           ← 알림함
-        </Link>
+        </BackLink>
 
         <div className="mt-6">
           <NotificationRulesList initialPreference={preference} />

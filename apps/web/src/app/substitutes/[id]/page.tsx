@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   formatAudienceType,
@@ -15,6 +14,7 @@ import {
   resolveSubstituteUrgency,
 } from "@balink/domain";
 import { Badge } from "@balink/ui/badge";
+import { BackLink } from "@/components/back-link";
 import { DirectApplyControls } from "@/components/direct-apply-controls";
 import { fetchSubstitutePost } from "@/lib/graphql/queries";
 
@@ -59,9 +59,12 @@ export default async function SubstituteDetailPage({ params }: SubstituteDetailP
     <div className="min-h-full bg-surface-muted pb-24 sm:pb-0">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-5">
-          <Link href="/substitutes" className="text-sm font-medium text-accent hover:text-accent">
+          <BackLink
+            href="/substitutes"
+            className="text-sm font-medium text-accent hover:text-accent"
+          >
             ← 대강 게시판
-          </Link>
+          </BackLink>
         </div>
       </header>
 

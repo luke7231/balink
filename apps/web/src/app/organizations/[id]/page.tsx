@@ -7,6 +7,7 @@ import {
 import { Badge } from "@balink/ui/badge";
 import { JobCard } from "@balink/ui/job-card";
 import { AcademyGallery } from "@/components/academy-gallery";
+import { BackLink } from "@/components/back-link";
 import { fetchOrganization } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -25,9 +26,9 @@ export default async function OrganizationDetailPage({ params }: OrganizationDet
     <div className="min-h-full bg-surface-muted">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-5">
-          <Link href="/" className="text-sm font-medium text-accent hover:text-accent">
+          <BackLink href="/" className="text-sm font-medium text-accent hover:text-accent">
             ← 목록으로
-          </Link>
+          </BackLink>
         </div>
       </header>
 
