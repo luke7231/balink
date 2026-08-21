@@ -1,11 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useEffect, useMemo, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { resolveSubstituteUrgency } from "@balink/domain";
 import { ListSortControl } from "@/components/list-sort-control";
+import { SkeletonCard } from "@/components/skeleton-block";
 import { SoftContentSwap } from "@/components/soft-content-swap";
-import { SubstituteList, type SubstituteCardData } from "@/components/substitute-list";
+import {
+  SubstituteList,
+  type SubstituteCardData,
+} from "@/components/substitute-list";
 import { SubstitutesFallback } from "@/components/substitutes-fallback";
 import { SubstitutesFilterBar } from "@/components/substitutes-filter-bar";
 import {
@@ -27,7 +38,25 @@ import {
 } from "@/lib/substitute-filter-params";
 import { hrefSearch, useFilterSearch } from "@/lib/use-filter-search";
 
+const PAGE_SIZE = 20;
+
 type DateFilter = SubstituteDateFilter;
+
+type CachedSubstitutes = {
+  items: SubstituteCardData[];
+  total: number;
+};
+
+type SubstitutesState = {
+  items: SubstituteCardData[];
+  page: number;
+  total: number;
+  hasMore: boolean;
+};
+
+function cacheKey(sort: SubstituteSort): string {
+  return `substitute-posts-open:${sort}:${PAGE_SIZE}`;
+}
 
 function toRegionValue(sido?: string | null, sigungu?: string | null): string {
   return [sido, sigungu].filter(Boolean).join("::");
@@ -43,7 +72,10 @@ function liveUrgency(post: {
   });
 }
 
-function matchesDateFilter(post: SubstituteCardData, dateFilter: DateFilter): boolean {
+function matchesDateFilter(
+  post: SubstituteCardData,
+  dateFilter: DateFilter,
+): boolean {
   if (dateFilter === "today") return liveUrgency(post) === "same_day";
   if (dateFilter === "tomorrow") return liveUrgency(post) === "next_day";
 
@@ -65,46 +97,40 @@ function matchesDateFilter(post: SubstituteCardData, dateFilter: DateFilter): bo
     })
     .filter((value): value is number => value != null && value >= now)
     .sort((a, b) => a - b)[0];
-  const lessonAt = upcoming ?? (post.nextLessonAt ? Date.parse(post.nextLessonAt) : NaN);
-  return Number.isFinite(lessonAt) && lessonAt >= rangeStart && lessonAt < rangeEnd;
+  const lessonAt =
+    upcoming ?? (post.nextLessonAt ? Date.parse(post.nextLessonAt) : NaN);
+  return (
+    Number.isFinite(lessonAt) && lessonAt >= rangeStart && lessonAt < rangeEnd
+  );
 }
 
-function sortByNextLesson(posts: SubstituteCardData[]): SubstituteCardData[] {
-  const urgencyRank = (urgency: string) =>
-    urgency === "same_day" ? 0 : urgency === "next_day" ? 1 : 2;
-
-  return posts.slice().sort((a, b) => {
-    const rankDifference = urgencyRank(liveUrgency(a)) - urgencyRank(liveUrgency(b));
-    if (rankDifference !== 0) return rankDifference;
-
-    const aLesson = a.nextLessonAt ? Date.parse(a.nextLessonAt) : Number.POSITIVE_INFINITY;
-    const bLesson = b.nextLessonAt ? Date.parse(b.nextLessonAt) : Number.POSITIVE_INFINITY;
-    if (aLesson !== bLesson) return aLesson - bLesson;
-
-    const aPosted = a.postedAt ? Date.parse(a.postedAt) : 0;
-    const bPosted = b.postedAt ? Date.parse(b.postedAt) : 0;
-    return bPosted - aPosted;
-  });
+function appendUnique(
+  existing: SubstituteCardData[],
+  incoming: SubstituteCardData[],
+): SubstituteCardData[] {
+  if (incoming.length === 0) return existing;
+  const seen = new Set(existing.map((post) => post.id));
+  const next = [...existing];
+  for (const post of incoming) {
+    if (seen.has(post.id)) continue;
+    seen.add(post.id);
+    next.push(post);
+  }
+  return next;
 }
 
-function sortByLatest(posts: SubstituteCardData[]): SubstituteCardData[] {
-  return posts.slice().sort((a, b) => {
-    const aPosted = a.postedAt ? Date.parse(a.postedAt) : 0;
-    const bPosted = b.postedAt ? Date.parse(b.postedAt) : 0;
-    if (aPosted !== bPosted) return bPosted - aPosted;
-    const aCreated = a.createdAt ? Date.parse(a.createdAt) : 0;
-    const bCreated = b.createdAt ? Date.parse(b.createdAt) : 0;
-    return bCreated - aCreated;
-  });
-}
-
-type CachedSubstitutes = {
-  items: SubstituteCardData[];
-  total: number;
-};
-
-function cacheKey(sort: SubstituteSort): string {
-  return `substitute-posts-open:${sort}`;
+function toSubstitutesState(
+  items: SubstituteCardData[],
+  page: number,
+  total: number,
+  totalPages: number,
+): SubstitutesState {
+  return {
+    items,
+    page,
+    total,
+    hasMore: page < totalPages,
+  };
 }
 
 export function SubstitutesClient({
@@ -117,36 +143,72 @@ export function SubstitutesClient({
   sort: SubstituteSort;
 }) {
   const search = useFilterSearch(
-    hrefSearch(buildSubstituteFilterHref(initialDateFilters, initialSelectedRegions, initialSort)),
+    hrefSearch(
+      buildSubstituteFilterHref(
+        initialDateFilters,
+        initialSelectedRegions,
+        initialSort,
+      ),
+    ),
   );
-  const { dateFilters, selectedRegions, sort } = parseSubstituteFilterSearchParams(
-    new URLSearchParams(search),
-  );
+  const { dateFilters, selectedRegions, sort } =
+    parseSubstituteFilterSearchParams(new URLSearchParams(search));
   const hasFilter = dateFilters.length > 0 || selectedRegions.length > 0;
-  const [raw, setRaw] = useState<CachedSubstitutes | null>(null);
   const key = cacheKey(sort);
+  const [data, setData] = useState<SubstitutesState | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadingMoreRef = useRef(false);
+  const loadMoreErrorRef = useRef(false);
+  const keyRef = useRef(key);
+  const dataRef = useRef(data);
+  keyRef.current = key;
+  dataRef.current = data;
 
   useEffect(() => {
     const cached = readListCache<CachedSubstitutes>(key);
-    if (cached) setRaw(cached);
+    if (cached) {
+      setData(
+        toSubstitutesState(
+          cached.items,
+          1,
+          cached.total,
+          Math.max(1, Math.ceil(cached.total / PAGE_SIZE)),
+        ),
+      );
+    } else {
+      setData(null);
+    }
+    loadingMoreRef.current = false;
+    loadMoreErrorRef.current = false;
+    setLoadingMore(false);
+    setLoadMoreError(false);
 
     let cancelled = false;
     void (async () => {
       try {
-        const result = await browserGraphqlRequest<SubstitutePostsQuery>(SubstitutePostsDocument, {
-          pagination: { page: 1, limit: 100 },
-          filter: { status: "OPEN" },
-          sort: toSubstitutePostSortEnum(sort),
-        });
+        const result = await browserGraphqlRequest<SubstitutePostsQuery>(
+          SubstitutePostsDocument,
+          {
+            pagination: { page: 1, limit: PAGE_SIZE },
+            filter: { status: "OPEN" },
+            sort: toSubstitutePostSortEnum(sort),
+          },
+        );
         if (cancelled) return;
-        const next = {
-          items: result.substitutePosts.items as SubstituteCardData[],
-          total: result.substitutePosts.pageInfo.total,
-        };
-        writeListCache(key, next);
-        // 무거운 리스트 커밋이 쉬머를 멈추지 않게 전환을 낮춤
+        const { items, pageInfo } = result.substitutePosts;
+        const next = toSubstitutesState(
+          items as SubstituteCardData[],
+          pageInfo.page,
+          pageInfo.total,
+          pageInfo.totalPages,
+        );
+        writeListCache(key, { items: next.items, total: next.total });
         startTransition(() => {
-          setRaw(next);
+          setData(next);
+          loadMoreErrorRef.current = false;
+          setLoadMoreError(false);
         });
       } catch {
         // keep cache
@@ -157,11 +219,56 @@ export function SubstitutesClient({
     };
   }, [key, sort]);
 
+  const loadNextPage = useCallback(async () => {
+    const current = dataRef.current;
+    if (!current?.hasMore || loadingMoreRef.current || loadMoreErrorRef.current)
+      return;
+
+    const requestKey = key;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    const nextPage = current.page + 1;
+
+    try {
+      const result = await browserGraphqlRequest<SubstitutePostsQuery>(
+        SubstitutePostsDocument,
+        {
+          pagination: { page: nextPage, limit: PAGE_SIZE },
+          filter: { status: "OPEN" },
+          sort: toSubstitutePostSortEnum(sort),
+        },
+      );
+      if (requestKey !== keyRef.current) return;
+      const { items, pageInfo } = result.substitutePosts;
+      const merged = appendUnique(
+        current.items,
+        items as SubstituteCardData[],
+      );
+      setData(
+        toSubstitutesState(
+          merged,
+          pageInfo.page,
+          pageInfo.total,
+          pageInfo.totalPages,
+        ),
+      );
+    } catch {
+      if (requestKey !== keyRef.current) return;
+      loadMoreErrorRef.current = true;
+      setLoadMoreError(true);
+    } finally {
+      if (requestKey === keyRef.current) {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      }
+    }
+  }, [key, sort]);
+
   const view = useMemo(() => {
-    if (!raw) return null;
+    if (!data) return null;
     const regionOptions = Array.from(
       new Map(
-        raw.items
+        data.items
           .filter((post) => post.sido || post.sigungu)
           .map((post) => {
             const value = toRegionValue(post.sido, post.sigungu);
@@ -174,14 +281,47 @@ export function SubstitutesClient({
     const regionSet = new Set(selectedRegions);
     let items =
       selectedRegions.length > 0
-        ? raw.items.filter((post) => regionSet.has(toRegionValue(post.sido, post.sigungu)))
-        : raw.items;
+        ? data.items.filter((post) =>
+            regionSet.has(toRegionValue(post.sido, post.sigungu)),
+          )
+        : data.items;
     if (dateFilters.length > 0) {
-      items = items.filter((post) => dateFilters.some((filter) => matchesDateFilter(post, filter)));
+      items = items.filter((post) =>
+        dateFilters.some((filter) => matchesDateFilter(post, filter)),
+      );
     }
-    items = sort === "latest" ? sortByLatest(items) : sortByNextLesson(items);
-    return { items, total: raw.total, regionOptions };
-  }, [raw, dateFilters, selectedRegions, sort]);
+    return { items, total: data.total, regionOptions, hasMore: data.hasMore };
+  }, [data, dateFilters, selectedRegions]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !view?.hasMore || loadMoreError) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          void loadNextPage();
+        }
+      },
+      { root: null, rootMargin: "200px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [view?.hasMore, loadMoreError, loadNextPage, view?.items.length]);
+
+  // 일정·지역 필터로 화면이 비면, 스크롤 전에 다음 페이지를 이어서 채운다
+  useEffect(() => {
+    if (!hasFilter || !view?.hasMore || loadingMore || loadMoreError) return;
+    if (view.items.length >= PAGE_SIZE) return;
+    void loadNextPage();
+  }, [
+    hasFilter,
+    view?.hasMore,
+    view?.items.length,
+    loadingMore,
+    loadMoreError,
+    loadNextPage,
+  ]);
 
   const skeleton = useMemo(
     () => <SubstitutesFallback hasFilter={hasFilter} />,
@@ -207,12 +347,26 @@ export function SubstitutesClient({
                 sheetTitle="정렬"
                 ariaLabel="대강 공고 정렬"
                 onChange={(nextSort) => {
-                  setFilterUrl(buildSubstituteFilterHref(dateFilters, selectedRegions, nextSort));
+                  setFilterUrl(
+                    buildSubstituteFilterHref(
+                      dateFilters,
+                      selectedRegions,
+                      nextSort,
+                    ),
+                  );
                 }}
               />
               <p className="text-sm text-muted-foreground">
-                {view.items.length}건
-                {view.items.length !== view.total ? ` / 전체 ${view.total}건` : ""}
+                {hasFilter ? (
+                  <>
+                    {view.items.length}건
+                    {view.items.length !== view.total
+                      ? ` / 전체 ${view.total}건`
+                      : ""}
+                  </>
+                ) : (
+                  <>{view.total}건</>
+                )}
               </p>
             </div>
           </div>
@@ -221,6 +375,49 @@ export function SubstitutesClient({
             getHref={(post) => `/substitutes/${post.id}`}
             linkComponent={Link}
           />
+          {data && data.items.length > 0 ? (
+            <div className="mt-4">
+              {loadingMore ? (
+                <div
+                  className="space-y-3"
+                  aria-busy="true"
+                  aria-label="대강 더 불러오는 중"
+                >
+                  <SkeletonCard index={0} />
+                  <SkeletonCard index={1} />
+                </div>
+              ) : null}
+              {loadMoreError ? (
+                <div className="flex flex-col items-center gap-2 py-4">
+                  <p className="text-sm text-muted-foreground">
+                    공고를 더 불러오지 못했어요
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loadMoreErrorRef.current = false;
+                      setLoadMoreError(false);
+                      void loadNextPage();
+                    }}
+                    className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:bg-surface-muted"
+                  >
+                    다시 불러오기
+                  </button>
+                </div>
+              ) : null}
+              {!view.hasMore &&
+              !loadingMore &&
+              !loadMoreError &&
+              view.items.length > 0 ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  모든 공고를 다 봤어요
+                </p>
+              ) : null}
+              {view.hasMore && !loadMoreError ? (
+                <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
+              ) : null}
+            </div>
+          ) : null}
         </>
       ) : null}
     </SoftContentSwap>

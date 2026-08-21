@@ -9,7 +9,7 @@ import { browserGraphqlRequest } from "@/lib/graphql/browser-client";
 import { readListCache, writeListCache } from "@/lib/list-cache";
 import { SUBSTITUTE_SORT_DEFAULT, toSubstitutePostSortEnum } from "@/lib/list-sort";
 
-const CACHE_KEY = `substitute-posts-open:${SUBSTITUTE_SORT_DEFAULT}`;
+const CACHE_KEY = `substitute-posts-open:${SUBSTITUTE_SORT_DEFAULT}:20`;
 
 /** 홈 체류 중 대강 목록을 백그라운드로 채워 탭 전환 빈화면을 줄인다 */
 export function SubstitutesListWarmup() {
@@ -23,7 +23,7 @@ export function SubstitutesListWarmup() {
           const result = await browserGraphqlRequest<SubstitutePostsQuery>(
             SubstitutePostsDocument,
             {
-              pagination: { page: 1, limit: 100 },
+              pagination: { page: 1, limit: 20 },
               filter: { status: "OPEN" },
               sort: toSubstitutePostSortEnum(SUBSTITUTE_SORT_DEFAULT),
             },
