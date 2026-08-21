@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Notifications from "expo-notifications";
 import { enableScreens } from "react-native-screens";
+import { AnimatedSplash } from "./src/animated-splash";
 import { BridgeProvider } from "./src/bridge-context";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 import { useSourceSessionCookies } from "./src/source-session-cookies";
@@ -41,6 +42,7 @@ function ThemedApp() {
       <BridgeProvider>
         <RootNavigator />
       </BridgeProvider>
+      <AnimatedSplash />
     </>
   );
 }

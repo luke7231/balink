@@ -18,16 +18,16 @@ export function SiteHeader({ jobCount, substituteCount }: SiteHeaderProps) {
           <Image
             src="/brand/logo-horizontal.png"
             alt="balink"
-            width={140}
-            height={50}
+            width={1024}
+            height={341}
             priority
             className="h-8 w-auto dark:hidden sm:h-9"
           />
           <Image
             src="/brand/logo-horizontal-dark.png"
             alt="balink"
-            width={140}
-            height={50}
+            width={1024}
+            height={341}
             priority
             className="hidden h-8 w-auto dark:block sm:h-9"
           />
