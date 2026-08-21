@@ -88,8 +88,8 @@ export function DirectApplyControls({
       </div>
 
       {/* Mobile sticky bar */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur sm:hidden">
-        <div className="mx-auto flex max-w-3xl gap-2">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur sm:hidden">
+        <div className="mx-auto flex max-w-lg gap-2">
           {canApply ? (
             <button
               type="button"
@@ -151,21 +151,21 @@ function ApplyActionRow({
     <div className="flex items-stretch gap-2">
       <a
         href={action.href}
-        className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-border bg-surface-muted/70 px-4 py-3 transition hover:border-accent-border hover:bg-accent-subtle/60"
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl bg-surface-muted px-4 py-3 transition hover:opacity-90"
       >
-        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-accent">
+        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-foreground">
           <Icon />
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-foreground">{action.label}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">{kindHint(action.kind)}</p>
         </div>
-        <span className="shrink-0 text-sm font-medium text-accent">열기</span>
+        <span className="shrink-0 text-sm font-medium text-muted-foreground">열기</span>
       </a>
       <button
         type="button"
         onClick={onCopy}
-        className="inline-flex shrink-0 flex-col items-center justify-center gap-1 rounded-2xl border border-border px-3 text-xs font-semibold text-muted-foreground hover:border-accent-border hover:text-accent"
+        className="inline-flex shrink-0 flex-col items-center justify-center gap-1 rounded-2xl border border-border px-3 text-xs font-semibold text-muted-foreground hover:bg-surface-muted hover:text-foreground"
       >
         <CopyIcon />
         {copied ? "복사됨" : "복사"}
