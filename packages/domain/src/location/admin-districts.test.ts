@@ -1,11 +1,26 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { canonicalizeAdminRegion, listAdminDistrictGroups } from "./admin-districts.js";
+import {
+  canonicalizeAdminRegion,
+  listAdminDistrictGroups,
+} from "./admin-districts.js";
 
 test("listAdminDistrictGroups pins Seoul and Gyeonggi first", () => {
   const groups = listAdminDistrictGroups();
   assert.equal(groups[0]?.sido, "서울특별시");
   assert.equal(groups[1]?.sido, "경기도");
+});
+
+test("listAdminDistrictGroups sorts districts alphabetically", () => {
+  const seoul = listAdminDistrictGroups().find(
+    (group) => group.sido === "서울특별시",
+  );
+  assert.ok(seoul);
+  assert.deepEqual(
+    [...seoul.districts],
+    [...seoul.districts].sort((a, b) => a.localeCompare(b, "ko")),
+  );
+  assert.equal(seoul.districts[0], "강남구");
 });
 
 test("canonicalizeAdminRegion expands short sido aliases", () => {

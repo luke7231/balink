@@ -106,7 +106,18 @@ const SIGUNGU_BY_SIDO: Record<string, readonly string[]> = {
     "가평군",
     "양평군",
   ],
-  인천광역시: ["중구", "동구", "미추홀구", "연수구", "남동구", "부평구", "계양구", "서구", "강화군", "옹진군"],
+  인천광역시: [
+    "중구",
+    "동구",
+    "미추홀구",
+    "연수구",
+    "남동구",
+    "부평구",
+    "계양구",
+    "서구",
+    "강화군",
+    "옹진군",
+  ],
   부산광역시: [
     "중구",
     "서구",
@@ -125,7 +136,17 @@ const SIGUNGU_BY_SIDO: Record<string, readonly string[]> = {
     "사상구",
     "기장군",
   ],
-  대구광역시: ["중구", "동구", "서구", "남구", "북구", "수성구", "달서구", "달성군", "군위군"],
+  대구광역시: [
+    "중구",
+    "동구",
+    "서구",
+    "남구",
+    "북구",
+    "수성구",
+    "달서구",
+    "달성군",
+    "군위군",
+  ],
   광주광역시: ["동구", "서구", "남구", "북구", "광산구"],
   대전광역시: ["동구", "중구", "서구", "유성구", "대덕구"],
   울산광역시: ["중구", "남구", "동구", "북구", "울주군"],
@@ -275,14 +296,22 @@ export interface AdminDistrictGroup {
 const PINNED_SIDO_ORDER = ["서울특별시", "경기도"] as const;
 
 export function listAdminDistrictGroups(): AdminDistrictGroup[] {
-  const pinRank = new Map<string, number>(PINNED_SIDO_ORDER.map((sido, index) => [sido, index]));
+  const pinRank = new Map<string, number>(
+    PINNED_SIDO_ORDER.map((sido, index) => [sido, index]),
+  );
   return Object.entries(SIGUNGU_BY_SIDO)
-    .map(([sido, districts]) => ({ sido, districts }))
+    .map(([sido, districts]) => ({
+      sido,
+      districts: [...districts].sort((a, b) => a.localeCompare(b, "ko")),
+    }))
     .sort((a, b) => {
       const aPin = pinRank.get(a.sido);
       const bPin = pinRank.get(b.sido);
       if (aPin != null || bPin != null) {
-        return (aPin ?? Number.POSITIVE_INFINITY) - (bPin ?? Number.POSITIVE_INFINITY);
+        return (
+          (aPin ?? Number.POSITIVE_INFINITY) -
+          (bPin ?? Number.POSITIVE_INFINITY)
+        );
       }
       return a.sido.localeCompare(b.sido, "ko");
     });
@@ -291,10 +320,16 @@ export function listAdminDistrictGroups(): AdminDistrictGroup[] {
 export function normalizeSido(value: string | null | undefined): string | null {
   if (!value) return null;
   const trimmed = value.trim();
-  return SIDO_ALIASES[trimmed] ?? (Object.values(SIDO_ALIASES).includes(trimmed) ? trimmed : null);
+  return (
+    SIDO_ALIASES[trimmed] ??
+    (Object.values(SIDO_ALIASES).includes(trimmed) ? trimmed : null)
+  );
 }
 
-export function normalizeSigungu(sido: string, value: string | null | undefined): string | null {
+export function normalizeSigungu(
+  sido: string,
+  value: string | null | undefined,
+): string | null {
   if (!value) return null;
   const trimmed = value.trim();
   const allowed = SIGUNGU_BY_SIDO[sido];
@@ -303,17 +338,27 @@ export function normalizeSigungu(sido: string, value: string | null | undefined)
   const exact = allowed.find((item) => item === trimmed);
   if (exact) return exact;
 
-  const partial = allowed.find((item) => trimmed.startsWith(item.replace(/(시|군|구)$/, "")) || item.startsWith(trimmed));
+  const partial = allowed.find(
+    (item) =>
+      trimmed.startsWith(item.replace(/(시|군|구)$/, "")) ||
+      item.startsWith(trimmed),
+  );
   return partial ?? trimmed;
 }
 
-export function isValidAdminDistrict(sido: string | null, sigungu: string | null): boolean {
+export function isValidAdminDistrict(
+  sido: string | null,
+  sigungu: string | null,
+): boolean {
   if (!sido || !sigungu) return false;
   const normalizedSido = normalizeSido(sido);
   if (!normalizedSido) return false;
   const allowed = SIGUNGU_BY_SIDO[normalizedSido];
   if (!allowed) return Boolean(sigungu.trim());
-  return allowed.some((item) => item === sigungu || sigungu.startsWith(item.replace(/(시|군|구)$/, "")));
+  return allowed.some(
+    (item) =>
+      item === sigungu || sigungu.startsWith(item.replace(/(시|군|구)$/, "")),
+  );
 }
 
 export function validateAdminDistrict(
@@ -321,7 +366,9 @@ export function validateAdminDistrict(
   sigungu: string | null | undefined,
 ): { sido: string | null; sigungu: string | null; valid: boolean } {
   const normalizedSido = normalizeSido(sido);
-  const normalizedSigungu = normalizedSido ? normalizeSigungu(normalizedSido, sigungu) : null;
+  const normalizedSigungu = normalizedSido
+    ? normalizeSigungu(normalizedSido, sigungu)
+    : null;
   return {
     sido: normalizedSido,
     sigungu: normalizedSigungu,
@@ -329,7 +376,11 @@ export function validateAdminDistrict(
   };
 }
 
-export function parseAddressTokens(address: string): { sido: string | null; sigungu: string | null; dongOrStation: string | null } {
+export function parseAddressTokens(address: string): {
+  sido: string | null;
+  sigungu: string | null;
+  dongOrStation: string | null;
+} {
   const tokens = address.trim().split(/\s+/).filter(Boolean);
   if (tokens.length === 0) {
     return { sido: null, sigungu: null, dongOrStation: null };
@@ -439,7 +490,8 @@ export function canonicalizeAdminRegion(input: {
       } else if (!sigungu) {
         sigungu = cityAsSido.sigungu;
       } else {
-        sigungu = normalizeSigungu(cityAsSido.sido, sigungu) ?? cityAsSido.sigungu;
+        sigungu =
+          normalizeSigungu(cityAsSido.sido, sigungu) ?? cityAsSido.sigungu;
       }
       sido = cityAsSido.sido;
     }
