@@ -11,13 +11,13 @@ import {
   formatNotificationRuleSummary,
   formatNotificationRuleTitle,
   getNotificationRuleSummaryParts,
-  formatSidoForDisplay,
   formatTimeSlot,
   type AlertJobType,
   type NotificationPreference,
   type NotificationRule,
 } from "@balink/domain";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
+import { BottomSheet } from "@/components/bottom-sheet";
 
 type DistrictGroup = {
   sido: string;
@@ -357,39 +357,27 @@ function RuleCard({
         <section>
           <h3 className="text-sm font-semibold text-foreground">지역</h3>
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
-            <label className="block">
-              <span className="sr-only">시·도</span>
-              <select
-                value={rule.sido}
-                onChange={(event) =>
-                  onChange({ ...rule, sido: event.target.value, sigungu: "" })
-                }
-                className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground"
-              >
-                <option value="">시·도 선택</option>
-                {districtGroups.map((group) => (
-                  <option key={group.sido} value={group.sido}>
-                    {formatSidoForDisplay(group.sido)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="sr-only">시·군·구</span>
-              <select
-                value={rule.sigungu}
-                disabled={!rule.sido}
-                onChange={(event) => onChange({ ...rule, sigungu: event.target.value })}
-                className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground disabled:opacity-50"
-              >
-                <option value="">시·군·구 선택</option>
-                {districts.map((sigungu) => (
-                  <option key={sigungu} value={sigungu}>
-                    {sigungu}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <SheetSelect
+              label="시·도"
+              value={rule.sido}
+              placeholder="시·도 선택"
+              options={districtGroups.map((group) => ({
+                value: group.sido,
+                label: group.sido,
+              }))}
+              onChange={(sido) => onChange({ ...rule, sido, sigungu: "" })}
+            />
+            <SheetSelect
+              label="시·군·구"
+              value={rule.sigungu}
+              placeholder="시·군·구 선택"
+              disabled={!rule.sido}
+              options={districts.map((sigungu) => ({
+                value: sigungu,
+                label: sigungu,
+              }))}
+              onChange={(sigungu) => onChange({ ...rule, sigungu })}
+            />
           </div>
           {!rule.sido || !rule.sigungu ? (
             <p className="mt-2 text-xs text-accent">지역을 선택해야 이 규칙으로 알림이 갑니다.</p>
@@ -548,6 +536,100 @@ function Toggle({
         }`}
       />
     </button>
+  );
+}
+
+function SheetSelect({
+  label,
+  value,
+  placeholder,
+  options,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  options: Array<{ value: string; label: string }>;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selectedLabel = options.find((option) => option.value === value)?.label;
+
+  return (
+    <>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={label}
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-left text-sm transition hover:bg-surface-muted disabled:pointer-events-none disabled:opacity-50"
+      >
+        <span className={selectedLabel ? "font-medium text-foreground" : "text-muted-foreground"}>
+          {selectedLabel ?? placeholder}
+        </span>
+        <SheetChevronIcon />
+      </button>
+
+      <BottomSheet open={open} title={label} onClose={() => setOpen(false)}>
+        <div className="space-y-2" role="radiogroup" aria-label={label}>
+          {options.map((option) => {
+            const selected = option.value === value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                className={`flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-sm font-semibold transition ${
+                  selected
+                    ? "bg-accent-subtle text-accent"
+                    : "border border-border text-foreground hover:bg-surface-muted"
+                }`}
+              >
+                <span>{option.label}</span>
+                {selected ? <SheetCheckIcon /> : null}
+              </button>
+            );
+          })}
+        </div>
+      </BottomSheet>
+    </>
+  );
+}
+
+function SheetChevronIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" fill="none" aria-hidden="true">
+      <path
+        d="M4 6l4 4 4-4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SheetCheckIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0" fill="none" aria-hidden="true">
+      <path
+        d="M3.5 8.5l3 3 6-6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

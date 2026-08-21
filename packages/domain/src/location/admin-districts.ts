@@ -272,10 +272,20 @@ export interface AdminDistrictGroup {
   districts: readonly string[];
 }
 
+const PINNED_SIDO_ORDER = ["서울특별시", "경기도"] as const;
+
 export function listAdminDistrictGroups(): AdminDistrictGroup[] {
+  const pinRank = new Map<string, number>(PINNED_SIDO_ORDER.map((sido, index) => [sido, index]));
   return Object.entries(SIGUNGU_BY_SIDO)
     .map(([sido, districts]) => ({ sido, districts }))
-    .sort((a, b) => a.sido.localeCompare(b.sido, "ko"));
+    .sort((a, b) => {
+      const aPin = pinRank.get(a.sido);
+      const bPin = pinRank.get(b.sido);
+      if (aPin != null || bPin != null) {
+        return (aPin ?? Number.POSITIVE_INFINITY) - (bPin ?? Number.POSITIVE_INFINITY);
+      }
+      return a.sido.localeCompare(b.sido, "ko");
+    });
 }
 
 export function normalizeSido(value: string | null | undefined): string | null {

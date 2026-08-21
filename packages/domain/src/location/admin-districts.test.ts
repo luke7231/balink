@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { canonicalizeAdminRegion } from "./admin-districts.js";
+import { canonicalizeAdminRegion, listAdminDistrictGroups } from "./admin-districts.js";
+
+test("listAdminDistrictGroups pins Seoul and Gyeonggi first", () => {
+  const groups = listAdminDistrictGroups();
+  assert.equal(groups[0]?.sido, "서울특별시");
+  assert.equal(groups[1]?.sido, "경기도");
+});
 
 test("canonicalizeAdminRegion expands short sido aliases", () => {
   assert.deepEqual(
