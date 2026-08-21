@@ -37,7 +37,8 @@ export type WebToNativeMessage =
   | { type: "OPEN_IN_APP_BROWSER"; url: string; title?: string }
   | { type: "CLEAR_SOURCE_LOGIN" }
   | { type: "SET_THEME"; preference: ThemePreference }
-  | { type: "SET_ACCENT"; accent: AccentPalette };
+  | { type: "SET_ACCENT"; accent: AccentPalette }
+  | { type: "WEB_SYNC"; reason: "auth" | "bookmark" };
 
 export type NativeToWebMessage =
   | ({ type: "PUSH_PERMISSION_STATUS" } & PushPermissionPayload)
@@ -52,7 +53,8 @@ export type NativeToWebMessage =
       preference: ThemePreference;
       resolvedTheme: ResolvedTheme;
       accent: AccentPalette;
-    };
+    }
+  | { type: "SYNC_REFRESH"; reason?: "auth" | "bookmark" };
 
 function isThemePreference(value: unknown): value is ThemePreference {
   return value === "system" || value === "light" || value === "dark";
@@ -107,6 +109,11 @@ export function parseWebMessage(value: string): WebToNativeMessage | null {
         const accent = (message as { accent?: unknown }).accent;
         if (!isAccentPalette(accent)) return null;
         return { type: "SET_ACCENT", accent };
+      }
+      case "WEB_SYNC": {
+        const reason = (message as { reason?: unknown }).reason;
+        if (reason !== "auth" && reason !== "bookmark") return null;
+        return { type: "WEB_SYNC", reason };
       }
       default:
         return null;

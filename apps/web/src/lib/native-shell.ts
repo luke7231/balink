@@ -57,6 +57,14 @@ export function clearSourceLoginOnDevice(): boolean {
   return true;
 }
 
+/** Notify native shell that other tab WebViews should soft-refresh on next focus. */
+export function notifyWebViewSync(reason: "auth" | "bookmark"): boolean {
+  if (typeof window === "undefined") return false;
+  if (!window.ReactNativeWebView) return false;
+  window.ReactNativeWebView.postMessage(JSON.stringify({ type: "WEB_SYNC", reason }));
+  return true;
+}
+
 export function useNativeShell(): boolean {
   const [nativeShell, setNativeShell] = useState(false);
 

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { signOutAction } from "@/components/login-actions";
+import { notifyWebViewSync } from "@/lib/native-shell";
 
 export function MobileAwareSignOutForm({
   className,
@@ -18,6 +19,7 @@ export function MobileAwareSignOutForm({
       className={className}
       onSubmit={(event) => {
         if (submittingRef.current) return;
+        notifyWebViewSync("auth");
         const form = event.currentTarget;
         const detach = window.balinkPush?.detach;
         if (!detach) return;

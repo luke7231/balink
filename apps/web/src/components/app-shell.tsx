@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { BottomTabBar, shouldHideBottomTab } from "@/components/bottom-tab-bar";
 import { MobileBridge } from "@/components/mobile-bridge";
+import { NativeSyncRefresh } from "@/components/native-sync-refresh";
 import { PrefetchTabs } from "@/components/prefetch-tabs";
 import { useNativeShell } from "@/lib/native-shell";
 
@@ -15,6 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <>
       <MobileBridge />
+      <NativeSyncRefresh />
       {nativeShell ? null : <PrefetchTabs />}
       <div
         className={

@@ -4,6 +4,7 @@ import { prisma } from "@balink/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { getBookmarkedJobIdSet } from "@/lib/job-bookmarks";
 
 export type BookmarkActionResult =
   | { ok: true; bookmarked: boolean }
@@ -56,4 +57,13 @@ export async function toggleJobBookmarkAction(jobPostId: string): Promise<Bookma
   revalidatePath("/saved");
   revalidatePath("/account");
   return { ok: true, bookmarked: true };
+}
+
+/** Client home feed: resolve which of the visible jobs are bookmarked. */
+export async function getBookmarkedJobIdsAction(jobPostIds: string[]): Promise<string[]> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId || jobPostIds.length === 0) return [];
+  const set = await getBookmarkedJobIdSet(userId, jobPostIds);
+  return [...set];
 }

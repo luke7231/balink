@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { startTransition, useEffect, useState } from "react";
 import { JobList } from "@balink/ui/job-list";
+import { getBookmarkedJobIdsAction } from "@/components/bookmark-actions";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { HomeJobsSectionFallback } from "@/components/home-fallbacks";
 import { ListSortControl } from "@/components/list-sort-control";
@@ -50,6 +51,7 @@ export function HomeJobsClient({
   const sigungu = filter?.sigungu ?? "";
   const key = cacheKey(filter, sort);
   const [data, setData] = useState<CachedJobs | null>(null);
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     const cached = readListCache<CachedJobs>(key);
@@ -80,6 +82,26 @@ export function HomeJobsClient({
       cancelled = true;
     };
   }, [key, sido, sigungu, sort]);
+
+  useEffect(() => {
+    if (!data?.items.length) {
+      setBookmarkedIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const ids = await getBookmarkedJobIdsAction(data.items.map((job) => job.id));
+        if (cancelled) return;
+        setBookmarkedIds(new Set(ids));
+      } catch {
+        if (!cancelled) setBookmarkedIds(new Set());
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [data]);
 
   if (!data) {
     return (
@@ -114,7 +136,11 @@ export function HomeJobsClient({
         getHref={(job) => `/jobs/${job.id}`}
         linkComponent={Link}
         renderAction={(job) => (
-          <BookmarkButton jobPostId={job.id} initialBookmarked={false} variant="icon" />
+          <BookmarkButton
+            jobPostId={job.id}
+            initialBookmarked={bookmarkedIds.has(job.id)}
+            variant="icon"
+          />
         )}
       />
     </MotionReveal>

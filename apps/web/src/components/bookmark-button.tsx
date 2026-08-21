@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toggleJobBookmarkAction } from "@/components/bookmark-actions";
+import { notifyWebViewSync } from "@/lib/native-shell";
 
 function BookmarkIcon({ filled }: { filled: boolean }) {
   if (filled) {
@@ -41,6 +42,10 @@ export function BookmarkButton({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  useEffect(() => {
+    setBookmarked(initialBookmarked);
+  }, [initialBookmarked, jobPostId]);
+
   function onToggle() {
     const previous = bookmarked;
     const next = !previous;
@@ -57,6 +62,7 @@ export function BookmarkButton({
         return;
       }
       setBookmarked(result.bookmarked);
+      notifyWebViewSync("bookmark");
     });
   }
 

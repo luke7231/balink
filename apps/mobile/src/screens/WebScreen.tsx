@@ -21,6 +21,10 @@ import { clearAllSourceLogins } from "../source-login-assist";
 import { useNativeTheme } from "../theme-context";
 import { isKakaoAppUrl, openKakaoAppUrl, WEBVIEW_APP_NAME } from "../kakao-app-url";
 import {
+  bumpWebViewSync,
+  getWebViewSyncGeneration,
+} from "../webview-sync";
+import {
   WEBVIEW_AUTH_HOSTS,
   WEB_ORIGIN,
   isStackPath,
@@ -30,6 +34,15 @@ import {
   toAppPath,
   withNativeShell,
 } from "../web-config";
+
+/** Tab roots that soft-refresh on focus only when WEB_SYNC bumped the generation. */
+const SYNC_SENSITIVE_PATHS = new Set(["/", "/saved", "/notifications", "/account", "/login"]);
+const AUTH_EXIT_PATHS = new Set([
+  "/login",
+  "/login/email",
+  "/login/reset",
+  "/signup",
+]);
 
 function nativeShellBefore(isDark: boolean) {
   const resolvedTheme = isDark ? "dark" : "light";
@@ -172,6 +185,8 @@ export function WebScreen() {
   const uri = useMemo(() => withNativeShell(path), [path]);
   const webViewRef = useRef<WebView>(null);
   const currentUrlRef = useRef(uri);
+  const previousPathRef = useRef<string | null>(null);
+  const syncSeenRef = useRef(getWebViewSyncGeneration());
   const [canGoBackInWeb, setCanGoBackInWeb] = useState(false);
   const [inAppBrowser, setInAppBrowser] = useState<{ url: string; title?: string } | null>(null);
   const { buildPermissionMessages, requestPushPermission, openNotificationSettings } = useBridge();
@@ -216,9 +231,28 @@ export function WebScreen() {
     syncTheme();
   }, [syncTheme]);
 
+  const requestSoftRefresh = useCallback(() => {
+    sendToWeb({ type: "SYNC_REFRESH" });
+    webViewRef.current?.injectJavaScript(`
+      (function () {
+        window.dispatchEvent(new CustomEvent('balink:sync-refresh'));
+      })();
+      true;
+    `);
+  }, [sendToWeb]);
+
   useFocusEffect(
     useCallback(() => {
       void syncPermission();
+      const pathOnly = path.split("?")[0] || "/";
+      const generation = getWebViewSyncGeneration();
+      if (
+        SYNC_SENSITIVE_PATHS.has(pathOnly) &&
+        generation > syncSeenRef.current
+      ) {
+        syncSeenRef.current = generation;
+        requestSoftRefresh();
+      }
       const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
         if (navigation.canGoBack()) {
           navigation.goBack();
@@ -231,7 +265,7 @@ export function WebScreen() {
         return false;
       });
       return () => subscription.remove();
-    }, [navigation, canGoBackInWeb, syncPermission]),
+    }, [navigation, canGoBackInWeb, syncPermission, path, requestSoftRefresh]),
   );
 
   useEffect(() => {
@@ -261,6 +295,10 @@ export function WebScreen() {
         openNotificationSettings();
       } else if (message.type === "CLEAR_SOURCE_LOGIN") {
         void clearAllSourceLogins();
+      } else if (message.type === "WEB_SYNC") {
+        bumpWebViewSync();
+        // Sender already has fresh UI — don't soft-refresh this WebView on next focus.
+        syncSeenRef.current = getWebViewSyncGeneration();
       } else {
         void syncPermission();
       }
@@ -368,6 +406,19 @@ export function WebScreen() {
         onNavigationStateChange={(state: WebViewNavigation) => {
           currentUrlRef.current = state.url;
           setCanGoBackInWeb(state.canGoBack);
+          const nextPath = toAppPath(state.url)?.split("?")[0] || "/";
+          const prevPath = previousPathRef.current;
+          previousPathRef.current = nextPath;
+
+          // Login/signup/reset → account: other tabs need auth UI refresh.
+          if (
+            nextPath === "/account" &&
+            prevPath &&
+            AUTH_EXIT_PATHS.has(prevPath)
+          ) {
+            bumpWebViewSync();
+            syncSeenRef.current = getWebViewSyncGeneration();
+          }
         }}
         onShouldStartLoadWithRequest={handleNavigation}
         onOpenWindow={({ nativeEvent }) => {
