@@ -210,8 +210,7 @@ export async function confirmEmailChangeWithToken(
     prisma.emailChangeRequest.deleteMany({ where: { userId: request.userId } }),
   ]);
 
-  revalidatePath("/account");
-  revalidatePath("/account/profile");
-  revalidatePath("/account/manage");
+  // Called from /account/email/confirm during render — revalidatePath is not allowed there.
+  // Account pages are force-dynamic, so the next navigation reads fresh data.
   return { ok: true, message: "이메일이 변경되었습니다." };
 }

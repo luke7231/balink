@@ -53,14 +53,12 @@ export default async function AccountProfilePage() {
           </header>
         </MotionReveal>
 
-        <MotionReveal index={2} variant="fade-up">
-          <ProfileEditForm
-            initialName={user.name ?? ""}
-            initialEmail={user.email}
-            initialImage={user.image}
-            pendingEmail={pendingRequest?.newEmail ?? null}
-          />
-        </MotionReveal>
+        <ProfileEditForm
+          initialName={user.name ?? ""}
+          initialEmail={user.email}
+          initialImage={user.image}
+          pendingEmail={pendingRequest?.newEmail ?? null}
+        />
       </div>
     </main>
   );

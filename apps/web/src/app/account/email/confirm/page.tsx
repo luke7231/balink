@@ -30,18 +30,23 @@ export default async function EmailConfirmPage({
         </MotionReveal>
 
         <MotionReveal index={1} variant="fade-up" className="mt-6">
-          <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+          <header>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {result.ok ? "이메일 변경 완료" : "이메일 변경 실패"}
             </h1>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {result.ok ? result.message : result.error}
             </p>
+          </header>
+        </MotionReveal>
+
+        <MotionReveal index={2} variant="fade-up">
+          <section className="border-t border-border py-7">
             <Link
               href={result.ok ? "/account" : "/account/profile"}
-              className="mt-6 inline-flex rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background hover:opacity-85"
+              className="inline-flex rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background hover:opacity-85"
             >
-              {result.ok ? "마이페이지로" : "다시 요청하기"}
+              {result.ok ? "마이페이지로 돌아가기" : "프로필에서 다시 요청하기"}
             </Link>
           </section>
         </MotionReveal>
