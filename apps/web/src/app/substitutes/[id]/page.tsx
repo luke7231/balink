@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { prisma } from "@balink/db";
 import {
   extractApplyLinks,
   formatAudienceType,
@@ -12,6 +13,7 @@ import {
   resolveSubstituteUrgency,
 } from "@balink/domain";
 import { Badge } from "@balink/ui/badge";
+import { auth } from "@/auth";
 import { BackLink } from "@/components/back-link";
 import { DirectApplyControls } from "@/components/direct-apply-controls";
 import { ExternalLinkIcon } from "@/components/external-link-icon";
@@ -35,9 +37,23 @@ export default async function SubstituteDetailPage({
   params,
 }: SubstituteDetailPageProps) {
   const { id } = await params;
-  const post = await fetchSubstitutePost(id);
+  const [post, session] = await Promise.all([fetchSubstitutePost(id), auth()]);
 
   if (!post) notFound();
+
+  const bookmarked = session?.user?.id
+    ? Boolean(
+        await prisma.substituteBookmark.findUnique({
+          where: {
+            userId_substitutePostId: {
+              userId: session.user.id,
+              substitutePostId: id,
+            },
+          },
+          select: { id: true },
+        }),
+      )
+    : false;
 
   const urgencyLabel = formatSubstituteUrgency(
     resolveSubstituteUrgency({
@@ -239,6 +255,11 @@ export default async function SubstituteDetailPage({
               contactMethods={post.contactMethods}
               applyLinks={applyLinks}
               sourceLinks={sourceLinks}
+              bookmark={
+                session?.user
+                  ? { substitutePostId: id, initialBookmarked: bookmarked }
+                  : { loginHref: "/login" }
+              }
             />
           </section>
         </MotionReveal>

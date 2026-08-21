@@ -219,6 +219,7 @@ model SubstitutePost {
   lastDeletionCheckAt      DateTime?
   createdAt                DateTime             @default(now())
   updatedAt                DateTime             @updatedAt
+  bookmarks                SubstituteBookmark[]
 
   @@unique([source, sourcePostId])
   @@index([status, nextLessonAt])
@@ -256,6 +257,7 @@ model User {
   sessions         Session[]
   interestRegions           UserInterestRegion[]
   jobBookmarks              JobBookmark[]
+  substituteBookmarks       SubstituteBookmark[]
   notificationPreference    UserNotificationPreference?
   notifications             UserNotification[]
   pushDevices               PushDevice[]
@@ -427,6 +429,19 @@ model JobBookmark {
   @@unique([userId, jobPostId])
   @@index([userId, createdAt])
   @@index([jobPostId])
+}
+
+model SubstituteBookmark {
+  id               String         @id @default(cuid())
+  userId           String
+  substitutePostId String
+  createdAt        DateTime       @default(now())
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  substitutePost   SubstitutePost @relation(fields: [substitutePostId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, substitutePostId])
+  @@index([userId, createdAt])
+  @@index([substitutePostId])
 }
 
 model Account {

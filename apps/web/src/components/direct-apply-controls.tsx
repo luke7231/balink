@@ -25,9 +25,10 @@ type DirectApplyControlsProps = {
   /** 지원 방법 등에서 추출한 http(s) 링크 */
   applyLinks?: string[];
   sourceLinks: DetailSourceLink[];
-  /** 채용 공고 저장. 없으면 저장 아이콘 숨김(대강 등). */
+  /** 채용·대강 저장. 없으면 저장 아이콘 숨김. */
   bookmark?:
     | { jobPostId: string; initialBookmarked: boolean }
+    | { substitutePostId: string; initialBookmarked: boolean }
     | { loginHref: string };
 };
 
@@ -81,6 +82,12 @@ export function DirectApplyControls({
     "jobPostId" in bookmark ? (
       <BookmarkButton
         jobPostId={bookmark.jobPostId}
+        initialBookmarked={bookmark.initialBookmarked}
+        variant="bar"
+      />
+    ) : "substitutePostId" in bookmark ? (
+      <BookmarkButton
+        substitutePostId={bookmark.substitutePostId}
         initialBookmarked={bookmark.initialBookmarked}
         variant="bar"
       />

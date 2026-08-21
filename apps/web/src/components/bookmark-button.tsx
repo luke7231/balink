@@ -2,7 +2,10 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { toggleJobBookmarkAction } from "@/components/bookmark-actions";
+import {
+  toggleJobBookmarkAction,
+  toggleSubstituteBookmarkAction,
+} from "@/components/bookmark-actions";
 import { notifyWebViewSync } from "@/lib/native-shell";
 
 function BookmarkIcon({ filled, className = "h-5 w-5" }: { filled: boolean; className?: string }) {
@@ -33,27 +36,40 @@ function BookmarkIcon({ filled, className = "h-5 w-5" }: { filled: boolean; clas
 const barIconClass =
   "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition";
 
+type BookmarkKind = "job" | "substitute";
+
 export function BookmarkButton({
   jobPostId,
+  substitutePostId,
   initialBookmarked,
   variant = "label",
   loginHref,
 }: {
   jobPostId?: string;
+  substitutePostId?: string;
   initialBookmarked?: boolean;
   variant?: "label" | "icon" | "bar";
-  /** 비로그인 시 이동할 경로 (bar/icon). jobPostId 없이 로그인 유도만 할 때. */
+  /** 비로그인 시 이동할 경로 (bar/icon). 타깃 id 없이 로그인 유도만 할 때. */
   loginHref?: string;
 }) {
+  const kind: BookmarkKind | null = jobPostId
+    ? "job"
+    : substitutePostId
+      ? "substitute"
+      : null;
+  const targetId = jobPostId ?? substitutePostId;
+  const saveLabel = kind === "substitute" ? "대강 저장" : "공고 저장";
+  const savedLabel = "저장됨";
+
   const [bookmarked, setBookmarked] = useState(initialBookmarked ?? false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
     setBookmarked(initialBookmarked ?? false);
-  }, [initialBookmarked, jobPostId]);
+  }, [initialBookmarked, targetId]);
 
-  if ((variant === "icon" || variant === "bar") && loginHref && !jobPostId) {
+  if ((variant === "icon" || variant === "bar") && loginHref && !targetId) {
     return (
       <Link
         href={loginHref}
@@ -69,7 +85,7 @@ export function BookmarkButton({
     );
   }
 
-  if (!jobPostId) return null;
+  if (!kind || !targetId) return null;
 
   function onToggle() {
     const previous = bookmarked;
@@ -79,7 +95,10 @@ export function BookmarkButton({
     window.balinkHaptics?.play(next ? "success" : "selection");
 
     startTransition(async () => {
-      const result = await toggleJobBookmarkAction(jobPostId!);
+      const result =
+        kind === "substitute"
+          ? await toggleSubstituteBookmarkAction(targetId!)
+          : await toggleJobBookmarkAction(targetId!);
       if (!result.ok) {
         setBookmarked(previous);
         setError(result.error);
@@ -101,7 +120,7 @@ export function BookmarkButton({
           event.stopPropagation();
           onToggle();
         }}
-        aria-label={bookmarked ? "저장 해제" : "공고 저장"}
+        aria-label={bookmarked ? "저장 해제" : saveLabel}
         aria-pressed={bookmarked}
         className={
           variant === "bar"
@@ -135,7 +154,7 @@ export function BookmarkButton({
         }`}
         aria-pressed={bookmarked}
       >
-        {bookmarked ? "저장됨" : "공고 저장"}
+        {bookmarked ? savedLabel : saveLabel}
       </button>
       {error ? <p className="text-xs text-accent">{error}</p> : null}
     </div>

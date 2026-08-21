@@ -11,6 +11,8 @@ import {
 } from "react";
 import { resolveSubstituteUrgency } from "@balink/domain";
 import { ListSortControl } from "@/components/list-sort-control";
+import { getBookmarkedSubstituteIdsAction } from "@/components/bookmark-actions";
+import { BookmarkButton } from "@/components/bookmark-button";
 import { SkeletonCard } from "@/components/skeleton-block";
 import { SoftContentSwap } from "@/components/soft-content-swap";
 import {
@@ -158,6 +160,9 @@ export function SubstitutesClient({
   const [data, setData] = useState<SubstitutesState | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadingMoreRef = useRef(false);
   const loadMoreErrorRef = useRef(false);
@@ -165,6 +170,20 @@ export function SubstitutesClient({
   const dataRef = useRef(data);
   keyRef.current = key;
   dataRef.current = data;
+
+  const mergeBookmarks = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return;
+    try {
+      const bookmarked = await getBookmarkedSubstituteIdsAction(ids);
+      setBookmarkedIds((prev) => {
+        const next = new Set(prev);
+        for (const id of bookmarked) next.add(id);
+        return next;
+      });
+    } catch {
+      // keep previous bookmarks
+    }
+  }, []);
 
   useEffect(() => {
     const cached = readListCache<CachedSubstitutes>(key);
@@ -177,8 +196,11 @@ export function SubstitutesClient({
           Math.max(1, Math.ceil(cached.total / PAGE_SIZE)),
         ),
       );
+      setBookmarkedIds(new Set());
+      void mergeBookmarks(cached.items.map((post) => post.id));
     } else {
       setData(null);
+      setBookmarkedIds(new Set());
     }
     loadingMoreRef.current = false;
     loadMoreErrorRef.current = false;
@@ -207,9 +229,11 @@ export function SubstitutesClient({
         writeListCache(key, { items: next.items, total: next.total });
         startTransition(() => {
           setData(next);
+          setBookmarkedIds(new Set());
           loadMoreErrorRef.current = false;
           setLoadMoreError(false);
         });
+        void mergeBookmarks(next.items.map((post) => post.id));
       } catch {
         // keep cache
       }
@@ -217,7 +241,7 @@ export function SubstitutesClient({
     return () => {
       cancelled = true;
     };
-  }, [key, sort]);
+  }, [key, sort, mergeBookmarks]);
 
   const loadNextPage = useCallback(async () => {
     const current = dataRef.current;
@@ -240,6 +264,7 @@ export function SubstitutesClient({
       );
       if (requestKey !== keyRef.current) return;
       const { items, pageInfo } = result.substitutePosts;
+      const existingIds = new Set(current.items.map((post) => post.id));
       const merged = appendUnique(
         current.items,
         items as SubstituteCardData[],
@@ -252,6 +277,10 @@ export function SubstitutesClient({
           pageInfo.totalPages,
         ),
       );
+      const newIds = (items as SubstituteCardData[])
+        .map((post) => post.id)
+        .filter((id) => !existingIds.has(id));
+      void mergeBookmarks(newIds);
     } catch {
       if (requestKey !== keyRef.current) return;
       loadMoreErrorRef.current = true;
@@ -262,7 +291,7 @@ export function SubstitutesClient({
         setLoadingMore(false);
       }
     }
-  }, [key, sort]);
+  }, [key, sort, mergeBookmarks]);
 
   const view = useMemo(() => {
     if (!data) return null;
@@ -374,6 +403,13 @@ export function SubstitutesClient({
             posts={view.items}
             getHref={(post) => `/substitutes/${post.id}`}
             linkComponent={Link}
+            renderAction={(post) => (
+              <BookmarkButton
+                substitutePostId={post.id}
+                initialBookmarked={bookmarkedIds.has(post.id)}
+                variant="icon"
+              />
+            )}
           />
           {data && data.items.length > 0 ? (
             <div className="mt-4">
