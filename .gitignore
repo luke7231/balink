@@ -13,3 +13,4 @@ npm-debug.log
 *firebase-adminsdk*.json
 google-services.json
 GoogleService-Info.plist
+.cursor/
