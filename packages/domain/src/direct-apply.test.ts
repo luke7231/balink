@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { hasDirectApplyContacts, resolveDirectApplyActions } from "./direct-apply.js";
+import {
+  extractApplyLinks,
+  hasDirectApplyContacts,
+  resolveDirectApplyActions,
+  splitTextByUrls,
+} from "./direct-apply.js";
 
 test("empty contacts produce no actions (balletmania-style)", () => {
   assert.equal(hasDirectApplyContacts({ phones: [], emails: [] }), false);
@@ -69,4 +74,46 @@ test("dedupes phones and emails", () => {
   assert.equal(actions.filter((a) => a.kind === "sms").length, 1);
   assert.equal(actions.filter((a) => a.kind === "tel").length, 1);
   assert.equal(actions.filter((a) => a.kind === "mailto").length, 1);
+});
+
+test("지원 방법 섹션 URL과 오픈카톡을 바로 지원 링크로 추출한다", () => {
+  const links = extractApplyLinks({
+    displaySections: [
+      {
+        title: "지원 방법",
+        content: "오픈카카오톡으로 이력서를 전달해 주세요:\nhttps://open.kakao.com/o/s8Ra3joi",
+      },
+      {
+        title: "근무 조건",
+        content: "자세한 안내는 https://example.com/guide 참고",
+      },
+    ],
+  });
+  assert.deepEqual(links, ["https://open.kakao.com/o/s8Ra3joi"]);
+  assert.equal(hasDirectApplyContacts({ links }), true);
+
+  const actions = resolveDirectApplyActions({
+    links,
+    title: "강남 정규",
+  });
+  assert.equal(actions.length, 1);
+  assert.equal(actions[0]?.kind, "link");
+  assert.equal(actions[0]?.href, "https://open.kakao.com/o/s8Ra3joi");
+  assert.match(actions[0]!.label, /오픈채팅/);
+});
+
+test("본문 텍스트의 오픈카톡도 추출한다", () => {
+  const links = extractApplyLinks({
+    texts: ["문의는 https://open.kakao.com/o/abc123 로"],
+  });
+  assert.deepEqual(links, ["https://open.kakao.com/o/abc123"]);
+});
+
+test("splitTextByUrls keeps trailing punctuation outside the url", () => {
+  const parts = splitTextByUrls("링크: https://open.kakao.com/o/x.");
+  assert.deepEqual(parts, [
+    { type: "text", value: "링크: " },
+    { type: "url", value: "https://open.kakao.com/o/x" },
+    { type: "text", value: "." },
+  ]);
 });

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@balink/db";
 import {
   displayableTimeSlots,
+  extractApplyLinks,
   formatDayGroups,
   formatJobType,
   formatLocation,
@@ -16,11 +17,13 @@ import { Badge } from "@balink/ui/badge";
 import { auth } from "@/auth";
 import { AcademyGallery } from "@/components/academy-gallery";
 import { BackLink } from "@/components/back-link";
-import { BookmarkButton } from "@/components/bookmark-button";
 import { DirectApplyControls } from "@/components/direct-apply-controls";
+import { ExternalLinkIcon } from "@/components/external-link-icon";
+import { LinkifiedText } from "@/components/linkified-text";
 import { MotionReveal } from "@/components/motion-reveal";
 import { OriginalDescription } from "@/components/original-description";
 import { OriginalSourceLink } from "@/components/original-source-link";
+import { PayHero } from "@/components/pay-hero";
 import { fetchJobPost } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -67,40 +70,30 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const cleanedSections = job.displaySections.filter(
     (section) => !(job.organization && section.title.trim() === "학원명"),
   );
+  const applyLinks = extractApplyLinks({
+    displaySections: cleanedSections,
+    texts: job.description ? [job.description] : [],
+  });
   const hasGallery = Boolean(job.academyLogoUrl) || job.academyGallery.length > 0;
+  const timeSlots = displayableTimeSlots(job.timeSlots);
+  const timeSlotLabel = timeSlots.map((slot) => formatTimeSlot(slot)).join(" · ");
 
   return (
     <main className="page-bg-radial flex min-h-full flex-1 flex-col pb-24 sm:pb-0">
       <div className="mx-auto w-full max-w-lg px-6 py-8">
         <MotionReveal index={0} variant="fade-in">
-          <div className="flex items-center justify-between gap-3">
-            <BackLink
-              href="/"
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-            >
-              ← 목록으로
-            </BackLink>
-            {session?.user ? (
-              <BookmarkButton
-                jobPostId={id}
-                initialBookmarked={bookmarked}
-                variant="icon"
-              />
-            ) : (
-              <Link
-                href="/login"
-                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-surface-muted"
-              >
-                로그인 후 저장
-              </Link>
-            )}
-          </div>
+          <BackLink
+            href="/"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+          >
+            ← 목록으로
+          </BackLink>
         </MotionReveal>
 
         <MotionReveal index={1} variant="fade-up" className="mt-6 pb-8">
           <div className="flex flex-wrap gap-2">
             <Badge variant="rose">{formatJobType(job.jobType ?? null)}</Badge>
-            {displayableTimeSlots(job.timeSlots).map((slot) => (
+            {timeSlots.map((slot) => (
               <Badge key={slot}>{formatTimeSlot(slot)}</Badge>
             ))}
           </div>
@@ -163,6 +156,14 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                   {formatDayGroups(job.dayGroups, job.days)}
                 </dd>
               </div>
+              {timeSlots.length > 0 ? (
+                <div>
+                  <dt className="text-muted-foreground">시간대</dt>
+                  <dd className="mt-1 font-medium text-foreground">
+                    {timeSlotLabel}
+                  </dd>
+                </div>
+              ) : null}
             </dl>
           </section>
         </MotionReveal>
@@ -176,9 +177,10 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                     <h2 className="text-base font-semibold text-foreground">
                       {section.title}
                     </h2>
-                    <p className="mt-3 whitespace-break-spaces text-sm leading-7 text-foreground">
-                      {section.content}
-                    </p>
+                    <LinkifiedText
+                      text={section.content}
+                      className="mt-3 whitespace-break-spaces text-sm leading-7 text-foreground"
+                    />
                   </div>
                 ))}
               </div>
@@ -218,7 +220,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                     key={source.id}
                     href={source.sourceUrl}
                     title={formatSource(source.source)}
-                    className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:opacity-80"
+                    className="flex items-center justify-between gap-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm font-semibold text-foreground transition hover:opacity-90"
                   >
                     <div className="min-w-0">
                       <p className="truncate">{formatSource(source.source)}</p>
@@ -227,7 +229,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                       </p>
                     </div>
                     <span aria-hidden className="shrink-0 text-muted-foreground">
-                      →
+                      <ExternalLinkIcon />
                     </span>
                   </OriginalSourceLink>
                 ))}
@@ -238,63 +240,17 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               contactPhones={job.contactPhones}
               contactEmails={job.contactEmails}
               contactMethods={job.contactMethods}
+              applyLinks={applyLinks}
               sourceLinks={sourceLinks}
+              bookmark={
+                session?.user
+                  ? { jobPostId: id, initialBookmarked: bookmarked }
+                  : { loginHref: "/login" }
+              }
             />
           </section>
         </MotionReveal>
       </div>
     </main>
-  );
-}
-
-function PayHero({
-  payMin,
-  payMax,
-  payLabel,
-}: {
-  payMin: number | null;
-  payMax: number | null;
-  payLabel: string;
-}) {
-  if (payMin != null && payMax != null) {
-    const amount =
-      payMin === payMax ? String(payMin) : `${payMin}~${payMax}`;
-    return (
-      <p className="flex items-baseline gap-1.5 text-foreground">
-        <span className="text-3xl font-bold tracking-tight tabular-nums">
-          {amount}
-        </span>
-        <span className="text-base font-medium text-muted-foreground">만원</span>
-      </p>
-    );
-  }
-
-  if (payMin != null || payMax != null) {
-    return (
-      <p className="flex items-baseline gap-1.5 text-foreground">
-        <span className="text-3xl font-bold tracking-tight tabular-nums">
-          {payMin ?? payMax}
-        </span>
-        <span className="text-base font-medium text-muted-foreground">만원</span>
-      </p>
-    );
-  }
-
-  const match = payLabel.match(/^(.+?)(만원(?:대)?)$/);
-  if (match) {
-    return (
-      <p className="flex items-baseline gap-1.5 text-foreground">
-        <span className="text-3xl font-bold tracking-tight tabular-nums">
-          {match[1].trim()}
-        </span>
-        <span className="text-base font-medium text-muted-foreground">
-          {match[2]}
-        </span>
-      </p>
-    );
-  }
-
-  return (
-    <p className="text-lg font-semibold text-foreground">{payLabel}</p>
   );
 }

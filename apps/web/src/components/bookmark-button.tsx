@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 import { toggleJobBookmarkAction } from "@/components/bookmark-actions";
 import { notifyWebViewSync } from "@/lib/native-shell";
 
-function BookmarkIcon({ filled }: { filled: boolean }) {
+function BookmarkIcon({ filled, className = "h-5 w-5" }: { filled: boolean; className?: string }) {
   if (filled) {
     return (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
         <path
           fill="currentColor"
           d="M6 3.75A2.25 2.25 0 0 1 8.25 1.5h7.5A2.25 2.25 0 0 1 18 3.75v18.19a.75.75 0 0 1-1.2.6L12 18.75l-4.8 3.79a.75.75 0 0 1-1.2-.6V3.75Z"
@@ -17,7 +18,7 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
   }
 
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
       <path
         stroke="currentColor"
         strokeWidth="1.8"
@@ -29,22 +30,46 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
   );
 }
 
+const barIconClass =
+  "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition";
+
 export function BookmarkButton({
   jobPostId,
   initialBookmarked,
   variant = "label",
+  loginHref,
 }: {
-  jobPostId: string;
-  initialBookmarked: boolean;
-  variant?: "label" | "icon";
+  jobPostId?: string;
+  initialBookmarked?: boolean;
+  variant?: "label" | "icon" | "bar";
+  /** 비로그인 시 이동할 경로 (bar/icon). jobPostId 없이 로그인 유도만 할 때. */
+  loginHref?: string;
 }) {
-  const [bookmarked, setBookmarked] = useState(initialBookmarked);
+  const [bookmarked, setBookmarked] = useState(initialBookmarked ?? false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
-    setBookmarked(initialBookmarked);
+    setBookmarked(initialBookmarked ?? false);
   }, [initialBookmarked, jobPostId]);
+
+  if ((variant === "icon" || variant === "bar") && loginHref && !jobPostId) {
+    return (
+      <Link
+        href={loginHref}
+        aria-label="로그인 후 저장"
+        className={
+          variant === "bar"
+            ? `${barIconClass} border-border bg-surface text-muted-foreground hover:border-accent-border hover:text-foreground`
+            : "rounded-full border border-border bg-surface p-2 text-muted-foreground shadow-sm hover:border-accent-border hover:text-accent"
+        }
+      >
+        <BookmarkIcon filled={false} />
+      </Link>
+    );
+  }
+
+  if (!jobPostId) return null;
 
   function onToggle() {
     const previous = bookmarked;
@@ -54,7 +79,7 @@ export function BookmarkButton({
     window.balinkHaptics?.play(next ? "success" : "selection");
 
     startTransition(async () => {
-      const result = await toggleJobBookmarkAction(jobPostId);
+      const result = await toggleJobBookmarkAction(jobPostId!);
       if (!result.ok) {
         setBookmarked(previous);
         setError(result.error);
@@ -66,7 +91,7 @@ export function BookmarkButton({
     });
   }
 
-  if (variant === "icon") {
+  if (variant === "icon" || variant === "bar") {
     return (
       <button
         type="button"
@@ -78,11 +103,19 @@ export function BookmarkButton({
         }}
         aria-label={bookmarked ? "저장 해제" : "공고 저장"}
         aria-pressed={bookmarked}
-        className={`rounded-full border p-2 shadow-sm transition ${
-          bookmarked
-            ? "border-accent-border bg-accent-subtle text-accent hover:bg-accent-subtle"
-            : "border-border bg-surface text-muted-foreground hover:border-accent-border hover:text-accent"
-        }`}
+        className={
+          variant === "bar"
+            ? `${barIconClass} ${
+                bookmarked
+                  ? "border-accent-border bg-accent-subtle text-accent"
+                  : "border-border bg-surface text-muted-foreground hover:border-accent-border hover:text-foreground"
+              }`
+            : `rounded-full border p-2 shadow-sm transition ${
+                bookmarked
+                  ? "border-accent-border bg-accent-subtle text-accent hover:bg-accent-subtle"
+                  : "border-border bg-surface text-muted-foreground hover:border-accent-border hover:text-accent"
+              }`
+        }
       >
         <BookmarkIcon filled={bookmarked} />
       </button>

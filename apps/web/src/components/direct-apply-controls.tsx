@@ -6,7 +6,9 @@ import {
   resolveDirectApplyActions,
   type DirectApplyAction,
 } from "@balink/domain";
+import { BookmarkButton } from "@/components/bookmark-button";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { ExternalLinkIcon } from "@/components/external-link-icon";
 import { OriginalSourceLink } from "@/components/original-source-link";
 
 export type DetailSourceLink = {
@@ -20,32 +22,49 @@ type DirectApplyControlsProps = {
   contactPhones: string[];
   contactEmails: string[];
   contactMethods: string[];
+  /** 지원 방법 등에서 추출한 http(s) 링크 */
+  applyLinks?: string[];
   sourceLinks: DetailSourceLink[];
+  /** 채용 공고 저장. 없으면 저장 아이콘 숨김(대강 등). */
+  bookmark?:
+    | { jobPostId: string; initialBookmarked: boolean }
+    | { loginHref: string };
 };
+
+const barIconClass =
+  "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition";
 
 export function DirectApplyControls({
   postTitle,
   contactPhones,
   contactEmails,
   contactMethods,
+  applyLinks = [],
   sourceLinks,
+  bookmark,
 }: DirectApplyControlsProps) {
   const [open, setOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const canApply = hasDirectApplyContacts({ phones: contactPhones, emails: contactEmails });
+  const canApply = hasDirectApplyContacts({
+    phones: contactPhones,
+    emails: contactEmails,
+    links: applyLinks,
+  });
   const actions = useMemo(
     () =>
       resolveDirectApplyActions({
         phones: contactPhones,
         emails: contactEmails,
+        links: applyLinks,
         methods: contactMethods,
         title: postTitle,
       }),
-    [contactEmails, contactMethods, contactPhones, postTitle],
+    [applyLinks, contactEmails, contactMethods, contactPhones, postTitle],
   );
 
   const primarySource = sourceLinks[0] ?? null;
+  const sourceIsPrimary = !canApply && Boolean(primarySource);
 
   async function copyValue(key: string, value: string) {
     try {
@@ -57,69 +76,78 @@ export function DirectApplyControls({
     }
   }
 
+  const bookmarkControl = bookmark ? (
+    "jobPostId" in bookmark ? (
+      <BookmarkButton
+        jobPostId={bookmark.jobPostId}
+        initialBookmarked={bookmark.initialBookmarked}
+        variant="bar"
+      />
+    ) : (
+      <BookmarkButton loginHref={bookmark.loginHref} variant="bar" />
+    )
+  ) : null;
+
+  const sourceControl = primarySource ? (
+    <OriginalSourceLink
+      href={primarySource.href}
+      title={primarySource.title ?? "원문"}
+      className={
+        sourceIsPrimary
+          ? `${barIconClass} border-transparent bg-accent text-background hover:opacity-90`
+          : `${barIconClass} border-border bg-surface text-muted-foreground hover:border-accent-border hover:text-foreground`
+      }
+    >
+      <span className="sr-only">원문 보기</span>
+      <ExternalLinkIcon className="h-5 w-5" />
+    </OriginalSourceLink>
+  ) : null;
+
+  const sideControls = (
+    <>
+      {bookmarkControl}
+      {sourceControl}
+    </>
+  );
+
   return (
     <>
       {/* Desktop inline CTA */}
-      <div className="mt-5 hidden gap-2 sm:flex">
+      <div className="mt-5 hidden items-center gap-2 sm:flex">
         {canApply ? (
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background hover:opacity-90"
+            className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-background hover:opacity-90"
           >
             <SendIcon />
             바로 지원하기
           </button>
         ) : null}
-        {primarySource ? (
-          <OriginalSourceLink
-            href={primarySource.href}
-            title={primarySource.title ?? "원문"}
-            className={
-              canApply
-                ? "inline-flex items-center justify-center gap-2 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground hover:border-accent-border"
-                : "inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-background hover:opacity-90"
-            }
-          >
-            <ExternalLinkIcon />
-            원문 보기
-          </OriginalSourceLink>
-        ) : null}
+        {sideControls}
       </div>
 
       {/* Mobile sticky bar */}
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur sm:hidden">
-        <div className="mx-auto flex max-w-lg gap-2">
+        <div className="mx-auto flex max-w-lg items-center gap-2">
           {canApply ? (
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 text-sm font-semibold text-background"
+              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-background"
             >
               <SendIcon />
               바로 지원하기
             </button>
           ) : null}
-          {primarySource ? (
-            <OriginalSourceLink
-              href={primarySource.href}
-              title={primarySource.title ?? "원문"}
-              className={
-                canApply
-                  ? "inline-flex items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-4 py-3 text-sm font-semibold text-foreground"
-                  : "inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 text-sm font-semibold text-background"
-              }
-            >
-              <ExternalLinkIcon />
-              원문 보기
-            </OriginalSourceLink>
-          ) : null}
+          {sideControls}
         </div>
       </div>
 
       <BottomSheet open={open} title="바로 지원하기" onClose={() => setOpen(false)}>
         <p className="mb-4 text-sm leading-6 text-muted-foreground">
-          공고에 공개된 연락처로 바로 연락합니다. 문자·메일은 짧은 지원 문구가 미리 채워집니다.
+          공고에 공개된 연락처·지원 링크로 바로 연락합니다. 문자·메일은 짧은 지원 문구가 미리
+          채워지고, 링크는 복사하거나 열 수 있습니다.
         </p>
         <ul className="space-y-2">
           {actions.map((action) => (
@@ -147,21 +175,35 @@ function ApplyActionRow({
   onCopy: () => void;
 }) {
   const Icon = actionIcon(action.kind);
+  const isExternal = action.kind === "link";
+  const openLabel = (
+    <>
+      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-foreground">
+        <Icon />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-foreground">{action.label}</p>
+        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+          {isExternal ? action.displayValue : kindHint(action.kind)}
+        </p>
+      </div>
+      <span className="shrink-0 text-sm font-medium text-muted-foreground">열기</span>
+    </>
+  );
+  const openClassName =
+    "flex min-w-0 flex-1 items-center gap-3 rounded-2xl bg-surface-muted px-4 py-3 transition hover:opacity-90";
+
   return (
     <div className="flex items-stretch gap-2">
-      <a
-        href={action.href}
-        className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl bg-surface-muted px-4 py-3 transition hover:opacity-90"
-      >
-        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-foreground">
-          <Icon />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-foreground">{action.label}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{kindHint(action.kind)}</p>
-        </div>
-        <span className="shrink-0 text-sm font-medium text-muted-foreground">열기</span>
-      </a>
+      {isExternal ? (
+        <OriginalSourceLink href={action.href} title="지원 링크" className={openClassName}>
+          {openLabel}
+        </OriginalSourceLink>
+      ) : (
+        <a href={action.href} className={openClassName}>
+          {openLabel}
+        </a>
+      )}
       <button
         type="button"
         onClick={onCopy}
@@ -177,12 +219,14 @@ function ApplyActionRow({
 function kindHint(kind: DirectApplyAction["kind"]): string {
   if (kind === "sms") return "문자 앱에서 보내기";
   if (kind === "tel") return "전화 걸기";
+  if (kind === "link") return "링크 열기";
   return "메일 앱에서 보내기";
 }
 
 function actionIcon(kind: DirectApplyAction["kind"]) {
   if (kind === "sms") return SmsIcon;
   if (kind === "tel") return PhoneIcon;
+  if (kind === "link") return ExternalLinkIcon;
   return MailIcon;
 }
 
@@ -209,33 +253,6 @@ function SendIcon() {
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function ExternalLinkIcon() {
-  return (
-    <svg {...iconProps("h-4 w-4")}>
-      <path
-        d="M14 5h5v5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M10 14 19 5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M17 13.5V18a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 4 18V8A1.5 1.5 0 0 1 5.5 6.5H10"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
       />
     </svg>
   );

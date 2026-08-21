@@ -1,17 +1,17 @@
 import Link from "next/link";
 import {
-  formatLessonDates,
   formatLocation,
   formatPostedAt,
-  formatRecurrenceSummary,
-  listSubstituteSessionCardGroups,
-  type SubstituteSessionDateGroup,
   formatSubstituteStatus,
   formatSubstituteUrgency,
   resolveSubstituteUrgency,
 } from "@balink/domain";
 import { Badge } from "@balink/ui/badge";
-import { CalendarIcon, MapPinIcon } from "@balink/ui";
+import { MapPinIcon } from "@balink/ui";
+import {
+  resolveSubstituteSchedule,
+  SubstituteScheduleView,
+} from "@/components/substitute-schedule";
 import { motionIndexStyle } from "@/lib/motion";
 
 export interface SubstituteCardData {
@@ -62,34 +62,6 @@ interface SubstituteListProps {
   linkComponent?: typeof Link;
 }
 
-type ScheduleBlock =
-  | { kind: "groups"; groups: SubstituteSessionDateGroup[]; overflow: number }
-  | { kind: "lines"; lines: string[] };
-
-function resolveCardSchedule(post: SubstituteCardData): ScheduleBlock {
-  if (post.scheduleKind === "recurring") {
-    const summary = formatRecurrenceSummary(post.recurrence ?? null);
-    return { kind: "lines", lines: summary ? [summary] : ["반복 일정"] };
-  }
-
-  if (post.scheduleKind === "unscheduled" || post.lessonDates.length === 0) {
-    return { kind: "lines", lines: ["일정 협의"] };
-  }
-
-  const { groups, overflow } = listSubstituteSessionCardGroups(
-    post.sessions ?? [],
-  );
-  if (groups.length > 0) {
-    return { kind: "groups", groups, overflow };
-  }
-
-  const fallback = formatLessonDates(post.lessonDates);
-  return {
-    kind: "lines",
-    lines: fallback ? fallback.split(" · ") : ["일정 협의"],
-  };
-}
-
 export function SubstituteList({
   posts,
   getHref,
@@ -112,7 +84,7 @@ export function SubstituteList({
             nextLessonAt: post.nextLessonAt,
           }),
         );
-        const schedule = resolveCardSchedule(post);
+        const schedule = resolveSubstituteSchedule(post, { max: 4 });
         const hasNormalizedLocation = Boolean(
           post.sido || post.sigungu || post.dongOrStation,
         );
@@ -163,53 +135,8 @@ export function SubstituteList({
               </div>
 
               <div className="min-w-0 self-end">
-                <div className="ml-auto inline-grid grid-cols-[14px_minmax(0,auto)] gap-x-1.5 gap-y-1 text-left text-sm leading-snug text-foreground">
-                  {schedule.kind === "groups" ? (
-                    <>
-                      {schedule.groups.map((group, groupIndex) => (
-                        <div key={group.date} className="contents">
-                          {groupIndex === 0 ? (
-                            <CalendarIcon className="mt-0.5 text-muted-foreground" />
-                          ) : (
-                            <span aria-hidden="true" />
-                          )}
-                          <div className="min-w-0">
-                            <p className="font-medium">{group.dateLabel}</p>
-                            {group.times.length > 0 ? (
-                              <ul className="mt-0.5 space-y-0.5 pl-2 text-muted-foreground">
-                                {group.times.map((time) => (
-                                  <li key={`${group.date}-${time}`}>
-                                    · {time}
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : null}
-                          </div>
-                        </div>
-                      ))}
-                      {schedule.overflow > 0 ? (
-                        <>
-                          <span aria-hidden="true" />
-                          <p className="text-muted-foreground">
-                            외 {schedule.overflow}개
-                          </p>
-                        </>
-                      ) : null}
-                    </>
-                  ) : (
-                    schedule.lines.map((line, index) => (
-                      <div key={`${line}-${index}`} className="contents">
-                        {index === 0 ? (
-                          <CalendarIcon className="mt-0.5 text-muted-foreground" />
-                        ) : (
-                          <span aria-hidden="true" />
-                        )}
-                        <span className="wrap-break-word font-medium">
-                          {line}
-                        </span>
-                      </div>
-                    ))
-                  )}
+                <div className="ml-auto">
+                  <SubstituteScheduleView schedule={schedule} />
                 </div>
                 <p className="mt-2 text-right text-xs text-muted-foreground">
                   {formatPostedAt(post.postedAt ?? null)}
