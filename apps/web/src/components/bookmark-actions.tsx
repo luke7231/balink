@@ -23,7 +23,7 @@ async function requireUserId() {
 export async function toggleJobBookmarkAction(jobPostId: string): Promise<BookmarkActionResult> {
   const userId = await requireUserId();
   if (!jobPostId.trim()) {
-    return { ok: false, error: "공고를 찾을 수 없습니다." };
+    return { ok: false, error: "공고를 찾을 수 없어요." };
   }
 
   const job = await prisma.jobPost.findUnique({
@@ -31,7 +31,7 @@ export async function toggleJobBookmarkAction(jobPostId: string): Promise<Bookma
     select: { id: true },
   });
   if (!job) {
-    return { ok: false, error: "공고를 찾을 수 없습니다." };
+    return { ok: false, error: "공고를 찾을 수 없어요." };
   }
 
   const existing = await prisma.jobBookmark.findUnique({
@@ -65,7 +65,7 @@ export async function toggleSubstituteBookmarkAction(
 ): Promise<BookmarkActionResult> {
   const userId = await requireUserId();
   if (!substitutePostId.trim()) {
-    return { ok: false, error: "대강 글을 찾을 수 없습니다." };
+    return { ok: false, error: "대강을 찾을 수 없어요." };
   }
 
   const post = await prisma.substitutePost.findUnique({
@@ -73,7 +73,7 @@ export async function toggleSubstituteBookmarkAction(
     select: { id: true },
   });
   if (!post) {
-    return { ok: false, error: "대강 글을 찾을 수 없습니다." };
+    return { ok: false, error: "대강을 찾을 수 없어요." };
   }
 
   const existing = await prisma.substituteBookmark.findUnique({

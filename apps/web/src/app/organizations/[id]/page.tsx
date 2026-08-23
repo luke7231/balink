@@ -108,7 +108,9 @@ export default async function OrganizationDetailPage({ params }: OrganizationDet
           <section className="mt-8">
             <h2 className="text-sm font-semibold text-foreground">채용 공고</h2>
             {organization.jobPosts.length === 0 ? (
-              <p className="mt-3 text-sm text-muted-foreground">연결된 공고가 없습니다.</p>
+              <p className="mt-3 text-sm text-muted-foreground" role="status">
+                연결된 채용 공고가 없어요.
+              </p>
             ) : (
               <div className="mt-3 space-y-3">
                 {organization.jobPosts.map((job) => (

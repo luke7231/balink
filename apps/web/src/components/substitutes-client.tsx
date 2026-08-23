@@ -28,6 +28,7 @@ import {
 import { setFilterUrl } from "@/lib/filter-url";
 import { browserGraphqlRequest } from "@/lib/graphql/browser-client";
 import { readListCache, writeListCache } from "@/lib/list-cache";
+import { errorCopy, listEndCopy } from "@/lib/ui-copy";
 import {
   SUBSTITUTE_SORT_OPTIONS,
   toSubstitutePostSortEnum,
@@ -424,9 +425,9 @@ export function SubstitutesClient({
                 </div>
               ) : null}
               {loadMoreError ? (
-                <div className="flex flex-col items-center gap-2 py-4">
+                <div className="flex flex-col items-center gap-2 py-4" role="alert">
                   <p className="text-sm text-muted-foreground">
-                    공고를 더 불러오지 못했어요
+                    {errorCopy.loadMoreSubstitutes}
                   </p>
                   <button
                     type="button"
@@ -437,7 +438,7 @@ export function SubstitutesClient({
                     }}
                     className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground hover:bg-surface-muted"
                   >
-                    다시 불러오기
+                    {errorCopy.reload}
                   </button>
                 </div>
               ) : null}
@@ -446,7 +447,7 @@ export function SubstitutesClient({
               !loadMoreError &&
               view.items.length > 0 ? (
                 <p className="py-4 text-center text-sm text-muted-foreground">
-                  모든 공고를 다 봤어요
+                  {listEndCopy.allSubstitutes}
                 </p>
               ) : null}
               {view.hasMore && !loadMoreError ? (

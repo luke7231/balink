@@ -15,9 +15,9 @@ export default async function LoginPage({
 
   const params = await searchParams;
   const errorMessage = params.error
-    ? "로그인에 실패했습니다. 다시 시도해 주세요."
+    ? "로그인에 실패했어요. 다시 시도해 주세요."
     : null;
-  const deletedMessage = params.deleted ? "계정이 삭제되었습니다." : null;
+  const deletedMessage = params.deleted ? "계정이 삭제되었어요." : null;
 
   return (
     <>

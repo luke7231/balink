@@ -32,7 +32,7 @@ export function KakaoChannelChat({
   function initialize() {
     const kakao = window.Kakao;
     if (!kakao) {
-      setError("카카오톡 채팅을 불러오지 못했습니다.");
+      setError("카카오톡 채팅을 불러오지 못했어요.");
       return;
     }
 
@@ -66,7 +66,7 @@ export function KakaoChannelChat({
       kakao.Channel.chat({ channelPublicId: channelPublicId! });
       setError(null);
     } catch {
-      setError("카카오톡 채팅을 열지 못했습니다.");
+      setError("카카오톡 채팅을 열지 못했어요.");
     }
   }
 
@@ -77,7 +77,7 @@ export function KakaoChannelChat({
         strategy="afterInteractive"
         onLoad={initialize}
         onReady={initialize}
-        onError={() => setError("카카오톡 채팅을 불러오지 못했습니다.")}
+        onError={() => setError("카카오톡 채팅을 불러오지 못했어요.")}
       />
       <button
         type="button"
