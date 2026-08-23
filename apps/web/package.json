@@ -10,6 +10,7 @@
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
+    "@amplitude/unified": "^1.1.29",
     "@auth/prisma-adapter": "^2.11.3",
     "@aws-sdk/client-s3": "^3.1098.0",
     "@balink/db": "workspace:*",

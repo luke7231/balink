@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AmplitudeAnalytics } from "@/components/amplitude-analytics";
 import { AppShell } from "@/components/app-shell";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
@@ -66,6 +67,11 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="flex min-h-full flex-col font-sans">
+        <AmplitudeAnalytics
+          vercelEnv={process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV}
+          devApiKey={process.env.NEXT_PUBLIC_AMPLITUDE_DEV_API_KEY}
+          prdApiKey={process.env.NEXT_PUBLIC_AMPLITUDE_PRD_API_KEY}
+        />
         <ThemeProvider>
           <AppShell>{children}</AppShell>
         </ThemeProvider>
