@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AmplitudeAnalytics } from "@/components/amplitude-analytics";
 import { AppShell } from "@/components/app-shell";
+import { JsonLd } from "@/components/json-ld";
 import { ThemeProvider } from "@/components/theme-provider";
+import { defaultMetadata, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,25 +16,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://www.balink.co.kr"),
-  title: "발링크",
-  description: "Ballet Career, Connected — 발레 강사 커리어 플랫폼",
-  openGraph: {
-    title: "발링크",
-    description: "Ballet Career, Connected — The leading platform for ballet careers.",
-    url: "https://www.balink.co.kr",
-    images: [{ url: "/brand/og.png", width: 1200, height: 630, alt: "balink" }],
-    type: "website",
-    siteName: "발링크",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "발링크",
-    description: "Ballet Career, Connected — The leading platform for ballet careers.",
-    images: ["/brand/og.png"],
-  },
-};
+export const metadata = defaultMetadata;
 
 const themeScript = `
 (function () {
@@ -65,6 +48,7 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
       </head>
       <body className="flex min-h-full flex-col font-sans">
         <AmplitudeAnalytics
