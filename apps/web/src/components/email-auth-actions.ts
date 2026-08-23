@@ -42,7 +42,7 @@ export type EmailAuthActionResult =
 
 const GENERIC_LOGIN_ERROR = "이메일 또는 비밀번호가 올바르지 않습니다.";
 const GENERIC_CODE_SENT = "인증 코드를 보냈어요. 이메일을 확인해 주세요.";
-const GENERIC_BUSY = "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
+const GENERIC_BUSY = "요청이 너무 많아요. 잠시 후 다시 시도해 주세요.";
 
 function passwordMismatchOrInvalid(
   password: string,
@@ -305,7 +305,7 @@ export async function completeResetAction(
   const user = await findUserByEmail(ticket.email);
   if (!user) {
     await clearAuthTicketCookie();
-    return { ok: false, error: "계정을 찾을 수 없습니다." };
+    return { ok: false, error: "계정을 찾을 수 없어요." };
   }
 
   const passwordHash = await hashPassword(passwordInput);
@@ -340,7 +340,7 @@ export async function setAccountPasswordAction(
     where: { id: userId },
     select: { email: true, emailVerified: true, passwordHash: true },
   });
-  if (!user) return { ok: false, error: "계정을 찾을 수 없습니다." };
+  if (!user) return { ok: false, error: "계정을 찾을 수 없어요." };
   if (!user.email || !user.emailVerified) {
     return {
       ok: false,
