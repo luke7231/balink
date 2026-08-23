@@ -6,6 +6,7 @@ import {
   addInterestRegionAction,
   removeInterestRegionAction,
 } from "@/components/account-actions";
+import { RegionLimitSheet } from "@/components/region-limit-sheet";
 import {
   interestRegionKey,
   type InterestRegion,
@@ -19,15 +20,18 @@ type DistrictGroup = {
 export function InterestRegionPicker({
   initialRegions,
   districtGroups,
+  regionReferred = false,
   onRegionsChange,
 }: {
   initialRegions: InterestRegion[];
   districtGroups: DistrictGroup[];
+  regionReferred?: boolean;
   onRegionsChange?: (regions: InterestRegion[]) => void;
 }) {
   const [regions, setRegions] = useState(initialRegions);
   const [selectedSido, setSelectedSido] = useState(districtGroups[0]?.sido ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [limitOpen, setLimitOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function commitRegions(updater: (prev: InterestRegion[]) => InterestRegion[]) {
@@ -67,6 +71,7 @@ export function InterestRegionPicker({
       const result = await addInterestRegionAction(sido, sigungu);
       if (!result.ok) {
         setError(result.error);
+        if (result.code === "REGION_LIMIT") setLimitOpen(true);
         return;
       }
       if (!result.region) return;
@@ -139,7 +144,11 @@ export function InterestRegionPicker({
 
       <div>
         <p className="text-sm font-medium text-foreground">시·군·구</p>
-        <p className="mt-1 text-xs text-muted-foreground">원하는 만큼 여러 지역을 선택할 수 있습니다.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {regionReferred
+            ? "기본은 두 곳까지입니다. 친구 한 명을 초대하면 무제한으로 열립니다."
+            : "기본은 한 곳까지입니다. 코드를 넣으면 하나 더, 친구 한 명을 초대하면 무제한입니다."}
+        </p>
         <div className="mt-3 grid max-h-64 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3">
           {currentDistricts.map((sigungu) => {
             const checked = selectedKeys.has(interestRegionKey(selectedSido, sigungu));
@@ -163,6 +172,11 @@ export function InterestRegionPicker({
       </div>
 
       {error ? <p className="text-sm text-accent">{error}</p> : null}
+      <RegionLimitSheet
+        open={limitOpen}
+        referred={regionReferred}
+        onClose={() => setLimitOpen(false)}
+      />
     </div>
   );
 }

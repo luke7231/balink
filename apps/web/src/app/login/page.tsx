@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { LoginScreen } from "@/components/login-screen";
+import { RememberInviteRef } from "@/components/remember-invite-ref";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; deleted?: string }>;
+  searchParams: Promise<{ error?: string; deleted?: string; ref?: string }>;
 }) {
   const session = await auth();
   if (session?.user) {
@@ -19,6 +20,9 @@ export default async function LoginPage({
   const deletedMessage = params.deleted ? "계정이 삭제되었습니다." : null;
 
   return (
-    <LoginScreen errorMessage={errorMessage} deletedMessage={deletedMessage} showBrowseLink />
+    <>
+      <RememberInviteRef code={params.ref} />
+      <LoginScreen errorMessage={errorMessage} deletedMessage={deletedMessage} showBrowseLink />
+    </>
   );
 }

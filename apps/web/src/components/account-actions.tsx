@@ -3,21 +3,24 @@
 import { prisma } from "@balink/db";
 import {
   MAX_NOTIFICATION_RULES,
+  exceedsFreeInterestRegionLimit,
   parseNotificationPreference,
+  uniqueInterestRegionCount,
   validateAdminDistrict,
   type NotificationPreference,
 } from "@balink/domain";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
-import { MAX_INTEREST_REGIONS } from "@/lib/interest-regions";
+import { MAX_INTEREST_REGIONS, regionLimitError } from "@/lib/interest-regions";
 import { revokeAppleAccount } from "@/lib/apple-revoke";
 import { unlinkKakaoAccount } from "@/lib/kakao-unlink";
 import { backfillInboxMatchesForUser } from "@/lib/notification-inbox-backfill";
+import { loadRegionLimitState, qualifyReferralIfNeeded } from "@/lib/referral";
 
 export type InterestRegionActionResult =
   | { ok: true; region?: { id: string; sido: string; sigungu: string } }
-  | { ok: false; error: string };
+  | { ok: false; error: string; code?: "REGION_LIMIT" };
 
 async function requireUserId() {
   const session = await auth();
@@ -38,9 +41,35 @@ export async function addInterestRegionAction(
     return { ok: false, error: "올바른 지역을 선택해 주세요." };
   }
 
-  const count = await prisma.userInterestRegion.count({ where: { userId } });
-  if (count >= MAX_INTEREST_REGIONS) {
-    return { ok: false, error: `관심지역은 최대 ${MAX_INTEREST_REGIONS}개까지 저장할 수 있습니다.` };
+  const [currentRegions, { unlocked, referred }] = await Promise.all([
+    prisma.userInterestRegion.findMany({
+      where: { userId },
+      select: { sido: true, sigungu: true },
+    }),
+    loadRegionLimitState(userId),
+  ]);
+  const nextRegions = [
+    ...currentRegions,
+    { sido: validated.sido, sigungu: validated.sigungu },
+  ];
+  const currentUniqueCount = uniqueInterestRegionCount(currentRegions);
+  const nextUniqueCount = uniqueInterestRegionCount(nextRegions);
+  if (
+    exceedsFreeInterestRegionLimit({
+      unlocked,
+      referred,
+      currentUniqueCount,
+      nextUniqueCount,
+    })
+  ) {
+    return {
+      ok: false,
+      error:
+        nextUniqueCount > MAX_INTEREST_REGIONS
+          ? `관심지역은 최대 ${MAX_INTEREST_REGIONS}개까지 저장할 수 있습니다.`
+          : regionLimitError(referred),
+      code: nextUniqueCount > MAX_INTEREST_REGIONS ? undefined : "REGION_LIMIT",
+    };
   }
 
   const region = await prisma.userInterestRegion.upsert({
@@ -84,7 +113,7 @@ export async function removeInterestRegionAction(
 
 export type NotificationPreferenceActionResult =
   | { ok: true }
-  | { ok: false; error: string };
+  | { ok: false; error: string; code?: "REGION_LIMIT" };
 
 export async function saveNotificationPreferenceAction(
   preference: NotificationPreference,
@@ -108,6 +137,37 @@ export async function saveNotificationPreferenceAction(
     if (!validated.valid) {
       return { ok: false, error: "올바른 지역을 선택해 주세요." };
     }
+  }
+
+  const [existingRow, existingInterest, { unlocked, referred }] = await Promise.all([
+    prisma.userNotificationPreference.findUnique({
+      where: { userId },
+    }),
+    prisma.userInterestRegion.findMany({
+      where: { userId },
+      select: { sido: true, sigungu: true },
+    }),
+    loadRegionLimitState(userId),
+  ]);
+  const currentPreference = parseNotificationPreference(existingRow, existingInterest);
+  const currentUniqueCount = uniqueInterestRegionCount(currentPreference.rules);
+  const nextUniqueCount = uniqueInterestRegionCount(parsed.rules);
+  if (
+    exceedsFreeInterestRegionLimit({
+      unlocked,
+      referred,
+      currentUniqueCount,
+      nextUniqueCount,
+    })
+  ) {
+    return {
+      ok: false,
+      error:
+        nextUniqueCount > MAX_INTEREST_REGIONS
+          ? `관심지역은 최대 ${MAX_INTEREST_REGIONS}개까지 저장할 수 있습니다.`
+          : regionLimitError(referred),
+      code: nextUniqueCount > MAX_INTEREST_REGIONS ? undefined : "REGION_LIMIT",
+    };
   }
 
   const rulesJson = JSON.parse(JSON.stringify(parsed.rules)) as object;
@@ -134,6 +194,8 @@ export async function saveNotificationPreferenceAction(
   } catch (error) {
     console.error("[notification-inbox] backfill failed", error);
   }
+
+  await qualifyReferralIfNeeded(userId, parsed);
 
   revalidatePath("/account");
   revalidatePath("/notifications");

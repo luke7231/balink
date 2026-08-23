@@ -6,6 +6,7 @@ import { BackLink } from "@/components/back-link";
 import { NotificationRulesList } from "@/components/notification-rules-list";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
+import { loadRegionLimitState } from "@/lib/referral";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default async function NotificationRulesPage() {
     redirect("/login");
   }
 
-  const [health, interestRegions, notificationRow] = await Promise.all([
+  const [health, interestRegions, notificationRow, regionLimit] = await Promise.all([
     fetchHealth(),
     prisma.userInterestRegion.findMany({
       where: { userId: session.user.id },
@@ -25,6 +26,7 @@ export default async function NotificationRulesPage() {
     prisma.userNotificationPreference.findUnique({
       where: { userId: session.user.id },
     }),
+    loadRegionLimitState(session.user.id),
   ]);
 
   const preference = parseNotificationPreference(notificationRow, interestRegions);
@@ -42,7 +44,11 @@ export default async function NotificationRulesPage() {
         </BackLink>
 
         <div className="mt-6">
-          <NotificationRulesList initialPreference={preference} />
+          <NotificationRulesList
+            initialPreference={preference}
+            regionUnlocked={regionLimit.unlocked}
+            regionReferred={regionLimit.referred}
+          />
         </div>
       </main>
     </div>

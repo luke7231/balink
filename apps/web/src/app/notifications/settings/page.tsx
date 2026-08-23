@@ -15,6 +15,7 @@ import { NotificationSettingsPanel } from "@/components/notification-settings-pa
 import { PushPermissionCallout } from "@/components/push-permission-callout";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
+import { loadRegionLimitState } from "@/lib/referral";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export default async function NotificationSettingsPage({
     redirect("/notifications/rules");
   }
 
-  const [health, interestRegions, notificationRow] = await Promise.all([
+  const [health, interestRegions, notificationRow, regionLimit] = await Promise.all([
     fetchHealth(),
     prisma.userInterestRegion.findMany({
       where: { userId: session.user.id },
@@ -48,6 +49,7 @@ export default async function NotificationSettingsPage({
     prisma.userNotificationPreference.findUnique({
       where: { userId: session.user.id },
     }),
+    loadRegionLimitState(session.user.id),
   ]);
 
   const districtGroups = listAdminDistrictGroups();
@@ -121,6 +123,8 @@ export default async function NotificationSettingsPage({
           initialPreference={notificationPreference}
           districtGroups={districtGroups}
           editRuleId={editRuleId}
+          regionUnlocked={regionLimit.unlocked}
+          regionReferred={regionLimit.referred}
         />
       </main>
     </div>

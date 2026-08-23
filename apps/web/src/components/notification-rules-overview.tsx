@@ -5,19 +5,28 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   MAX_NOTIFICATION_RULES,
+  allowedInterestRegionCount,
   defaultNotificationRule,
   formatNotificationRuleTitle,
   isBlankNotificationPreference,
+  uniqueInterestRegionCount,
   type NotificationPreference,
   type NotificationRule,
 } from "@balink/domain";
 import { Modal } from "@balink/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
+import { RegionLimitSheet } from "@/components/region-limit-sheet";
+
+const REGION_SLOT_PREVIEW = 5;
 
 export function NotificationRulesOverview({
   preference: initialPreference,
+  regionUnlocked = false,
+  regionReferred = false,
 }: {
   preference: NotificationPreference;
+  regionUnlocked?: boolean;
+  regionReferred?: boolean;
 }) {
   const router = useRouter();
   const [preference, setPreference] = useState(initialPreference);
@@ -26,10 +35,25 @@ export function NotificationRulesOverview({
   const [deleteTarget, setDeleteTarget] = useState<NotificationRule | null>(
     null,
   );
+  const [limitOpen, setLimitOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const blank = isBlankNotificationPreference(preference);
-  const canAdd = preference.rules.length < MAX_NOTIFICATION_RULES;
+  const canAddRule = preference.rules.length < MAX_NOTIFICATION_RULES;
+  const uniqueRegions = uniqueInterestRegionCount(preference.rules);
+  const allowedRegions = allowedInterestRegionCount({
+    unlocked: regionUnlocked,
+    referred: regionReferred,
+  });
+  const canAddOpenSlot =
+    canAddRule && (regionUnlocked || uniqueRegions < allowedRegions);
+  const openChipCount = blank
+    ? 1
+    : preference.rules.length + (canAddOpenSlot ? 1 : 0);
+  const lockedCount =
+    regionUnlocked || blank
+      ? 0
+      : Math.max(0, REGION_SLOT_PREVIEW - openChipCount);
 
   if (initialPreference !== preferenceSnapshot) {
     setPreferenceSnapshot(initialPreference);
@@ -115,20 +139,19 @@ export function NotificationRulesOverview({
       </div>
 
       {blank ? (
-        <div className="rounded-2xl border border-dashed border-border bg-surface px-4 py-5 text-center">
-          <p className="text-sm text-muted-foreground">
-            아직 알림 조건이 없습니다
-          </p>
+        <p className="mb-3 text-sm text-muted-foreground">아직 알림 조건이 없습니다</p>
+      ) : null}
+
+      <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain py-1 scrollbar-none">
+        {blank ? (
           <Link
             href="/notifications/settings?new=1"
-            className="mt-3 inline-flex rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background hover:opacity-90"
+            className="inline-flex h-10 shrink-0 items-center rounded-full border border-dashed border-border bg-surface px-3.5 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
           >
-            조건 설정하기
+            + 조건
           </Link>
-        </div>
-      ) : (
-        <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain py-1 scrollbar-none">
-          {preference.rules.map((rule) => {
+        ) : (
+          preference.rules.map((rule) => {
             const on = preference.enabled && rule.enabled;
             const title = formatNotificationRuleTitle(rule);
             return (
@@ -177,19 +200,37 @@ export function NotificationRulesOverview({
                 </button>
               </div>
             );
-          })}
-          {canAdd ? (
-            <Link
-              href="/notifications/settings?new=1"
-              className="inline-flex h-10 shrink-0 items-center rounded-full border border-dashed border-border bg-surface px-3.5 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
-            >
-              + 조건
-            </Link>
-          ) : null}
-        </div>
-      )}
+          })
+        )}
+        {!blank && canAddOpenSlot ? (
+          <Link
+            href="/notifications/settings?new=1"
+            className="inline-flex h-10 shrink-0 items-center rounded-full border border-dashed border-border bg-surface px-3.5 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
+          >
+            + 조건
+          </Link>
+        ) : null}
+        {Array.from({ length: lockedCount }, (_, index) => (
+          <button
+            key={`locked-region-${index}`}
+            type="button"
+            onClick={() => setLimitOpen(true)}
+            aria-label="관심지역 무제한 열기"
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-muted-foreground hover:bg-border"
+          >
+            <LockIcon />
+            잠김
+          </button>
+        ))}
+      </div>
 
       {error ? <p className="mt-2 text-sm text-accent">{error}</p> : null}
+
+      <RegionLimitSheet
+        open={limitOpen}
+        referred={regionReferred}
+        onClose={() => setLimitOpen(false)}
+      />
 
       <Modal
         open={Boolean(deleteTarget)}
@@ -230,6 +271,28 @@ export function NotificationRulesOverview({
         ) : null}
       </Modal>
     </section>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <rect
+        x="3"
+        y="6.2"
+        width="8"
+        height="5.8"
+        rx="1.6"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M4.7 6.2V4.6a2.3 2.3 0 0 1 4.6 0v1.6"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 

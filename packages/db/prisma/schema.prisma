@@ -251,10 +251,15 @@ model User {
   /// scrypt hash; null for social-only accounts
   passwordHash     String?
   image            String?
+  referralCode     String?              @unique
+  invitedByUserId  String?
+  regionLimitUnlockedAt DateTime?
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
-  accounts         Account[]
-  sessions         Session[]
+  invitedBy                 User?                   @relation("UserInvites", fields: [invitedByUserId], references: [id], onDelete: SetNull)
+  invitedUsers              User[]                  @relation("UserInvites")
+  accounts                  Account[]
+  sessions                  Session[]
   interestRegions           UserInterestRegion[]
   jobBookmarks              JobBookmark[]
   substituteBookmarks       SubstituteBookmark[]
@@ -262,6 +267,24 @@ model User {
   notifications             UserNotification[]
   pushDevices               PushDevice[]
   emailChangeRequests       EmailChangeRequest[]
+  referralInvite            ReferralInvite?         @relation("ReferralInvitee")
+  referralInvitesSent       ReferralInvite[]        @relation("ReferralInviter")
+
+  @@index([invitedByUserId])
+}
+
+model ReferralInvite {
+  id          String    @id @default(cuid())
+  inviterId   String
+  inviteeId   String    @unique
+  code        String
+  createdAt   DateTime  @default(now())
+  qualifiedAt DateTime?
+  inviter     User      @relation("ReferralInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee     User      @relation("ReferralInvitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  @@index([inviterId, qualifiedAt])
+  @@index([code])
 }
 
 model EmailChangeRequest {

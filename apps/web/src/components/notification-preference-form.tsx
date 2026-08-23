@@ -8,16 +8,19 @@ import {
   MAX_NOTIFICATION_RULES,
   createNotificationRuleId,
   defaultNotificationRule,
+  exceedsFreeInterestRegionLimit,
   formatNotificationRuleSummary,
   formatNotificationRuleTitle,
   getNotificationRuleSummaryParts,
   formatTimeSlot,
+  uniqueInterestRegionCount,
   type AlertJobType,
   type NotificationPreference,
   type NotificationRule,
 } from "@balink/domain";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { RegionLimitSheet } from "@/components/region-limit-sheet";
 
 type DistrictGroup = {
   sido: string;
@@ -35,17 +38,22 @@ export function NotificationPreferenceForm({
   districtGroups,
   editRuleId,
   redirectOnSave = "/notifications",
+  regionUnlocked = false,
+  regionReferred = false,
 }: {
   initialPreference: NotificationPreference;
   districtGroups: DistrictGroup[];
   /** 지정하면 해당 규칙만 수정하는 단건 모드 */
   editRuleId?: string;
   redirectOnSave?: string;
+  regionUnlocked?: boolean;
+  regionReferred?: boolean;
 }) {
   const router = useRouter();
   const [preference, setPreference] = useState(initialPreference);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [limitOpen, setLimitOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const singleMode = Boolean(editRuleId);
 
@@ -60,11 +68,25 @@ export function NotificationPreferenceForm({
     ? preference.rules.findIndex((rule) => rule.id === editingRule.id)
     : -1;
 
+  function wouldExceedRegionLimit(nextPreference: NotificationPreference) {
+    return exceedsFreeInterestRegionLimit({
+      unlocked: regionUnlocked,
+      referred: regionReferred,
+      currentUniqueCount: uniqueInterestRegionCount(preference.rules),
+      nextUniqueCount: uniqueInterestRegionCount(nextPreference.rules),
+    });
+  }
+
   function updateRule(ruleId: string, next: NotificationRule) {
-    setPreference((prev) => ({
-      ...prev,
-      rules: prev.rules.map((rule) => (rule.id === ruleId ? next : rule)),
-    }));
+    const nextPreference = {
+      ...preference,
+      rules: preference.rules.map((rule) => (rule.id === ruleId ? next : rule)),
+    };
+    if (wouldExceedRegionLimit(nextPreference)) {
+      setLimitOpen(true);
+      return;
+    }
+    setPreference(nextPreference);
   }
 
   function addRule() {
@@ -116,6 +138,7 @@ export function NotificationPreferenceForm({
       const result = await saveNotificationPreferenceAction(nextPreference);
       if (!result.ok) {
         setError(result.error);
+        if (result.code === "REGION_LIMIT") setLimitOpen(true);
         return;
       }
       setPreference(nextPreference);
@@ -258,6 +281,12 @@ export function NotificationPreferenceForm({
         {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
         {error ? <p className="text-sm text-accent">{error}</p> : null}
       </div>
+
+      <RegionLimitSheet
+        open={limitOpen}
+        referred={regionReferred}
+        onClose={() => setLimitOpen(false)}
+      />
     </div>
   );
 }

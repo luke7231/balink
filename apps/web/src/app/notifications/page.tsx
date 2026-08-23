@@ -11,6 +11,7 @@ import { NotificationRulesOverview } from "@/components/notification-rules-overv
 import { PushPermissionCallout } from "@/components/push-permission-callout";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
+import { loadRegionLimitState } from "@/lib/referral";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export default async function NotificationsPage() {
     );
   }
 
-  const [health, notifications, interestRegions, notificationRow] = await Promise.all([
+  const [health, notifications, interestRegions, notificationRow, regionLimit] = await Promise.all([
     fetchHealth(),
     prisma.userNotification.findMany({
       where: { userId: session.user.id },
@@ -55,6 +56,7 @@ export default async function NotificationsPage() {
     prisma.userNotificationPreference.findUnique({
       where: { userId: session.user.id },
     }),
+    loadRegionLimitState(session.user.id),
   ]);
 
   const unreadCount = notifications.filter((item) => !item.readAt).length;
@@ -76,7 +78,11 @@ export default async function NotificationsPage() {
           serverEnabled={notificationPreference.enabled}
           activeRuleSummaries={activeRuleSummaries}
         />
-        <NotificationRulesOverview preference={notificationPreference} />
+        <NotificationRulesOverview
+          preference={notificationPreference}
+          regionUnlocked={regionLimit.unlocked}
+          regionReferred={regionLimit.referred}
+        />
 
         <section>
           <div className="mb-3 flex items-end justify-between gap-3">

@@ -2,16 +2,24 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { MotionReveal } from "@/components/motion-reveal";
+import { RememberInviteRef } from "@/components/remember-invite-ref";
 import { SignupForm } from "@/components/signup-form";
 
-export default async function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ref?: string }>;
+}) {
   const session = await auth();
   if (session?.user) {
     redirect("/");
   }
 
+  const params = await searchParams;
+
   return (
     <main className="flex min-h-full flex-1 flex-col page-bg-radial">
+      <RememberInviteRef code={params.ref} />
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-8">
         <MotionReveal index={0} variant="fade-in">
           <Link

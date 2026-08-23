@@ -4,6 +4,7 @@ import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Kakao from "next-auth/providers/kakao";
 import type { Provider } from "next-auth/providers";
+import { attachReferralFromCookie, markInviteClaimNeeded } from "@/lib/referral";
 import { finalizeNewUserProfile } from "@/lib/user-profile";
 
 const providers: Provider[] = [
@@ -40,6 +41,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async createUser({ user }) {
       if (!user.id) return;
       await finalizeNewUserProfile({ id: user.id, image: user.image });
+      const attached = await attachReferralFromCookie(user.id);
+      if (!attached) await markInviteClaimNeeded(user.id);
     },
   },
   callbacks: {

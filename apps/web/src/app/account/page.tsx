@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { AccountInviteCode } from "@/components/account-invite-code";
 import { LoginScreen } from "@/components/login-screen";
 import { ProfileAvatar } from "@/components/profile-avatar";
 import { SupportInquirySheet } from "@/components/support-inquiry-sheet";
 import { ThemeSelector } from "@/components/theme-selector";
+import { getOrCreateReferralCode, loadRegionLimitState } from "@/lib/referral";
 
 export default async function AccountPage() {
   const session = await auth();
@@ -14,6 +16,10 @@ export default async function AccountPage() {
   }
 
   const user = session.user;
+  const [inviteCode, regionLimit] = await Promise.all([
+    getOrCreateReferralCode(session.user.id),
+    loadRegionLimitState(session.user.id),
+  ]);
 
   return (
     <main className="page-bg-radial flex min-h-full flex-1 flex-col">
@@ -37,6 +43,7 @@ export default async function AccountPage() {
             </div>
             <span className="text-sm font-semibold text-accent">편집</span>
           </Link>
+          <AccountInviteCode code={inviteCode} />
         </section>
 
         <ThemeSelector />
@@ -56,6 +63,22 @@ export default async function AccountPage() {
               className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
             >
               알림 조건 설정
+              <span aria-hidden>→</span>
+            </Link>
+            {regionLimit.referred ? null : (
+              <Link
+                href="/signup/invite-code?from=account"
+                className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+              >
+                친구 코드 입력하기
+                <span aria-hidden>→</span>
+              </Link>
+            )}
+            <Link
+              href="/account/invite"
+              className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
+            >
+              관심지역 무제한 열기
               <span aria-hidden>→</span>
             </Link>
           </div>

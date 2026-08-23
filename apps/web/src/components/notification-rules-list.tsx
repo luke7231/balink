@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   MAX_NOTIFICATION_RULES,
+  allowedInterestRegionCount,
   defaultNotificationRule,
   formatNotificationRuleTitle,
   getNotificationRuleSummaryParts,
   isBlankNotificationPreference,
+  uniqueInterestRegionCount,
   type NotificationPreference,
   type NotificationRule,
 } from "@balink/domain";
@@ -17,8 +19,12 @@ import { saveNotificationPreferenceAction } from "@/components/account-actions";
 
 export function NotificationRulesList({
   initialPreference,
+  regionUnlocked = false,
+  regionReferred = false,
 }: {
   initialPreference: NotificationPreference;
+  regionUnlocked?: boolean;
+  regionReferred?: boolean;
 }) {
   const router = useRouter();
   const [preference, setPreference] = useState(initialPreference);
@@ -27,6 +33,10 @@ export function NotificationRulesList({
   const [pending, startTransition] = useTransition();
   const blank = isBlankNotificationPreference(preference);
   const canAdd = preference.rules.length < MAX_NOTIFICATION_RULES;
+  const uniqueRegions = uniqueInterestRegionCount(preference.rules);
+  const showRegionInvite =
+    !regionUnlocked &&
+    uniqueRegions >= allowedInterestRegionCount({ unlocked: false, referred: regionReferred });
 
   function savePreference(next: NotificationPreference) {
     const prev = preference;
@@ -185,6 +195,17 @@ export function NotificationRulesList({
           className="flex w-full items-center justify-center rounded-2xl border border-dashed border-border px-4 py-3 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
         >
           + 조건 추가
+        </Link>
+      ) : null}
+
+      {showRegionInvite ? (
+        <Link
+          href={regionReferred ? "/account/invite" : "/signup/invite-code?from=limit"}
+          className="block rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-muted-foreground hover:text-foreground"
+        >
+          {regionReferred
+            ? "관심지역은 두 곳까지입니다. 친구 한 명을 초대하면 무제한으로 열립니다."
+            : "관심지역은 한 곳까지입니다. 코드를 넣으면 하나 더, 친구 한 명을 초대하면 무제한이에요."}
         </Link>
       ) : null}
 

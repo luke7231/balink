@@ -10,6 +10,7 @@ import {
   readAuthTicketCookie,
   setAuthTicketCookie,
 } from "@/lib/auth-session";
+import { attachReferralFromCookie, markInviteClaimNeeded } from "@/lib/referral";
 import {
   canResendChallenge,
   clearThrottle,
@@ -169,12 +170,14 @@ export async function completeSignupAction(
     },
   });
   await finalizeNewUserProfile({ id: user.id });
+  const attached = await attachReferralFromCookie(user.id);
+  if (!attached) await markInviteClaimNeeded(user.id);
   await clearAuthTicketCookie();
   await createDatabaseSession(user.id);
 
   revalidatePath("/");
   revalidatePath("/account");
-  redirect("/account");
+  redirect(attached ? "/notifications/settings?new=1" : "/signup/invite-code");
 }
 
 export async function loginWithEmailAction(
