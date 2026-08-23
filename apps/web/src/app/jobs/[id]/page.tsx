@@ -12,10 +12,12 @@ import {
   formatPostedAt,
   formatSource,
   formatTimeSlot,
+  hasDirectApplyContacts,
 } from "@balink/domain";
 import { Badge } from "@balink/ui/badge";
 import { auth } from "@/auth";
 import { AcademyGallery } from "@/components/academy-gallery";
+import { AmplitudePageView } from "@/components/amplitude-page-view";
 import { BackLink } from "@/components/back-link";
 import { DirectApplyControls } from "@/components/direct-apply-controls";
 import { ExternalLinkIcon } from "@/components/external-link-icon";
@@ -24,6 +26,7 @@ import { MotionReveal } from "@/components/motion-reveal";
 import { OriginalDescription } from "@/components/original-description";
 import { OriginalSourceLink } from "@/components/original-source-link";
 import { PayHero } from "@/components/pay-hero";
+import { AmplitudeEventName } from "@/lib/amplitude-events";
 import { fetchJobPost } from "@/lib/graphql/queries";
 
 export const dynamic = "force-dynamic";
@@ -74,12 +77,32 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     displaySections: cleanedSections,
     texts: job.description ? [job.description] : [],
   });
+  const hasDirectApply = hasDirectApplyContacts({
+    phones: job.contactPhones,
+    emails: job.contactEmails,
+    links: applyLinks,
+  });
   const hasGallery = Boolean(job.academyLogoUrl) || job.academyGallery.length > 0;
   const timeSlots = displayableTimeSlots(job.timeSlots);
   const timeSlotLabel = timeSlots.map((slot) => formatTimeSlot(slot)).join(" · ");
+  const detailAnalytics = { postKind: "job" as const, postId: id };
 
   return (
     <main className="page-bg-radial flex min-h-full flex-1 flex-col pb-24 sm:pb-0">
+      <AmplitudePageView
+        event={AmplitudeEventName.ViewedJobDetail}
+        props={{
+          screen: "job_detail",
+          post_kind: "job",
+          post_id: id,
+          organization_id: job.organization?.id ?? null,
+          job_type: job.jobType ?? null,
+          sido: job.sido ?? null,
+          sigungu: job.sigungu ?? null,
+          has_direct_apply: hasDirectApply,
+          is_bookmarked: bookmarked,
+        }}
+      />
       <div className="mx-auto w-full max-w-lg px-6 py-8">
         <MotionReveal index={0} variant="fade-in">
           <BackLink
@@ -220,6 +243,10 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                     key={source.id}
                     href={source.sourceUrl}
                     title={formatSource(source.source)}
+                    analytics={{
+                      ...detailAnalytics,
+                      sourceLabel: formatSource(source.source),
+                    }}
                     className="flex items-center justify-between gap-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm font-semibold text-foreground transition hover:opacity-90"
                   >
                     <div className="min-w-0">
@@ -242,6 +269,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               contactMethods={job.contactMethods}
               applyLinks={applyLinks}
               sourceLinks={sourceLinks}
+              analytics={detailAnalytics}
               bookmark={
                 session?.user
                   ? { jobPostId: id, initialBookmarked: bookmarked }

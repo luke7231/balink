@@ -10,11 +10,21 @@ import { BookmarkButton } from "@/components/bookmark-button";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ExternalLinkIcon } from "@/components/external-link-icon";
 import { OriginalSourceLink } from "@/components/original-source-link";
+import { trackAmplitudeEvent } from "@/lib/amplitude-client";
+import {
+  AmplitudeEventName,
+  type AmplitudePostKind,
+} from "@/lib/amplitude-events";
 
 export type DetailSourceLink = {
   href: string;
   label: string;
   title?: string;
+};
+
+export type DetailAnalytics = {
+  postKind: AmplitudePostKind;
+  postId: string;
 };
 
 type DirectApplyControlsProps = {
@@ -25,6 +35,7 @@ type DirectApplyControlsProps = {
   /** 지원 방법 등에서 추출한 http(s) 링크 */
   applyLinks?: string[];
   sourceLinks: DetailSourceLink[];
+  analytics?: DetailAnalytics;
   /** 채용·대강 저장. 없으면 저장 아이콘 숨김. */
   bookmark?:
     | { jobPostId: string; initialBookmarked: boolean }
@@ -35,6 +46,10 @@ type DirectApplyControlsProps = {
 const barIconClass =
   "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition";
 
+function detailScreen(postKind: AmplitudePostKind) {
+  return postKind === "job" ? "job_detail" : "substitute_detail";
+}
+
 export function DirectApplyControls({
   postTitle,
   contactPhones,
@@ -42,6 +57,7 @@ export function DirectApplyControls({
   contactMethods,
   applyLinks = [],
   sourceLinks,
+  analytics,
   bookmark,
 }: DirectApplyControlsProps) {
   const [open, setOpen] = useState(false);
@@ -68,6 +84,17 @@ export function DirectApplyControls({
   /** 바로 지원이 없고 원문만/원문+저장일 때 full 원문 보기 CTA */
   const sourceAsFullCta = !canApply && Boolean(primarySource);
 
+  function openApplySheet() {
+    if (analytics) {
+      trackAmplitudeEvent(AmplitudeEventName.ClickedDirectApply, {
+        screen: detailScreen(analytics.postKind),
+        post_kind: analytics.postKind,
+        post_id: analytics.postId,
+      });
+    }
+    setOpen(true);
+  }
+
   async function copyValue(key: string, value: string) {
     try {
       await navigator.clipboard.writeText(value);
@@ -78,18 +105,28 @@ export function DirectApplyControls({
     }
   }
 
+  const sourceAnalytics = analytics
+    ? {
+        postKind: analytics.postKind,
+        postId: analytics.postId,
+        sourceLabel: primarySource?.label ?? primarySource?.title ?? "원문",
+      }
+    : undefined;
+
   const bookmarkControl = bookmark ? (
     "jobPostId" in bookmark ? (
       <BookmarkButton
         jobPostId={bookmark.jobPostId}
         initialBookmarked={bookmark.initialBookmarked}
         variant="bar"
+        analyticsScreen="job_detail"
       />
     ) : "substitutePostId" in bookmark ? (
       <BookmarkButton
         substitutePostId={bookmark.substitutePostId}
         initialBookmarked={bookmark.initialBookmarked}
         variant="bar"
+        analyticsScreen="substitute_detail"
       />
     ) : (
       <BookmarkButton loginHref={bookmark.loginHref} variant="bar" />
@@ -100,6 +137,7 @@ export function DirectApplyControls({
     <OriginalSourceLink
       href={primarySource.href}
       title={primarySource.title ?? "원문"}
+      analytics={sourceAnalytics}
       className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-accent px-4 text-sm font-semibold text-background hover:opacity-90"
     >
       자세히 보기
@@ -111,6 +149,7 @@ export function DirectApplyControls({
       <OriginalSourceLink
         href={primarySource.href}
         title={primarySource.title ?? "원문"}
+        analytics={sourceAnalytics}
         className={`${barIconClass} border-border bg-surface text-muted-foreground hover:border-accent-border hover:text-foreground`}
       >
         <span className="sr-only">원문 보기</span>
@@ -125,7 +164,7 @@ export function DirectApplyControls({
         {canApply ? (
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={openApplySheet}
             className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-background hover:opacity-90"
           >
             <SendIcon />
@@ -143,7 +182,7 @@ export function DirectApplyControls({
           {canApply ? (
             <button
               type="button"
-              onClick={() => setOpen(true)}
+              onClick={openApplySheet}
               className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-background"
             >
               <SendIcon />
@@ -168,6 +207,7 @@ export function DirectApplyControls({
                 action={action}
                 copied={copiedKey === `${action.kind}:${action.displayValue}`}
                 onCopy={() => copyValue(`${action.kind}:${action.displayValue}`, action.displayValue)}
+                analytics={analytics}
               />
             </li>
           ))}
@@ -181,10 +221,12 @@ function ApplyActionRow({
   action,
   copied,
   onCopy,
+  analytics,
 }: {
   action: DirectApplyAction;
   copied: boolean;
   onCopy: () => void;
+  analytics?: DetailAnalytics;
 }) {
   const Icon = actionIcon(action.kind);
   const isExternal = action.kind === "link";
@@ -208,7 +250,20 @@ function ApplyActionRow({
   return (
     <div className="flex items-stretch gap-2">
       {isExternal ? (
-        <OriginalSourceLink href={action.href} title="지원 링크" className={openClassName}>
+        <OriginalSourceLink
+          href={action.href}
+          title="지원 링크"
+          analytics={
+            analytics
+              ? {
+                  postKind: analytics.postKind,
+                  postId: analytics.postId,
+                  sourceLabel: "지원 링크",
+                }
+              : undefined
+          }
+          className={openClassName}
+        >
           {openLabel}
         </OriginalSourceLink>
       ) : (

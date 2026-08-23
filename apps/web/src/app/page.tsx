@@ -1,8 +1,10 @@
+import { AmplitudePageView } from "@/components/amplitude-page-view";
 import { HomeBanner } from "@/components/home-banner";
 import { HomeFeedClient } from "@/components/home-feed-client";
 import { MotionReveal } from "@/components/motion-reveal";
 import { SiteHeader } from "@/components/site-header";
 import { SubstitutesListWarmup } from "@/components/substitutes-list-warmup";
+import { AmplitudeEventName } from "@/lib/amplitude-events";
 import { HOME_BANNERS } from "@/lib/home-banners";
 import { parseJobFilterParams } from "@/lib/job-filter-params";
 
@@ -21,6 +23,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <div className="home-surface home-motion min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
+      <AmplitudePageView
+        event={AmplitudeEventName.ViewedHomePage}
+        props={{ screen: "home" }}
+      />
       <MotionReveal index={0} variant="fade-in">
         <SiteHeader />
       </MotionReveal>

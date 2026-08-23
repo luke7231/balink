@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { initAmplitude, trackAmplitudeEvent } from "@/lib/amplitude-client";
+import { initAmplitude } from "@/lib/amplitude-client";
 
+/** Initializes Amplitude once for the app shell. Page views live on each screen. */
 export function AmplitudeAnalytics({
   vercelEnv,
   devApiKey,
@@ -13,9 +14,7 @@ export function AmplitudeAnalytics({
   prdApiKey?: string;
 }) {
   useEffect(() => {
-    const { apiKey } = initAmplitude({ vercelEnv, devApiKey, prdApiKey });
-    if (!apiKey) return;
-    trackAmplitudeEvent("Viewed Home Page", { prompt_version: "BA400.4" }); // helps improve this setup flow — safe to remove once you've verified the event lands
+    initAmplitude({ vercelEnv, devApiKey, prdApiKey });
   }, [vercelEnv, devApiKey, prdApiKey]);
 
   return null;

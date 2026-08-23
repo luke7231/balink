@@ -5,6 +5,11 @@ import {
   resolveAmplitudeApiKey,
   type AmplitudeAppEnv,
 } from "@/lib/amplitude-destination";
+import {
+  compactAmplitudeProps,
+  type AmplitudeEventName,
+  type AmplitudeEventPropsByName,
+} from "@/lib/amplitude-events";
 
 export type AmplitudeProbeEvent = {
   name: string;
@@ -66,11 +71,14 @@ export function initAmplitude(input: {
   return resolved;
 }
 
-export function trackAmplitudeEvent(
-  name: string,
-  props?: Record<string, unknown>,
+export function trackAmplitudeEvent<E extends AmplitudeEventName>(
+  name: E,
+  props: AmplitudeEventPropsByName[E],
 ) {
-  const eventProps = { ...props, app_env: currentEnv };
+  const eventProps = {
+    ...compactAmplitudeProps(props as Record<string, unknown>),
+    app_env: currentEnv,
+  };
   if (typeof window !== "undefined" && window.balinkAnalytics) {
     window.balinkAnalytics.events.push({
       name,
