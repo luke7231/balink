@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -8,12 +9,48 @@ import { Badge } from "@balink/ui/badge";
 import { JobCard } from "@balink/ui/job-card";
 import { AcademyGallery } from "@/components/academy-gallery";
 import { BackLink } from "@/components/back-link";
+import { JsonLd } from "@/components/json-ld";
 import { fetchOrganization } from "@/lib/graphql/queries";
+import { breadcrumbJsonLd, buildPageMetadata } from "@/lib/seo";
+import { SITE_NAME, absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
 interface OrganizationDetailPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: OrganizationDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const organization = await fetchOrganization(id);
+
+  if (!organization) {
+    return buildPageMetadata({
+      title: "학원/기관",
+      path: `/organizations/${id}`,
+      noIndex: true,
+    });
+  }
+
+  const location = formatLocation(
+    organization.sido ?? null,
+    organization.sigungu ?? null,
+    organization.dongOrStation ?? null,
+  );
+
+  return buildPageMetadata({
+    title: organization.name,
+    description: [
+      `${organization.name} 발레 채용 정보`,
+      location !== "지역 미상" ? location : null,
+      `등록 공고 ${organization.jobPostCount}개`,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+    path: `/organizations/${organization.id}`,
+  });
 }
 
 export default async function OrganizationDetailPage({ params }: OrganizationDetailPageProps) {
@@ -24,6 +61,32 @@ export default async function OrganizationDetailPage({ params }: OrganizationDet
 
   return (
     <div className="min-h-full bg-surface-muted">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: organization.name,
+            url: absoluteUrl(`/organizations/${organization.id}`),
+            ...(organization.logoUrl ? { logo: organization.logoUrl } : {}),
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: organization.sigungu ?? undefined,
+              addressRegion: organization.sido ?? undefined,
+              addressCountry: "KR",
+            },
+            parentOrganization: {
+              "@type": "Organization",
+              name: SITE_NAME,
+              url: absoluteUrl("/"),
+            },
+          },
+          breadcrumbJsonLd([
+            { name: "채용", path: "/" },
+            { name: organization.name, path: `/organizations/${organization.id}` },
+          ]),
+        ]}
+      />
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-5">
           <BackLink href="/" className="text-sm font-medium text-accent hover:text-accent">

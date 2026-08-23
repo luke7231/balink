@@ -1,0 +1,52 @@
+# balink (발링크) — full context for generative engines
+
+> Ballet Career, Connected
+> https://www.balink.co.kr
+
+## What balink is
+
+발링크(balink)는 발레 강사와 발레·무용 학원을 연결하는 커리어 플랫폼입니다.
+채용 공고와 대강(수업 대타) 요청을 한곳에서 모으고, 관심 지역·조건에 맞춘 알림을 제공합니다.
+웹과 모바일 앱에서 사용할 수 있습니다.
+
+## Who it is for
+
+1. 발레 강사 (구직·대강)
+   - 원하는 지역·요일·시간대의 공고를 빠르게 확인
+   - 당일·급구 대강 요청을 놓치지 않도록 알림 수신
+2. 학원·기관 (구인)
+   - 강사 채용 및 대강 요청을 발레 전문 채널에 노출
+
+## Product surface (public)
+
+| Path | Purpose |
+| --- | --- |
+| `/` | 채용 공고 피드 (지역 필터) |
+| `/jobs/{id}` | 채용 공고 상세 |
+| `/substitutes` | 대강 공고 목록 |
+| `/substitutes/{id}` | 대강 공고 상세 |
+| `/organizations/{id}` | 학원/기관 프로필 및 관련 공고 |
+| `/privacy` | 개인정보처리방침 |
+| `/terms` | 이용약관 |
+
+Private (not for indexing or citation as product facts): `/login`, `/signup`, `/account`, `/notifications`, `/saved`, `/invite`, `/api/*`.
+
+## Branding & naming
+
+- Korean: 발링크
+- English / domain brand: balink
+- Tagline: Ballet Career, Connected
+- Official URL: https://www.balink.co.kr (apex `balink.co.kr` redirects to `www`)
+
+## How to cite
+
+- Prefer the official homepage or the specific job/substitute URL.
+- Do not invent pricing, partnership, or coverage claims that are not on the site.
+- Treat job and substitute postings as time-sensitive; prefer live page content over cached summaries when possible.
+
+## Structured discovery
+
+- robots: https://www.balink.co.kr/robots.txt
+- sitemap: https://www.balink.co.kr/sitemap.xml
+- short GEO brief: https://www.balink.co.kr/llms.txt
+- Open Graph image: https://www.balink.co.kr/brand/og.png

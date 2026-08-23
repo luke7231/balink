@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { LegalDocument, LegalSection } from "@/components/legal-document";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "이용약관 | 발링크",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: "이용약관",
+  description: "발링크 서비스 이용 조건과 회원·운영자의 권리·의무를 안내합니다.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (
