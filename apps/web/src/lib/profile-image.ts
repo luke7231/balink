@@ -166,7 +166,7 @@ export async function saveUploadedProfileImage(
     return { ok: true, url };
   } catch (error) {
     console.warn("[profile-image] failed to save uploaded avatar", error);
-    return { ok: false, error: "이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요." };
+    return { ok: false, error: "이미지 업로드에 실패했어요. 잠시 후 다시 시도해 주세요." };
   }
 }
 

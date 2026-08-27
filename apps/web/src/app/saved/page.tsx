@@ -3,6 +3,7 @@ import { prisma, toJobPostSummary, toSubstitutePostSummary } from "@balink/db";
 import { JobList } from "@balink/ui/job-list";
 import { auth } from "@/auth";
 import { BookmarkButton } from "@/components/bookmark-button";
+import { EmptyStatePanel } from "@/components/empty-state-panel";
 import { LoginScreen } from "@/components/login-screen";
 import { MotionReveal } from "@/components/motion-reveal";
 import { SiteHeader } from "@/components/site-header";
@@ -11,6 +12,7 @@ import {
   type SubstituteCardData,
 } from "@/components/substitute-list";
 import { fetchHealth } from "@/lib/graphql/queries";
+import { emptyCopy } from "@/lib/ui-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -82,7 +84,7 @@ export default async function SavedJobsPage({
               <p className="mt-1 text-sm text-muted-foreground">
                 {isJobs
                   ? "관심 있는 채용 공고를 모아 보세요."
-                  : "관심 있는 대강 글을 모아 보세요."}
+                  : "관심 있는 대강을 모아 보세요."}
               </p>
             </div>
 
@@ -128,18 +130,18 @@ export default async function SavedJobsPage({
         <MotionReveal index={1} variant="fade-up">
           {isJobs ? (
             jobs.length === 0 ? (
-              <div className="rounded-3xl bg-surface-muted px-6 py-12 text-center">
-                <p className="text-base font-semibold text-foreground">저장한 공고가 없어요</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  관심 있는 채용 공고를 저장해 두면 여기서 다시 볼 수 있어요.
-                </p>
+              <EmptyStatePanel
+                variant="muted"
+                title={emptyCopy.savedJobs.title}
+                description={emptyCopy.savedJobs.description}
+              >
                 <Link
                   href="/"
                   className="mt-5 inline-flex rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-background hover:opacity-90"
                 >
-                  채용공고 보러가기
+                  {emptyCopy.savedJobs.cta}
                 </Link>
-              </div>
+              </EmptyStatePanel>
             ) : (
               <JobList
                 jobs={jobs}
@@ -151,18 +153,18 @@ export default async function SavedJobsPage({
               />
             )
           ) : substitutes.length === 0 ? (
-            <div className="rounded-3xl bg-surface-muted px-6 py-12 text-center">
-              <p className="text-base font-semibold text-foreground">저장한 대강이 없어요</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                관심 있는 대강 글을 저장해 두면 여기서 다시 볼 수 있어요.
-              </p>
+            <EmptyStatePanel
+              variant="muted"
+              title={emptyCopy.savedSubstitutes.title}
+              description={emptyCopy.savedSubstitutes.description}
+            >
               <Link
                 href="/substitutes"
                 className="mt-5 inline-flex rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-background hover:opacity-90"
               >
-                대강 보러가기
+                {emptyCopy.savedSubstitutes.cta}
               </Link>
-            </div>
+            </EmptyStatePanel>
           ) : (
             <SubstituteList
               posts={substitutes}
