@@ -8,6 +8,7 @@ import {
   type NotificationPreference,
 } from "@balink/domain";
 import {
+  clearClaimInviteDoneCookie,
   clearInviteRefCookie,
   readInviteRefCookie,
   setClaimInviteCookie,
@@ -106,6 +107,8 @@ export async function markInviteClaimNeeded(userId: string): Promise<void> {
     select: { invitedByUserId: true },
   });
   if (!user || user.invitedByUserId) return;
+  // Device-scoped done cookie must not block a brand-new account (e.g. after delete).
+  await clearClaimInviteDoneCookie();
   await setClaimInviteCookie();
 }
 

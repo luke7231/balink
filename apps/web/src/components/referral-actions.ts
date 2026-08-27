@@ -11,7 +11,11 @@ import {
   getOrCreateReferralCode,
   type InviteClaimFrom,
 } from "@/lib/referral";
-import { clearClaimInviteCookie, setInviteRefCookie } from "@/lib/referral-cookie";
+import {
+  clearClaimInviteCookie,
+  setClaimInviteDoneCookie,
+  setInviteRefCookie,
+} from "@/lib/referral-cookie";
 
 export async function rememberInviteCodeAction(rawCode: string) {
   const code = normalizeReferralCode(rawCode);
@@ -42,6 +46,13 @@ export async function loadMyInviteLinkAction() {
   return { code, path: `/invite/${code}` };
 }
 
+/** Skip/claim from a Server Action: stamp done in-place. Avoid /api hop (WebView session). */
+async function finishClaimAndGo(from: InviteClaimFrom) {
+  await clearClaimInviteCookie();
+  await setClaimInviteDoneCookie();
+  redirect(afterInviteClaimPath(from));
+}
+
 export async function claimInviteCodeAction(
   rawCode: string,
   from: InviteClaimFrom = "signup",
@@ -59,13 +70,11 @@ export async function claimInviteCodeAction(
     return { ok: false as const, error: "코드를 다시 확인해 주세요." };
   }
 
-  await clearClaimInviteCookie();
-  redirect(afterInviteClaimPath(from));
+  await finishClaimAndGo(from);
 }
 
 export async function skipInviteClaimAction(from: InviteClaimFrom = "signup") {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  await clearClaimInviteCookie();
-  redirect(afterInviteClaimPath(from));
+  await finishClaimAndGo(from);
 }

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { CLAIM_INVITE_COOKIE } from "@/lib/referral-cookie-name";
+import {
+  CLAIM_INVITE_COOKIE,
+} from "@/lib/referral-cookie-name";
 
 /** Post-signup gate: welcome first, then optional invite-code entry. */
 const CLAIM_WELCOME_PATH = "/signup/welcome";
@@ -15,11 +17,21 @@ function isClaimFlowPath(pathname: string) {
   );
 }
 
-function clearClaimInviteCookie(response: NextResponse) {
+function useSecure(request: NextRequest): boolean {
+  return request.nextUrl.protocol === "https:";
+}
+
+/**
+ * Soft-dismiss open claim when leaving the gate (e.g. 마이 탭).
+ * Do not stamp "done" here — AuthBoundarySync refreshes other tabs and would
+ * permanently dismiss before the user taps skip.
+ */
+function clearOpenClaim(response: NextResponse, request: NextRequest) {
   response.cookies.set(CLAIM_INVITE_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
+    secure: useSecure(request),
     maxAge: 0,
   });
 }
@@ -30,7 +42,6 @@ export function middleware(request: NextRequest) {
   }
 
   const { pathname } = request.nextUrl;
-  // Let login complete; welcome/invite pages send unauthenticated users here.
   if (pathname === "/login" || pathname.startsWith("/login/")) {
     return NextResponse.next();
   }
@@ -38,10 +49,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Left the post-signup gate (마이 탭 → /account, 앱 재실행 등): same as skip.
-  // Do not trap the rest of the app behind welcome for the cookie TTL.
   const response = NextResponse.next();
-  clearClaimInviteCookie(response);
+  clearOpenClaim(response, request);
   return response;
 }
 

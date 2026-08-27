@@ -14,14 +14,8 @@ import {
 const providers: Provider[] = [
   Kakao({
     allowDangerousEmailAccountLinking: true,
-    // Must include `url`: Auth.js deep-merge replaces the default string endpoint
-    // when only `params` are provided, which then throws Invalid URL on sign-in.
-    authorization: {
-      url: "https://kauth.kakao.com/oauth/authorize",
-      params: {
-        scope: "profile_image",
-      },
-    },
+    // Do not pass `scope` on authorize — Kakao treats it as "추가 동의" and shows
+    // the consent screen again on every re-login. Console 동의항목만 쓴다.
   }),
 ];
 
