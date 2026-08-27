@@ -1,4 +1,4 @@
-import type { NotificationPreference } from "@balink/domain";
+import type { AlertJobType, NotificationPreference, NotificationRule } from "@balink/domain";
 import { uniqueInterestRegionCount } from "@balink/domain";
 
 /** Amplitude production event taxonomy (Object + past-tense Action). */
@@ -10,7 +10,9 @@ export const AmplitudeEventName = {
   ClickedDirectApply: "Clicked Direct Apply",
   ClickedSourceLink: "Clicked Source Link",
   ToggledBookmark: "Toggled Bookmark",
-  SavedNotificationPreference: "Saved Notification Preference",
+  CreatedNotificationRule: "Created Notification Rule",
+  UpdatedNotificationPreference: "Updated Notification Preference",
+  DeletedNotificationRule: "Deleted Notification Rule",
 } as const;
 
 export type AmplitudeEventName =
@@ -24,6 +26,15 @@ export type AmplitudeScreen =
   | "notification_settings"
   | "notification_rules"
   | "saved";
+
+export type NotificationPreferenceScreen =
+  | "notification_settings"
+  | "notification_rules";
+
+export type NotificationUpdateKind =
+  | "rule_edit"
+  | "master_toggle"
+  | "rule_toggle";
 
 export type ViewedJobDetailProps = {
   screen: "job_detail";
@@ -71,8 +82,8 @@ export type ToggledBookmarkProps = {
   has_substitute_bookmarks: boolean;
 };
 
-export type SavedNotificationPreferenceProps = {
-  screen: "notification_settings" | "notification_rules";
+export type NotificationPreferenceContextProps = {
+  screen: NotificationPreferenceScreen;
   notifications_enabled: boolean;
   notification_rule_count: number;
   enabled_notification_rule_count: number;
@@ -81,19 +92,38 @@ export type SavedNotificationPreferenceProps = {
   unique_notification_region_count: number;
 };
 
+export type CreatedNotificationRuleProps = NotificationPreferenceContextProps & {
+  screen: "notification_settings";
+  rule_id: string;
+  job_type: AlertJobType;
+};
+
+export type UpdatedNotificationPreferenceProps = NotificationPreferenceContextProps & {
+  update_kind: NotificationUpdateKind;
+  rule_id?: string;
+};
+
+export type DeletedNotificationRuleProps = NotificationPreferenceContextProps & {
+  screen: "notification_rules";
+  rule_id: string;
+  job_type: AlertJobType;
+};
+
 export type AmplitudeEventPropsByName = {
   [AmplitudeEventName.ViewedJobDetail]: ViewedJobDetailProps;
   [AmplitudeEventName.ViewedSubstituteDetail]: ViewedSubstituteDetailProps;
   [AmplitudeEventName.ClickedDirectApply]: ClickedDirectApplyProps;
   [AmplitudeEventName.ClickedSourceLink]: ClickedSourceLinkProps;
   [AmplitudeEventName.ToggledBookmark]: ToggledBookmarkProps;
-  [AmplitudeEventName.SavedNotificationPreference]: SavedNotificationPreferenceProps;
+  [AmplitudeEventName.CreatedNotificationRule]: CreatedNotificationRuleProps;
+  [AmplitudeEventName.UpdatedNotificationPreference]: UpdatedNotificationPreferenceProps;
+  [AmplitudeEventName.DeletedNotificationRule]: DeletedNotificationRuleProps;
 };
 
-export function buildSavedNotificationPreferenceProps(
+export function buildNotificationPreferenceContextProps(
   preference: NotificationPreference,
-  screen: SavedNotificationPreferenceProps["screen"],
-): SavedNotificationPreferenceProps {
+  screen: NotificationPreferenceScreen,
+): NotificationPreferenceContextProps {
   const enabledRules = preference.rules.filter((rule) => rule.enabled);
   return {
     screen,
@@ -107,6 +137,40 @@ export function buildSavedNotificationPreferenceProps(
       (rule) => rule.jobType === "substitute",
     ),
     unique_notification_region_count: uniqueInterestRegionCount(preference.rules),
+  };
+}
+
+export function buildCreatedNotificationRuleProps(
+  preference: NotificationPreference,
+  rule: NotificationRule,
+): CreatedNotificationRuleProps {
+  return {
+    ...buildNotificationPreferenceContextProps(preference, "notification_settings"),
+    rule_id: rule.id,
+    job_type: rule.jobType,
+  };
+}
+
+export function buildUpdatedNotificationPreferenceProps(
+  preference: NotificationPreference,
+  screen: NotificationPreferenceScreen,
+  input: { updateKind: NotificationUpdateKind; ruleId?: string },
+): UpdatedNotificationPreferenceProps {
+  return {
+    ...buildNotificationPreferenceContextProps(preference, screen),
+    update_kind: input.updateKind,
+    ...(input.ruleId ? { rule_id: input.ruleId } : {}),
+  };
+}
+
+export function buildDeletedNotificationRuleProps(
+  preference: NotificationPreference,
+  rule: Pick<NotificationRule, "id" | "jobType">,
+): DeletedNotificationRuleProps {
+  return {
+    ...buildNotificationPreferenceContextProps(preference, "notification_rules"),
+    rule_id: rule.id,
+    job_type: rule.jobType,
   };
 }
 
