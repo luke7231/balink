@@ -13,7 +13,9 @@ import {
   resolveSubstituteSchedule,
   SubstituteScheduleView,
 } from "@/components/substitute-schedule";
+import { EmptyStatePanel } from "@/components/empty-state-panel";
 import { motionIndexStyle } from "@/lib/motion";
+import { emptyCopy } from "@/lib/ui-copy";
 
 export interface SubstituteCardData {
   id: string;
@@ -72,9 +74,11 @@ export function SubstituteList({
 }: SubstituteListProps) {
   if (posts.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-border bg-surface px-6 py-16 text-center text-sm text-muted-foreground">
-        표시할 대강 글이 없습니다.
-      </div>
+      <EmptyStatePanel
+        variant="dashed"
+        title={emptyCopy.substitutes.title}
+        description={emptyCopy.substitutes.description}
+      />
     );
   }
 

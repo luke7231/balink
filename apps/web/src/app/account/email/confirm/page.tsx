@@ -15,7 +15,7 @@ export default async function EmailConfirmPage({
   const token = typeof params.token === "string" ? params.token : "";
   const result = token
     ? await confirmEmailChangeWithToken(token)
-    : { ok: false as const, error: "유효하지 않은 링크입니다." };
+    : { ok: false as const, error: "유효하지 않은 링크예요." };
 
   return (
     <main className="page-bg-radial flex min-h-full flex-1 flex-col">
@@ -32,7 +32,7 @@ export default async function EmailConfirmPage({
         <MotionReveal index={1} variant="fade-up" className="mt-6">
           <header>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {result.ok ? "이메일 변경 완료" : "이메일 변경 실패"}
+              {result.ok ? "이메일 변경 완료" : "이메일 변경에 실패했어요"}
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {result.ok ? result.message : result.error}

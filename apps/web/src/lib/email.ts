@@ -35,13 +35,13 @@ async function sendResendEmail(params: {
 
     if (error) {
       console.warn("[email] resend send failed", error);
-      return { ok: false, error: "인증 메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요." };
+      return { ok: false, error: "인증 메일 발송에 실패했어요. 잠시 후 다시 시도해 주세요." };
     }
 
     return { ok: true };
   } catch (error) {
     console.warn("[email] resend send threw", error);
-    return { ok: false, error: "인증 메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요." };
+    return { ok: false, error: "인증 메일 발송에 실패했어요. 잠시 후 다시 시도해 주세요." };
   }
 }
 

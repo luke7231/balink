@@ -20,6 +20,8 @@ import {
   trackDeletedNotificationRule,
   trackUpdatedNotificationPreference,
 } from "@/lib/amplitude-notification";
+import { FormError } from "@/components/form-error";
+import { emptyCopy, notificationCopy } from "@/lib/ui-copy";
 
 export function NotificationRulesList({
   initialPreference,
@@ -118,26 +120,30 @@ export function NotificationRulesList({
   return (
     <div className="space-y-3">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">알림 조건</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          {notificationCopy.rulesTitle}
+        </h1>
         <LabeledToggle
           checked={preference.enabled}
           disabled={pending || blank}
           onChange={toggleMaster}
-          ariaLabel="알림 받기"
+          ariaLabel={notificationCopy.masterAria}
         />
       </div>
 
       {blank ? (
         <div className="rounded-3xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
-          <p className="text-sm font-medium text-foreground">아직 알림 조건이 없습니다</p>
+          <p className="text-sm font-medium text-foreground">
+            {emptyCopy.notificationRules.title}
+          </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            지역·유형·요일·시간대를 설정해 두면, 맞는 공고가 올라올 때 알림함으로 옵니다.
+            {emptyCopy.notificationRules.description}
           </p>
           <Link
             href="/notifications/settings?new=1"
             className="mt-5 inline-flex rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background hover:opacity-90"
           >
-            조건 설정하기
+            {emptyCopy.notificationRules.cta}
           </Link>
         </div>
       ) : (
@@ -232,11 +238,11 @@ export function NotificationRulesList({
 
       {!blank && !canAdd ? (
         <p className="text-center text-xs text-muted-foreground">
-          조건은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있습니다.
+          조건은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있어요.
         </p>
       ) : null}
 
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      {error ? <FormError>{error}</FormError> : null}
 
       <Modal
         open={Boolean(deleteTarget)}
@@ -271,7 +277,7 @@ export function NotificationRulesList({
             <span className="font-semibold text-foreground">
               {formatNotificationRuleTitle(deleteTarget)}
             </span>
-            조건을 삭제할까요? 삭제하면 이 조건으로는 더 이상 알림이 오지 않습니다.
+            {notificationCopy.deleteConfirm}
           </>
         ) : null}
       </Modal>

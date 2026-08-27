@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@balink/db";
@@ -21,6 +22,7 @@ import { AmplitudePageView } from "@/components/amplitude-page-view";
 import { BackLink } from "@/components/back-link";
 import { DirectApplyControls } from "@/components/direct-apply-controls";
 import { ExternalLinkIcon } from "@/components/external-link-icon";
+import { JsonLd } from "@/components/json-ld";
 import { LinkifiedText } from "@/components/linkified-text";
 import { MotionReveal } from "@/components/motion-reveal";
 import { OriginalDescription } from "@/components/original-description";
@@ -28,11 +30,56 @@ import { OriginalSourceLink } from "@/components/original-source-link";
 import { PayHero } from "@/components/pay-hero";
 import { AmplitudeEventName } from "@/lib/amplitude-events";
 import { fetchJobPost } from "@/lib/graphql/queries";
+import {
+  breadcrumbJsonLd,
+  buildJobDescription,
+  buildPageMetadata,
+  jobPostingJsonLd,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 interface JobDetailPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: JobDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const job = await fetchJobPost(id);
+
+  if (!job) {
+    return buildPageMetadata({
+      title: "채용 공고",
+      path: `/jobs/${id}`,
+      noIndex: true,
+    });
+  }
+
+  const location = formatLocation(
+    job.sido ?? null,
+    job.sigungu ?? null,
+    job.dongOrStation ?? null,
+  );
+  const payLabel = formatPay(
+    job.payText ?? null,
+    job.payMinManwon ?? null,
+    job.payMaxManwon ?? null,
+    job.representativePayText ?? job.representativePay?.displayText ?? null,
+  );
+
+  return buildPageMetadata({
+    title: job.title,
+    description: buildJobDescription({
+      title: job.title,
+      location: location === "지역 미상" ? null : location,
+      pay: payLabel === "협의" ? null : payLabel,
+      description: job.description,
+    }),
+    path: `/jobs/${job.id}`,
+    type: "article",
+  });
 }
 
 export default async function JobDetailPage({ params }: JobDetailPageProps) {
@@ -102,6 +149,29 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           has_direct_apply: hasDirectApply,
           is_bookmarked: bookmarked,
         }}
+      />
+      <JsonLd
+        data={[
+          jobPostingJsonLd({
+            id: job.id,
+            title: job.title,
+            description: job.description,
+            locationText: job.locationText,
+            sido: job.sido,
+            sigungu: job.sigungu,
+            postedAt: job.postedAt,
+            updatedAt: job.updatedAt,
+            payMinManwon: payMin,
+            payMaxManwon: payMax,
+            payText: payLabel,
+            organizationName: job.organization?.name,
+            employmentType: job.jobType,
+          }),
+          breadcrumbJsonLd([
+            { name: "채용", path: "/" },
+            { name: job.title, path: `/jobs/${job.id}` },
+          ]),
+        ]}
       />
       <div className="mx-auto w-full max-w-lg px-6 py-8">
         <MotionReveal index={0} variant="fade-in">
