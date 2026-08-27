@@ -164,7 +164,8 @@ export type InviteClaimFrom = "signup" | "limit" | "account";
 export function afterInviteClaimPath(from: InviteClaimFrom) {
   if (from === "account") return "/account";
   if (from === "limit") return "/notifications/rules";
-  return "/notifications/settings?new=1";
+  // Post-signup skip / claim: stay on 마이, not notification onboarding.
+  return "/account";
 }
 
 export async function loadRegionLimitState(userId: string) {

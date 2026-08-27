@@ -1,11 +1,12 @@
 import type { ComponentProps } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { CommonActions } from "@react-navigation/native";
 import type { MaterialTopTabBarProps } from "@react-navigation/material-top-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { playHaptic } from "../haptics";
 import { useNativeTheme } from "../theme-context";
-import type { TabName } from "../web-config";
+import { tabRootPath, type TabName } from "../web-config";
 import { useTabPagerTransition } from "./tab-pager-transition";
 
 const TAB_META: Record<
@@ -26,6 +27,44 @@ const TAB_META: Record<
   },
   Account: { label: "마이", name: "person", nameOutline: "person-outline" },
 };
+
+type TabRoute = MaterialTopTabBarProps["state"]["routes"][number];
+
+/** Nested stack is Home at the tab root path (query ignored). */
+function isNestedAtTabRoot(route: TabRoute, rootPath: string): boolean {
+  const nested = route.state;
+  if (!nested) return true;
+
+  const index = nested.index ?? 0;
+  if (index !== 0) return false;
+
+  const current = nested.routes[index];
+  if (!current || current.name !== "Home") return false;
+
+  const path =
+    (current.params as { path?: string } | undefined)?.path ?? rootPath;
+  const pathname = path.split("?")[0] || "/";
+  return pathname === rootPath;
+}
+
+/** Reset nested stack to Home at the tab's root web path. */
+function resetTabToRoot(
+  navigation: MaterialTopTabBarProps["navigation"],
+  tabName: TabName,
+  rootPath: string,
+) {
+  navigation.dispatch(
+    CommonActions.navigate({
+      name: tabName,
+      params: {
+        state: {
+          index: 0,
+          routes: [{ name: "Home", params: { path: rootPath } }],
+        },
+      },
+    }),
+  );
+}
 
 export function BalinkTabBar({ state, navigation }: MaterialTopTabBarProps) {
   const { isDark } = useNativeTheme();
@@ -49,6 +88,9 @@ export function BalinkTabBar({ state, navigation }: MaterialTopTabBarProps) {
         const focused = state.index === index;
         const meta = TAB_META[route.name as TabName];
         if (!meta) return null;
+        const tabName = route.name as TabName;
+        const rootPath = tabRootPath(tabName);
+        const atRoot = isNestedAtTabRoot(route, rootPath);
 
         return (
           <Pressable
@@ -62,13 +104,24 @@ export function BalinkTabBar({ state, navigation }: MaterialTopTabBarProps) {
                 target: route.key,
                 canPreventDefault: true,
               });
-              if (event.defaultPrevented || focused) return;
+              if (event.defaultPrevented) return;
 
               void playHaptic("selection");
-              const distance = Math.abs(index - state.index);
-              const go = () => navigation.navigate(route.name, route.params);
 
-              // 옆 칸: 스와이프와 같은 슬라이드 / 두 칸 이상: 중간 훑지 않고 바로 이동
+              // Already focused: we own root reset. preventDefault so native-stack's
+              // tabPress → popToTop (rAF) does not race after we reset to Home.
+              if (focused) {
+                event.preventDefault();
+                if (!atRoot) resetTabToRoot(navigation, tabName, rootPath);
+                return;
+              }
+
+              const distance = Math.abs(index - state.index);
+              const go = () => {
+                if (atRoot) navigation.navigate(tabName);
+                else resetTabToRoot(navigation, tabName, rootPath);
+              };
+
               if (distance <= 1) go();
               else runWithoutPagerAnimation(go);
             }}

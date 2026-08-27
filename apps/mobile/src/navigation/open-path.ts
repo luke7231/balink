@@ -75,19 +75,15 @@ export function openAppPath(
   if (isTabRootPath(pathname)) {
     const activeTab = currentTabName(navigation);
     const stackNav = findStackNavigation(navigation);
-    // Same tab stack → tab root: keep scroll on plain returns; remount when query
-    // carries UI state (e.g. /account?deleted=1 after account deletion).
-    if (activeTab === tab && stackNav?.canGoBack()) {
-      if (pathWithQuery.includes("?")) {
-        stackNav.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: "Home", params: { path: pathWithQuery } }],
-          }),
-        );
-        return true;
-      }
-      stackNav.dispatch(StackActions.popToTop());
+    // Same tab → tab root: always reset to Home. Do not use popToTop — it races
+    // with tab-bar resets (invite → 마이) and throws when the stack is already root.
+    if (activeTab === tab && stackNav) {
+      stackNav.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "Home", params: { path: pathWithQuery } }],
+        }),
+      );
       return true;
     }
     tabNav.dispatch(

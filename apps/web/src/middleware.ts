@@ -15,6 +15,15 @@ function isClaimFlowPath(pathname: string) {
   );
 }
 
+function clearClaimInviteCookie(response: NextResponse) {
+  response.cookies.set(CLAIM_INVITE_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+}
+
 export function middleware(request: NextRequest) {
   if (request.cookies.get(CLAIM_INVITE_COOKIE)?.value !== "1") {
     return NextResponse.next();
@@ -29,10 +38,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const url = request.nextUrl.clone();
-  url.pathname = CLAIM_WELCOME_PATH;
-  url.search = "";
-  return NextResponse.redirect(url);
+  // Left the post-signup gate (마이 탭 → /account, 앱 재실행 등): same as skip.
+  // Do not trap the rest of the app behind welcome for the cookie TTL.
+  const response = NextResponse.next();
+  clearClaimInviteCookie(response);
+  return response;
 }
 
 export const config = {
