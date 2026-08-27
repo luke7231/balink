@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FilterChipBar } from "@/components/filter-chip-bar";
 import { setFilterUrl } from "@/lib/filter-url";
+import { trackClickedListFilter } from "@/lib/amplitude-list-filter";
 import type { SubstituteSort } from "@/lib/list-sort";
 import {
   buildSubstituteFilterHref,
@@ -53,7 +54,27 @@ export function SubstitutesFilterBar({
 
   const activeCount = dateFilters.length + selectedRegions.length;
 
-  function apply(dates: SubstituteDateFilter[], regions: string[]) {
+  function apply(
+    dates: SubstituteDateFilter[],
+    regions: string[],
+    analytics: {
+      filterSource: "chip" | "sheet_apply" | "sheet_reset";
+      filterKind: "date_all" | "date" | "region_combo" | "sheet_apply" | "sheet_reset";
+      filterValue?: string;
+      filterSelected: boolean;
+    },
+  ) {
+    trackClickedListFilter({
+      screen: "substitute_list",
+      postKind: "substitute",
+      sort,
+      filterSource: analytics.filterSource,
+      filterKind: analytics.filterKind,
+      filterValue: analytics.filterValue,
+      filterSelected: analytics.filterSelected,
+      activeDateCount: dates.length,
+      activeRegionCount: regions.length,
+    });
     setFilterUrl(buildSubstituteFilterHref(dates, regions, sort));
   }
 
@@ -62,12 +83,25 @@ export function SubstitutesFilterBar({
       key: "all-dates",
       label: "전체 일정",
       selected: dateFilters.length === 0,
-      onSelect: () => apply([], selectedRegions),
+      onSelect: () =>
+        apply([], selectedRegions, {
+          filterSource: "chip",
+          filterKind: "date_all",
+          filterSelected: true,
+        }),
     },
     ...DATE_OPTIONS.map((option) => ({
       key: option.value,
       label: option.label,
-      onSelect: () => apply(toggleValue(dateFilters, option.value), selectedRegions),
+      onSelect: () => {
+        const nextDates = toggleValue(dateFilters, option.value);
+        apply(nextDates, selectedRegions, {
+          filterSource: "chip",
+          filterKind: "date",
+          filterValue: option.value,
+          filterSelected: nextDates.includes(option.value),
+        });
+      },
       selected: dateFilters.includes(option.value),
     })),
     ...selectedRegions.map((region) => {
@@ -79,6 +113,12 @@ export function SubstitutesFilterBar({
           apply(
             dateFilters,
             selectedRegions.filter((entry) => entry !== region),
+            {
+              filterSource: "chip",
+              filterKind: "region_combo",
+              filterValue: region,
+              filterSelected: false,
+            },
           ),
         selected: true,
       };
@@ -96,7 +136,11 @@ export function SubstitutesFilterBar({
           className="space-y-5"
           onSubmit={(event) => {
             event.preventDefault();
-            apply(draftDates, draftRegions);
+            apply(draftDates, draftRegions, {
+              filterSource: "sheet_apply",
+              filterKind: "sheet_apply",
+              filterSelected: draftDates.length > 0 || draftRegions.length > 0,
+            });
           }}
         >
           <div>
@@ -159,7 +203,13 @@ export function SubstitutesFilterBar({
             <button
               type="button"
               data-close-sheet
-              onClick={() => apply([], [])}
+              onClick={() =>
+                apply([], [], {
+                  filterSource: "sheet_reset",
+                  filterKind: "sheet_reset",
+                  filterSelected: false,
+                })
+              }
               className="flex-1 rounded-2xl border border-border px-4 py-3 text-center text-sm font-semibold text-muted-foreground"
             >
               초기화

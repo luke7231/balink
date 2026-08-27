@@ -13,6 +13,7 @@ export const AmplitudeEventName = {
   CreatedNotificationRule: "Created Notification Rule",
   UpdatedNotificationPreference: "Updated Notification Preference",
   DeletedNotificationRule: "Deleted Notification Rule",
+  ClickedListFilter: "Clicked List Filter",
 } as const;
 
 export type AmplitudeEventName =
@@ -23,9 +24,23 @@ export type AmplitudePostKind = "job" | "substitute";
 export type AmplitudeScreen =
   | "job_detail"
   | "substitute_detail"
+  | "job_list"
+  | "substitute_list"
   | "notification_settings"
   | "notification_rules"
   | "saved";
+
+export type ListFilterSource = "chip" | "sheet_apply" | "sheet_reset";
+
+export type ListFilterKind =
+  | "region_all"
+  | "region_sido"
+  | "region_sigungu"
+  | "region_combo"
+  | "date_all"
+  | "date"
+  | "sheet_apply"
+  | "sheet_reset";
 
 export type NotificationPreferenceScreen =
   | "notification_settings"
@@ -109,6 +124,20 @@ export type DeletedNotificationRuleProps = NotificationPreferenceContextProps & 
   job_type: AlertJobType;
 };
 
+export type ClickedListFilterProps = {
+  screen: "job_list" | "substitute_list";
+  post_kind: AmplitudePostKind;
+  filter_source: ListFilterSource;
+  filter_kind: ListFilterKind;
+  filter_value?: string;
+  filter_selected: boolean;
+  active_sido_count?: number;
+  active_sigungu_count?: number;
+  active_date_count?: number;
+  active_region_count?: number;
+  sort: string;
+};
+
 export type AmplitudeEventPropsByName = {
   [AmplitudeEventName.ViewedJobDetail]: ViewedJobDetailProps;
   [AmplitudeEventName.ViewedSubstituteDetail]: ViewedSubstituteDetailProps;
@@ -118,6 +147,7 @@ export type AmplitudeEventPropsByName = {
   [AmplitudeEventName.CreatedNotificationRule]: CreatedNotificationRuleProps;
   [AmplitudeEventName.UpdatedNotificationPreference]: UpdatedNotificationPreferenceProps;
   [AmplitudeEventName.DeletedNotificationRule]: DeletedNotificationRuleProps;
+  [AmplitudeEventName.ClickedListFilter]: ClickedListFilterProps;
 };
 
 export function buildNotificationPreferenceContextProps(
