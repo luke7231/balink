@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { FilterChipBar } from "@/components/filter-chip-bar";
 import { setFilterUrl } from "@/lib/filter-url";
+import { trackClickedListFilter } from "@/lib/amplitude-list-filter";
 import { buildJobsFilterHref } from "@/lib/job-filter-params";
 import type { JobSort } from "@/lib/list-sort";
 
@@ -72,7 +73,27 @@ export function JobsFilterBar({
       return !region.districts.some((district) => selectedSigungus.includes(district.sigungu));
     }).length + selectedSigungus.length;
 
-  function apply(sidos: string[], sigungus: string[]) {
+  function apply(
+    sidos: string[],
+    sigungus: string[],
+    analytics: {
+      filterSource: "chip" | "sheet_apply" | "sheet_reset";
+      filterKind: "region_all" | "region_sido" | "region_sigungu" | "sheet_apply" | "sheet_reset";
+      filterValue?: string;
+      filterSelected: boolean;
+    },
+  ) {
+    trackClickedListFilter({
+      screen: "job_list",
+      postKind: "job",
+      sort,
+      filterSource: analytics.filterSource,
+      filterKind: analytics.filterKind,
+      filterValue: analytics.filterValue,
+      filterSelected: analytics.filterSelected,
+      activeSidoCount: sidos.length,
+      activeSigunguCount: sigungus.length,
+    });
     setFilterUrl(buildJobsFilterHref(sidos, sigungus, sort));
   }
 
@@ -81,25 +102,36 @@ export function JobsFilterBar({
       key: "all",
       label: "전체 지역",
       selected: selectedSidos.length === 0 && selectedSigungus.length === 0,
-      onSelect: () => apply([], []),
+      onSelect: () =>
+        apply([], [], {
+          filterSource: "chip",
+          filterKind: "region_all",
+          filterSelected: true,
+        }),
     },
     ...regions.map((region) => {
       const hasDistrictSelection = region.districts.some((district) =>
         selectedSigungus.includes(district.sigungu),
       );
+      const sidoSelected = selectedSidos.includes(region.sido);
       return {
         key: region.sido,
         label: region.sido,
-        onSelect: () =>
-          apply(
-            toggleValue(selectedSidos, region.sido),
-            selectedSidos.includes(region.sido)
-              ? selectedSigungus.filter(
-                  (sigungu) => !region.districts.some((district) => district.sigungu === sigungu),
-                )
-              : selectedSigungus,
-          ),
-        selected: selectedSidos.includes(region.sido) && !hasDistrictSelection,
+        onSelect: () => {
+          const nextSidos = toggleValue(selectedSidos, region.sido);
+          const nextSigungus = sidoSelected
+            ? selectedSigungus.filter(
+                (sigungu) => !region.districts.some((district) => district.sigungu === sigungu),
+              )
+            : selectedSigungus;
+          apply(nextSidos, nextSigungus, {
+            filterSource: "chip",
+            filterKind: "region_sido",
+            filterValue: region.sido,
+            filterSelected: nextSidos.includes(region.sido),
+          });
+        },
+        selected: sidoSelected && !hasDistrictSelection,
       };
     }),
     ...selectedSigungus.map((sigungu) => ({
@@ -109,6 +141,12 @@ export function JobsFilterBar({
         apply(
           selectedSidos,
           selectedSigungus.filter((entry) => entry !== sigungu),
+          {
+            filterSource: "chip",
+            filterKind: "region_sigungu",
+            filterValue: sigungu,
+            filterSelected: false,
+          },
         ),
       selected: true,
     })),
@@ -125,7 +163,11 @@ export function JobsFilterBar({
           className="space-y-5"
           onSubmit={(event) => {
             event.preventDefault();
-            apply(draftSidos, draftSigungus);
+            apply(draftSidos, draftSigungus, {
+              filterSource: "sheet_apply",
+              filterKind: "sheet_apply",
+              filterSelected: draftSidos.length > 0 || draftSigungus.length > 0,
+            });
           }}
         >
           <div>
@@ -198,7 +240,13 @@ export function JobsFilterBar({
             <button
               type="button"
               data-close-sheet
-              onClick={() => apply([], [])}
+              onClick={() =>
+                apply([], [], {
+                  filterSource: "sheet_reset",
+                  filterKind: "sheet_reset",
+                  filterSelected: false,
+                })
+              }
               className="flex-1 rounded-2xl border border-border px-4 py-3 text-center text-sm font-semibold text-muted-foreground"
             >
               초기화
