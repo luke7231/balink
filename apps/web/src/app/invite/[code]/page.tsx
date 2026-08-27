@@ -5,8 +5,12 @@ import { normalizeReferralCode } from "@balink/domain";
 import { MotionReveal } from "@/components/motion-reveal";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { RememberInviteRef } from "@/components/remember-invite-ref";
-import { startInviteKakaoAction } from "@/components/referral-actions";
+import {
+  startInviteAppleAction,
+  startInviteKakaoAction,
+} from "@/components/referral-actions";
 import { CTA_PRESS_CLASS } from "@/lib/button-classes";
+import { isAppleLoginEnabled } from "@/lib/auth-features";
 import { findInviterByCode } from "@/lib/referral";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +31,7 @@ export default async function InvitePage({
   const isOwnLink = session?.user?.id === inviter.id;
   const alreadyMember = Boolean(session?.user?.id) && !isOwnLink;
   const inviterName = inviter.name?.trim() || "친구";
+  const showApple = isAppleLoginEnabled();
 
   return (
     <main className="flex min-h-full flex-1 flex-col page-bg-radial">
@@ -73,6 +78,16 @@ export default async function InvitePage({
                 카카오로 시작하기
               </PendingSubmitButton>
             </form>
+            {showApple ? (
+              <form action={startInviteAppleAction.bind(null, code)}>
+                <PendingSubmitButton
+                  pendingLabel="연결 중..."
+                  className={`flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-foreground text-[15px] font-semibold text-background transition hover:opacity-90 disabled:opacity-50 ${CTA_PRESS_CLASS}`}
+                >
+                  Apple로 시작하기
+                </PendingSubmitButton>
+              </form>
+            ) : null}
             <Link
               href={`/signup?ref=${encodeURIComponent(code)}`}
               className={`flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted ${CTA_PRESS_CLASS}`}

@@ -48,7 +48,7 @@ Auth.js + Prisma. 소셜 콜백 경로는 `/api/auth/callback/{provider}` 입니
 2. Return URLs: `https://www.balink.co.kr/api/auth/callback/apple`
 3. Keys → Sign in with Apple 키 생성 후 `.p8`로 client secret JWT 발급
 4. 생성된 JWT를 `AUTH_APPLE_SECRET`에 넣습니다 (보통 6개월 유효)
-5. Apple 로그인은 지금은 숨겨 둡니다 (`isAppleLoginEnabled()`). 다시 켤 때 이 플래그와 `AUTH_APPLE_ID` / `AUTH_APPLE_SECRET`이 필요합니다.
+5. Apple 로그인은 `isAppleLoginEnabled()`로 켜져 있습니다. 프로바이더 등록에는 `AUTH_APPLE_ID` / `AUTH_APPLE_SECRET`이 필요합니다.
 
 ## 이메일 로그인 / 회원가입 (OTP)
 

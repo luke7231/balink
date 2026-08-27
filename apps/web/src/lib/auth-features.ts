@@ -1,4 +1,4 @@
-/** Apple login is hidden until account-linking UX is ready. */
+/** Apple Sign In — required for App Store review when other social logins exist. */
 export function isAppleLoginEnabled(): boolean {
-  return false;
+  return true;
 }
