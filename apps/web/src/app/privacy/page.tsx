@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { LegalDocument, LegalSection } from "@/components/legal-document";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "개인정보처리방침 | 발링크",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: "개인정보처리방침",
+  description: "발링크 서비스의 개인정보 수집·이용·보관·파기 기준을 안내합니다.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (
