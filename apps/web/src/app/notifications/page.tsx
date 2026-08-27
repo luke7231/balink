@@ -9,9 +9,11 @@ import { markAllNotificationsReadAction } from "@/components/notification-action
 import { NotificationItem } from "@/components/notification-item";
 import { NotificationRulesOverview } from "@/components/notification-rules-overview";
 import { PushPermissionCallout } from "@/components/push-permission-callout";
+import { EmptyStatePanel } from "@/components/empty-state-panel";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
 import { loadRegionLimitState } from "@/lib/referral";
+import { emptyCopy, notificationCopy } from "@/lib/ui-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -24,18 +26,17 @@ export default async function NotificationsPage() {
         <SiteHeader jobCount={health.jobCount} substituteCount={health.substituteCount} />
         <main className="mx-auto max-w-lg px-4 py-8">
           <PushPermissionCallout loggedIn={false} serverEnabled={false} />
-          <section className="rounded-3xl border border-border bg-surface px-6 py-10 text-center shadow-sm">
-            <p className="text-sm font-semibold text-foreground">맞춤 알림은 로그인 후 이용할 수 있어요</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              지역·요일 조건을 저장하고 내 알림함을 확인해 보세요.
-            </p>
+          <EmptyStatePanel
+            title={emptyCopy.notificationsGuest.title}
+            description={emptyCopy.notificationsGuest.description}
+          >
             <Link
               href="/login"
               className="mt-5 inline-flex rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background"
             >
-              로그인하기
+              {emptyCopy.notificationsGuest.cta}
             </Link>
-          </section>
+          </EmptyStatePanel>
         </main>
       </div>
     );
@@ -86,26 +87,26 @@ export default async function NotificationsPage() {
 
         <section>
           <div className="mb-3 flex items-end justify-between gap-3">
-            <h3 className="text-base font-semibold text-foreground">받은 알림</h3>
+            <h3 className="text-base font-semibold text-foreground">
+              {notificationCopy.inboxTitle}
+            </h3>
             {unreadCount > 0 ? (
               <form action={markAllNotificationsReadAction}>
                 <button
                   type="submit"
                   className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent-border hover:text-accent"
                 >
-                  모두 읽음
+                  {notificationCopy.markAllRead}
                 </button>
               </form>
             ) : null}
           </div>
 
           {notifications.length === 0 ? (
-            <div className="rounded-3xl border border-border bg-surface px-6 py-12 text-center shadow-sm">
-              <p className="text-sm font-medium text-foreground">아직 알림이 없습니다</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                알림 조건에 맞는 공고가 올라오면 여기에 표시됩니다.
-              </p>
-            </div>
+            <EmptyStatePanel
+              title={emptyCopy.notifications.title}
+              description={emptyCopy.notifications.description}
+            />
           ) : (
             <ul className="space-y-3">
               {notifications.map((item, index) => (

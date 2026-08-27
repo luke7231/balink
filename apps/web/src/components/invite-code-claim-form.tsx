@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { MotionReveal } from "@/components/motion-reveal";
+import { FormError } from "@/components/form-error";
 import { claimInviteCodeAction, skipInviteClaimAction } from "@/components/referral-actions";
 import type { InviteClaimFrom } from "@/lib/referral";
 
@@ -40,7 +41,7 @@ export function InviteCodeClaimForm({ from = "signup" }: { from?: InviteClaimFro
               className={inputClass}
             />
           </label>
-          {error ? <p className="text-sm text-accent">{error}</p> : null}
+          {error ? <FormError>{error}</FormError> : null}
           <button
             type="submit"
             disabled={pending || code.trim().length < 8}

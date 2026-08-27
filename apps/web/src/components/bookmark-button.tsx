@@ -6,6 +6,7 @@ import {
   toggleJobBookmarkAction,
   toggleSubstituteBookmarkAction,
 } from "@/components/bookmark-actions";
+import { FormError } from "@/components/form-error";
 import { notifyWebViewSync } from "@/lib/native-shell";
 
 function BookmarkIcon({ filled, className = "h-5 w-5" }: { filled: boolean; className?: string }) {
@@ -156,7 +157,7 @@ export function BookmarkButton({
       >
         {bookmarked ? savedLabel : saveLabel}
       </button>
-      {error ? <p className="text-xs text-accent">{error}</p> : null}
+      {error ? <FormError className="text-xs text-accent">{error}</FormError> : null}
     </div>
   );
 }

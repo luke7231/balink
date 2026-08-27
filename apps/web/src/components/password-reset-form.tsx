@@ -178,7 +178,10 @@ export function PasswordResetForm() {
         </p>
       ) : null}
       {error ? (
-        <p className="rounded-2xl border border-accent-border bg-accent-subtle px-4 py-3 text-sm text-accent">
+        <p
+          role="alert"
+          className="rounded-2xl border border-accent-border bg-accent-subtle px-4 py-3 text-sm text-accent"
+        >
           {error}
         </p>
       ) : null}

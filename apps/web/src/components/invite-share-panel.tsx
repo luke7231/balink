@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { FormError } from "@/components/form-error";
 import { inviteShareText } from "@/lib/invite-share";
 
 export function InviteSharePanel({
@@ -117,7 +118,7 @@ export function InviteSharePanel({
           {copied === "link" ? "링크를 복사했어요" : "링크 복사하기"}
         </button>
       </div>
-      {error ? <p className="mt-3 text-sm text-accent">{error}</p> : null}
+      {error ? <FormError className="mt-3 text-sm text-accent">{error}</FormError> : null}
     </section>
   );
 }

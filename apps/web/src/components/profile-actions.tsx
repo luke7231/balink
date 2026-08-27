@@ -113,7 +113,7 @@ export async function requestEmailChangeAction(emailInput: string): Promise<Prof
     where: { id: userId },
     select: { email: true },
   });
-  if (!current) return { ok: false, error: "계정을 찾을 수 없습니다." };
+  if (!current) return { ok: false, error: "계정을 찾을 수 없어요." };
   if (current.email && current.email.toLowerCase() === newEmail) {
     return { ok: false, error: "현재 사용 중인 이메일과 같습니다." };
   }
@@ -135,7 +135,7 @@ export async function requestEmailChangeAction(emailInput: string): Promise<Prof
     select: { createdAt: true },
   });
   if (latest && Date.now() - latest.createdAt.getTime() < EMAIL_CHANGE_COOLDOWN_MS) {
-    return { ok: false, error: "잠시 후에 다시 요청해 주세요." };
+    return { ok: false, error: "잠시 후 다시 요청해 주세요." };
   }
 
   const token = createEmailChangeToken();
