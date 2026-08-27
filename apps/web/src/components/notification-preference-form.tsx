@@ -215,10 +215,11 @@ export function NotificationPreferenceForm({
             index={editingIndex >= 0 ? editingIndex : preference.rules.indexOf(rule)}
             rule={rule}
             districtGroups={districtGroups}
-            canRemove={preference.rules.length > 1}
-            hideHeader={singleMode}
+            canRemove={!isNewRule && preference.rules.length > 1}
+            hideHeader={isNewRule}
             onChange={(next) => updateRule(rule.id, next)}
             onRemove={() => {
+              if (isNewRule) return;
               if (singleMode) {
                 const deletedRule = rule;
                 const next =
@@ -333,7 +334,7 @@ function RuleCard({
   rule,
   districtGroups,
   canRemove,
-  hideHeader,
+  hideHeader = false,
   onChange,
   onRemove,
 }: {
@@ -341,6 +342,7 @@ function RuleCard({
   rule: NotificationRule;
   districtGroups: DistrictGroup[];
   canRemove: boolean;
+  /** 추가 화면: 제목·활성 토글 불필요 */
   hideHeader?: boolean;
   onChange: (next: NotificationRule) => void;
   onRemove: () => void;
@@ -373,25 +375,13 @@ function RuleCard({
             <Toggle checked={rule.enabled} onChange={(enabled) => onChange({ ...rule, enabled })} />
           </div>
         </div>
-      ) : (
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-foreground">
-            {formatNotificationRuleTitle(rule)}
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onRemove}
-              className="text-xs font-medium text-muted-foreground hover:text-accent"
-            >
-              삭제
-            </button>
-            <Toggle checked={rule.enabled} onChange={(enabled) => onChange({ ...rule, enabled })} />
-          </div>
-        </div>
-      )}
+      ) : null}
 
-      <div className={`mt-4 space-y-5 ${rule.enabled ? "" : "pointer-events-none opacity-45"}`}>
+      <div
+        className={`space-y-5 ${hideHeader ? "" : "mt-4"} ${
+          rule.enabled ? "" : "pointer-events-none opacity-45"
+        }`}
+      >
         <section>
           <h3 className="text-sm font-semibold text-foreground">유형</h3>
           <div className="mt-2 flex rounded-2xl border border-border bg-surface-muted p-1">
