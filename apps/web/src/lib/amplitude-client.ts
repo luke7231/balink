@@ -5,6 +5,7 @@ import {
   resolveAmplitudeApiKey,
   type AmplitudeAppEnv,
 } from "@/lib/amplitude-destination";
+import { readAuthUserId } from "@/lib/amplitude-identity";
 import {
   compactAmplitudeProps,
   type AmplitudeEventName,
@@ -21,7 +22,13 @@ export type AmplitudeProbe = {
   env: AmplitudeAppEnv;
   initialized: boolean;
   events: AmplitudeProbeEvent[];
+  sessionReplaySampleRate: number;
+  /** Database `User.id` after identify; null while anonymous. */
+  userId: string | null;
 };
+
+/** Session Replay captures this fraction of sessions (0–1). */
+export const SESSION_REPLAY_SAMPLE_RATE = 0.2;
 
 declare global {
   interface Window {
@@ -30,7 +37,16 @@ declare global {
 }
 
 let didInit = false;
+let initPromise: Promise<void> | null = null;
 let currentEnv: AmplitudeAppEnv = "dev";
+let identifiedUserId: string | null = null;
+/** Logout/delete in flight — don't re-identify from a still-valid session cookie. */
+let ignoreSessionIdentify = false;
+
+function syncProbeUserId() {
+  if (typeof window === "undefined" || !window.balinkAnalytics) return;
+  window.balinkAnalytics.userId = identifiedUserId;
+}
 
 function installDevProbe(env: AmplitudeAppEnv) {
   if (typeof window === "undefined" || env !== "dev") return;
@@ -38,7 +54,13 @@ function installDevProbe(env: AmplitudeAppEnv) {
     env,
     initialized: window.balinkAnalytics?.initialized ?? false,
     events: window.balinkAnalytics?.events ?? [],
+    sessionReplaySampleRate: SESSION_REPLAY_SAMPLE_RATE,
+    userId: identifiedUserId,
   };
+}
+
+export function getAmplitudeUserId(): string | null {
+  return identifiedUserId;
 }
 
 export function initAmplitude(input: {
@@ -61,14 +83,70 @@ export function initAmplitude(input: {
   }
 
   didInit = true;
-  void amplitude.initAll(resolved.apiKey, {
+  initPromise = amplitude.initAll(resolved.apiKey, {
     analytics: { autocapture: true },
-    sessionReplay: { sampleRate: 1 },
+    sessionReplay: { sampleRate: SESSION_REPLAY_SAMPLE_RATE },
+  }).then(() => {
+    if (typeof window !== "undefined" && window.balinkAnalytics) {
+      window.balinkAnalytics.initialized = true;
+    }
   });
-  if (typeof window !== "undefined" && window.balinkAnalytics) {
-    window.balinkAnalytics.initialized = true;
-  }
   return resolved;
+}
+
+async function whenAmplitudeReady() {
+  if (initPromise) await initPromise;
+}
+
+export async function applyAmplitudeUserId(userId: string | undefined) {
+  await whenAmplitudeReady();
+  if (!didInit) return;
+
+  if (userId) {
+    ignoreSessionIdentify = false;
+    if (identifiedUserId === userId) return;
+    amplitude.setUserId(userId);
+    identifiedUserId = userId;
+    syncProbeUserId();
+    return;
+  }
+
+  if (identifiedUserId === null) return;
+  amplitude.reset();
+  identifiedUserId = null;
+  syncProbeUserId();
+}
+
+/** Call before logout / account delete so the next visitor is not this user. */
+export function resetAmplitudeUser() {
+  ignoreSessionIdentify = true;
+  identifiedUserId = null;
+  syncProbeUserId();
+  if (!didInit) return;
+  amplitude.reset();
+}
+
+async function fetchAuthUserId(): Promise<string | undefined> {
+  try {
+    const response = await fetch("/api/auth/session", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    if (!response.ok) return undefined;
+    return readAuthUserId(await response.json());
+  } catch {
+    return undefined;
+  }
+}
+
+/** Attach `User.id` when a session exists; reset only if we were identified. */
+export async function syncAmplitudeIdentityFromSession() {
+  const userId = await fetchAuthUserId();
+  if (ignoreSessionIdentify) {
+    if (!userId) ignoreSessionIdentify = false;
+    return;
+  }
+  await applyAmplitudeUserId(userId);
 }
 
 export function trackAmplitudeEvent<E extends AmplitudeEventName>(

@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, type FormEvent, type MutableRefObject } from "react";
+import {
+  resetAmplitudeUser,
+  syncAmplitudeIdentityFromSession,
+} from "@/lib/amplitude-client";
 import { notifyWebViewSync } from "@/lib/native-shell";
 
 /** Notify native shell that auth changed — other tab WebViews refresh on focus. */
@@ -40,6 +44,7 @@ export function createAuthBoundaryFormSubmit(options: {
 }) {
   return (event: FormEvent<HTMLFormElement>) => {
     if (options.submittingRef.current) return;
+    if (options.detachPush) resetAmplitudeUser();
     const form = event.currentTarget;
     const shouldDetach = Boolean(options.detachPush && window.balinkPush?.detach);
 
@@ -60,6 +65,7 @@ export function createAuthBoundaryFormSubmit(options: {
 export function AuthBoundarySync() {
   useEffect(() => {
     notifyAuthBoundaryChange();
+    void syncAmplitudeIdentityFromSession();
   }, []);
   return null;
 }
