@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { HomeBanner } from "@/components/home-banner";
 import { HomeFeedClient } from "@/components/home-feed-client";
 import { MotionReveal } from "@/components/motion-reveal";
@@ -5,6 +6,14 @@ import { SiteHeader } from "@/components/site-header";
 import { SubstitutesListWarmup } from "@/components/substitutes-list-warmup";
 import { HOME_BANNERS } from "@/lib/home-banners";
 import { parseJobFilterParams } from "@/lib/job-filter-params";
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "발레 강사 채용",
+  description:
+    "발레 강사 채용 공고를 지역·조건별로 모았습니다. 발링크에서 커리어에 맞는 학원·기관 공고를 확인하세요.",
+  path: "/",
+});
 
 interface HomePageProps {
   searchParams: Promise<{

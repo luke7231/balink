@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@balink/db";
 import {
@@ -19,6 +20,7 @@ import { AmplitudePageView } from "@/components/amplitude-page-view";
 import { BackLink } from "@/components/back-link";
 import { DirectApplyControls } from "@/components/direct-apply-controls";
 import { ExternalLinkIcon } from "@/components/external-link-icon";
+import { JsonLd } from "@/components/json-ld";
 import { MotionReveal } from "@/components/motion-reveal";
 import { OriginalDescription } from "@/components/original-description";
 import { OriginalSourceLink } from "@/components/original-source-link";
@@ -29,11 +31,56 @@ import {
 } from "@/components/substitute-schedule";
 import { AmplitudeEventName } from "@/lib/amplitude-events";
 import { fetchSubstitutePost } from "@/lib/graphql/queries";
+import {
+  breadcrumbJsonLd,
+  buildJobDescription,
+  buildPageMetadata,
+  jobPostingJsonLd,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 interface SubstituteDetailPageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: SubstituteDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const post = await fetchSubstitutePost(id);
+
+  if (!post) {
+    return buildPageMetadata({
+      title: "대강 공고",
+      path: `/substitutes/${id}`,
+      noIndex: true,
+    });
+  }
+
+  const location = formatLocation(
+    post.sido ?? null,
+    post.sigungu ?? null,
+    post.dongOrStation ?? null,
+  );
+  const payLabel = formatPay(
+    post.payText ?? null,
+    post.representativePay?.minManwon ?? null,
+    post.representativePay?.maxManwon ?? null,
+    post.representativePayText ?? post.representativePay?.displayText ?? null,
+  );
+
+  return buildPageMetadata({
+    title: post.title,
+    description: buildJobDescription({
+      title: post.title,
+      location: location === "지역 미상" ? null : location,
+      pay: payLabel === "협의" ? null : payLabel,
+      description: post.summary ?? post.body,
+    }),
+    path: `/substitutes/${post.id}`,
+    type: "article",
+  });
 }
 
 export default async function SubstituteDetailPage({
@@ -118,6 +165,29 @@ export default async function SubstituteDetailPage({
           has_direct_apply: hasDirectApply,
           is_bookmarked: bookmarked,
         }}
+      />
+      <JsonLd
+        data={[
+          jobPostingJsonLd({
+            id: post.id,
+            title: post.title,
+            description: post.summary ?? post.body,
+            locationText: post.locationText,
+            sido: post.sido,
+            sigungu: post.sigungu,
+            postedAt: post.postedAt,
+            updatedAt: post.updatedAt,
+            payMinManwon: payMin,
+            payMaxManwon: payMax,
+            payText: payLabel,
+            organizationName: post.academyName,
+            employmentType: "TEMPORARY",
+          }),
+          breadcrumbJsonLd([
+            { name: "대강", path: "/substitutes" },
+            { name: post.title, path: `/substitutes/${post.id}` },
+          ]),
+        ]}
       />
       <div className="mx-auto w-full max-w-lg px-6 py-8">
         <MotionReveal index={0} variant="fade-in">

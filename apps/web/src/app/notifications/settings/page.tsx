@@ -106,7 +106,7 @@ export default async function NotificationSettingsPage({
           {wantsNew ? "알림 조건 추가" : "알림 조건 수정"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          지역·유형·요일·시간대를 정해 저장하면 알림함에 반영됩니다.
+          지역·유형·요일·시간대를 정해 저장하면 알림함에 반영돼요.
         </p>
 
         <div className="mt-6">

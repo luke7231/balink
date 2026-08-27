@@ -99,7 +99,7 @@ export async function removeInterestRegionAction(
 ): Promise<InterestRegionActionResult> {
   const userId = await requireUserId();
   if (!regionId.trim()) {
-    return { ok: false, error: "삭제할 지역이 없습니다." };
+    return { ok: false, error: "삭제할 지역이 없어요." };
   }
 
   await prisma.userInterestRegion.deleteMany({

@@ -6,6 +6,7 @@ import {
   addInterestRegionAction,
   removeInterestRegionAction,
 } from "@/components/account-actions";
+import { FormError } from "@/components/form-error";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
 import {
   interestRegionKey,
@@ -102,7 +103,9 @@ export function InterestRegionPicker({
       <div>
         <p className="text-sm font-medium text-foreground">선택한 관심지역</p>
         {regions.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">아직 선택한 지역이 없습니다.</p>
+          <p className="mt-2 text-sm text-muted-foreground" role="status">
+            아직 선택한 지역이 없어요.
+          </p>
         ) : (
           <ul className="mt-2 flex flex-wrap gap-2">
             {regions.map((region) => (
@@ -171,7 +174,7 @@ export function InterestRegionPicker({
         </div>
       </div>
 
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      {error ? <FormError>{error}</FormError> : null}
       <RegionLimitSheet
         open={limitOpen}
         referred={regionReferred}

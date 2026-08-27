@@ -25,7 +25,9 @@ import {
   trackUpdatedNotificationPreference,
 } from "@/lib/amplitude-notification";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { FormError } from "@/components/form-error";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
+import { emptyCopy, notificationCopy } from "@/lib/ui-copy";
 
 type DistrictGroup = {
   sido: string;
@@ -177,14 +179,16 @@ export function NotificationPreferenceForm({
 
   if (singleMode && !editingRule) {
     return (
-      <div className="rounded-2xl border border-border bg-surface px-4 py-8 text-center">
-        <p className="text-sm text-muted-foreground">수정할 조건을 찾을 수 없습니다.</p>
+      <div className="rounded-2xl border border-border bg-surface px-4 py-8 text-center" role="status">
+        <p className="text-sm text-muted-foreground">
+          {emptyCopy.notificationRuleMissing.title}
+        </p>
         <button
           type="button"
           onClick={() => router.push(redirectOnSave)}
           className="mt-4 text-sm font-semibold text-foreground underline"
         >
-          알림으로 돌아가기
+          {emptyCopy.notificationRuleMissing.cta}
         </button>
       </div>
     );
@@ -195,9 +199,11 @@ export function NotificationPreferenceForm({
       <div className="space-y-4">
         {!singleMode ? (
           <div>
-            <h2 className="text-base font-semibold text-foreground">알림 규칙</h2>
+            <h2 className="text-base font-semibold text-foreground">
+              {notificationCopy.rulesHeading}
+            </h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              규칙마다 지역·정규/대강·요일·시간대를 따로 정합니다. 하나라도 맞으면 알림이 옵니다.
+              {notificationCopy.rulesHelp}
             </p>
           </div>
         ) : null}
@@ -250,19 +256,21 @@ export function NotificationPreferenceForm({
             onClick={addRule}
             className="w-full rounded-2xl border border-dashed border-border px-4 py-3 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
           >
-            + 규칙 추가
+            + 조건 추가
           </button>
         ) : null}
 
         {!singleMode && preference.rules.length >= MAX_NOTIFICATION_RULES ? (
           <p className="text-center text-xs text-muted-foreground">
-            규칙은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있습니다.
+            조건은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있어요.
           </p>
         ) : null}
 
         {!singleMode ? (
           <div className="rounded-2xl border border-accent-border bg-accent-subtle/50 px-4 py-3">
-            <p className="text-xs font-semibold text-accent">이렇게 알림이 옵니다</p>
+            <p className="text-xs font-semibold text-accent">
+              {notificationCopy.rulesPreviewLabel}
+            </p>
             <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-foreground">
               {summary}
             </p>
@@ -304,7 +312,7 @@ export function NotificationPreferenceForm({
           </button>
         ) : null}
         {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
-        {error ? <p className="text-sm text-accent">{error}</p> : null}
+        {error ? <FormError>{error}</FormError> : null}
       </div>
 
       <RegionLimitSheet
@@ -434,7 +442,7 @@ function RuleCard({
             />
           </div>
           {!rule.sido || !rule.sigungu ? (
-            <p className="mt-2 text-xs text-accent">지역을 선택해야 이 규칙으로 알림이 갑니다.</p>
+            <p className="mt-2 text-xs text-accent">{notificationCopy.regionRequired}</p>
           ) : null}
         </section>
 
@@ -498,8 +506,8 @@ function RuleCard({
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
             {anyDay
-              ? "요일 상관없이 알림이 옵니다."
-              : "선택한 요일이 모두 들어 있는 공고만 맞습니다."}
+              ? "요일 상관없이 알림이 와요."
+              : "선택한 요일이 모두 들어 있는 공고만 맞아요."}
           </p>
         </section>
 
@@ -555,8 +563,8 @@ function RuleCard({
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
             {rule.timeSlots.length === 0
-              ? "시간대 상관없이 알림이 옵니다. 오전·오후·저녁과는 함께 고를 수 없습니다."
-              : "선택한 시간대 중 하나라도 겹치면 알림이 옵니다."}
+              ? "시간대 상관없이 알림이 와요. 오전·오후·저녁과는 함께 고를 수 없어요."
+              : "선택한 시간대 중 하나라도 겹치면 알림이 와요."}
           </p>
         </section>
       </div>
@@ -689,11 +697,11 @@ function SheetCheckIcon() {
 
 function buildSummary(preference: NotificationPreference): string {
   const enabledRules = preference.rules.filter((rule) => rule.enabled);
-  if (enabledRules.length === 0) return "켜져 있는 규칙이 없습니다.";
+  if (enabledRules.length === 0) return notificationCopy.noEnabledRules;
 
   const incomplete = enabledRules.filter((rule) => !rule.sido || !rule.sigungu);
   if (incomplete.length === enabledRules.length) {
-    return "지역이 선택된 규칙이 없습니다. 각 규칙에서 지역을 골라 주세요.";
+    return notificationCopy.noRegionRules;
   }
 
   return enabledRules

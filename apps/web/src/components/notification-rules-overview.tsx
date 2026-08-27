@@ -15,8 +15,10 @@ import {
 } from "@balink/domain";
 import { Modal } from "@balink/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
+import { FormError } from "@/components/form-error";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
 import { trackDeletedNotificationRule } from "@/lib/amplitude-notification";
+import { emptyCopy, notificationCopy } from "@/lib/ui-copy";
 
 const REGION_SLOT_PREVIEW = 5;
 
@@ -142,7 +144,9 @@ export function NotificationRulesOverview({
       </div>
 
       {blank ? (
-        <p className="mb-3 text-sm text-muted-foreground">아직 알림 조건이 없습니다</p>
+        <p className="mb-3 text-sm text-muted-foreground" role="status">
+          {emptyCopy.notificationRules.inline}
+        </p>
       ) : null}
 
       <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain py-1 scrollbar-none">
@@ -227,7 +231,7 @@ export function NotificationRulesOverview({
         ))}
       </div>
 
-      {error ? <p className="mt-2 text-sm text-accent">{error}</p> : null}
+      {error ? <FormError className="mt-2 text-sm text-accent">{error}</FormError> : null}
 
       <RegionLimitSheet
         open={limitOpen}
@@ -268,8 +272,7 @@ export function NotificationRulesOverview({
             <span className="font-semibold text-foreground">
               {formatNotificationRuleTitle(deleteTarget)}
             </span>
-            조건을 삭제할까요? 삭제하면 이 조건으로는 더 이상 알림이 오지
-            않습니다.
+            {notificationCopy.deleteConfirm}
           </>
         ) : null}
       </Modal>
