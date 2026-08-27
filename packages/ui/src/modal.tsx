@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 export interface ModalProps {
   open: boolean;
@@ -15,6 +16,10 @@ export interface ModalProps {
   size?: "sm" | "md";
 }
 
+const EXIT_MS = 280;
+const MOTION =
+  "duration-280 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none motion-reduce:transform-none";
+
 export function Modal({
   open,
   title,
@@ -26,9 +31,35 @@ export function Modal({
 }: ModalProps) {
   const titleId = useId();
   const descriptionId = useId();
+  const [mounted, setMounted] = useState(open);
+  const [visible, setVisible] = useState(false);
+  const [openSnapshot, setOpenSnapshot] = useState(open);
+
+  if (open !== openSnapshot) {
+    setOpenSnapshot(open);
+    if (open) {
+      setMounted(true);
+    } else {
+      setVisible(false);
+    }
+  }
 
   useEffect(() => {
-    if (!open) return;
+    if (!mounted) return;
+
+    if (open) {
+      const frame = requestAnimationFrame(() => {
+        requestAnimationFrame(() => setVisible(true));
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+
+    const timer = window.setTimeout(() => setMounted(false), EXIT_MS);
+    return () => window.clearTimeout(timer);
+  }, [open, mounted]);
+
+  useEffect(() => {
+    if (!mounted) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
@@ -39,16 +70,21 @@ export function Modal({
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, onClose]);
+  }, [mounted, onClose]);
 
-  if (!open) return null;
+  if (!mounted) return null;
+  if (typeof document === "undefined") return null;
 
-  return (
+  // Portal to body so `fixed` covers the viewport — ancestors with transform
+  // (page motion) would otherwise clip the backdrop to a single section.
+  return createPortal(
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <button
         type="button"
         aria-label="닫기"
-        className="absolute inset-0 bg-foreground/40"
+        className={`absolute inset-0 bg-foreground/40 transition-opacity ${MOTION} ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
         onClick={closeOnBackdrop ? onClose : undefined}
       />
       <div
@@ -56,8 +92,12 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className={`relative w-full rounded-3xl bg-surface p-5 shadow-2xl ${
+        className={`relative w-full rounded-3xl bg-surface p-5 shadow-2xl transition-[opacity,transform] will-change-transform ${MOTION} ${
           size === "md" ? "max-w-md" : "max-w-sm"
+        } ${
+          visible
+            ? "translate-y-0 scale-100 opacity-100"
+            : "translate-y-2.5 scale-[0.985] opacity-0"
         }`}
       >
         <div className="flex items-start justify-between gap-3">
@@ -80,7 +120,8 @@ export function Modal({
 
         {footer ? <div className="mt-5 flex flex-wrap justify-end gap-2">{footer}</div> : null}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
