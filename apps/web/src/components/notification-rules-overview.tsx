@@ -147,7 +147,7 @@ export function NotificationRulesOverview({
       <div className="flex min-w-0 max-w-full gap-2 overflow-x-auto overscroll-x-contain py-1 scrollbar-none">
         {blank ? (
           <Link
-            href="/notifications/settings?new=1"
+            href="/notifications/settings?new=1&from=inbox"
             className="inline-flex h-10 shrink-0 items-center rounded-full border border-dashed border-border bg-surface px-3.5 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
           >
             + 조건
@@ -168,7 +168,7 @@ export function NotificationRulesOverview({
                 }`}
               >
                 <Link
-                  href={`/notifications/settings?ruleId=${encodeURIComponent(rule.id)}`}
+                  href={`/notifications/settings?ruleId=${encodeURIComponent(rule.id)}&from=inbox`}
                   aria-label={`${rule.jobType === "substitute" ? "대강" : "정규"} · ${title}${on ? "" : " · 꺼짐"}`}
                   className="inline-flex items-center gap-1.5 py-1"
                 >
@@ -206,7 +206,7 @@ export function NotificationRulesOverview({
         )}
         {!blank && canAddOpenSlot ? (
           <Link
-            href="/notifications/settings?new=1"
+            href="/notifications/settings?new=1&from=inbox"
             className="inline-flex h-10 shrink-0 items-center rounded-full border border-dashed border-border bg-surface px-3.5 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
           >
             + 조건

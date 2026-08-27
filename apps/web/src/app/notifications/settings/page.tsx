@@ -19,7 +19,7 @@ import { loadRegionLimitState } from "@/lib/referral";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = Promise<{ ruleId?: string; new?: string }>;
+type SearchParams = Promise<{ ruleId?: string; new?: string; from?: string }>;
 
 export default async function NotificationSettingsPage({
   searchParams,
@@ -34,6 +34,8 @@ export default async function NotificationSettingsPage({
   const params = await searchParams;
   const wantsNew = params.new === "1";
   const requestedRuleId = typeof params.ruleId === "string" ? params.ruleId : undefined;
+  const fromInbox = params.from === "inbox";
+  const backHref = fromInbox ? "/notifications" : "/notifications/rules";
 
   if (!wantsNew && !requestedRuleId) {
     redirect("/notifications/rules");
@@ -96,11 +98,11 @@ export default async function NotificationSettingsPage({
 
       <main className="mx-auto max-w-lg px-4 py-8">
         <BackLink
-          href="/notifications/rules"
+          href={backHref}
           preferHref
           className="text-sm text-muted-foreground hover:text-foreground"
         >
-          ← 알림 조건
+          {fromInbox ? "← 알림함" : "← 알림 조건"}
         </BackLink>
 
         <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
@@ -125,6 +127,7 @@ export default async function NotificationSettingsPage({
           districtGroups={districtGroups}
           editRuleId={editRuleId}
           isNewRule={wantsNew}
+          redirectOnSave={backHref}
           regionUnlocked={regionLimit.unlocked}
           regionReferred={regionLimit.referred}
         />
