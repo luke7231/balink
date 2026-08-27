@@ -52,9 +52,6 @@ Auth.js + Prisma. 소셜 콜백 경로는 `/api/auth/callback/{provider}` 입니
 
 ## 이메일 로그인 / 회원가입 (OTP)
 
-프로덕션(`VERCEL_ENV=production`)에서는 숨깁니다. 로컬·프리뷰에서만 로그인 화면에 나옵니다.
-`/signup`, `/login/email`, `/login/reset`도 프로덕션에서는 `/login`으로 보냅니다.
-
 1. Resend가 설정되어 있어야 합니다 (아래 Resend 절).
 2. 흐름
    - 회원가입: `/signup` → 이메일 → 6자리 코드 → 비밀번호 → **이때** `User` 생성 (`emailVerified` 설정)
@@ -86,8 +83,8 @@ Auth.js는 이 연동 시에도 `createUser` 이벤트를 보내므로, 이미 �
 
 ```bash
 pnpm dev:web
-# http://localhost:3100/login → 카카오 로그인 (로컬에서는 이메일 로그인도 표시)
-# http://localhost:3100/signup → 이메일 OTP 가입 (로컬·프리뷰만)
+# http://localhost:3100/login → 카카오 로그인
+# http://localhost:3100/signup → 이메일 OTP 가입
 # http://localhost:3100/login/email → 이메일 로그인
 # DB User / Account·Session 행 생성, 헤더에 이름·로그아웃 표시
 ```

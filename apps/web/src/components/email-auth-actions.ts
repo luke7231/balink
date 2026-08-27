@@ -34,7 +34,6 @@ import {
   sendSignupOtpEmail,
 } from "@/lib/email";
 import { hashPassword, validatePassword, verifyPassword } from "@/lib/password";
-import { isEmailAuthEnabled } from "@/lib/auth-features";
 import { finalizeNewUserProfile } from "@/lib/user-profile";
 
 export type EmailAuthActionResult =
@@ -44,10 +43,6 @@ export type EmailAuthActionResult =
 const GENERIC_LOGIN_ERROR = "이메일 또는 비밀번호가 올바르지 않습니다.";
 const GENERIC_CODE_SENT = "인증 코드를 보냈어요. 이메일을 확인해 주세요.";
 const GENERIC_BUSY = "요청이 너무 많아요. 잠시 후 다시 시도해 주세요.";
-
-function ensureEmailAuthEnabled(): void {
-  if (!isEmailAuthEnabled()) redirect("/login");
-}
 
 function passwordMismatchOrInvalid(
   password: string,
@@ -75,7 +70,6 @@ async function findUserByEmail(email: string) {
 export async function requestSignupCodeAction(
   emailInput: string,
 ): Promise<EmailAuthActionResult> {
-  ensureEmailAuthEnabled();
   const email = normalizeEmail(emailInput);
   if (!isValidEmail(email)) {
     return { ok: false, error: "올바른 이메일 주소를 입력해 주세요." };
@@ -109,7 +103,6 @@ export async function verifySignupCodeAction(
   emailInput: string,
   codeInput: string,
 ): Promise<EmailAuthActionResult> {
-  ensureEmailAuthEnabled();
   const email = normalizeEmail(emailInput);
   const code = codeInput.trim();
 
@@ -149,7 +142,6 @@ export async function completeSignupAction(
   passwordInput: string,
   confirmInput: string,
 ): Promise<EmailAuthActionResult> {
-  ensureEmailAuthEnabled();
   const ticketRaw = await readAuthTicketCookie();
   if (!ticketRaw) {
     return { ok: false, error: "인증이 만료되었습니다. 처음부터 다시 진행해 주세요." };
@@ -192,7 +184,6 @@ export async function loginWithEmailAction(
   emailInput: string,
   passwordInput: string,
 ): Promise<EmailAuthActionResult> {
-  ensureEmailAuthEnabled();
   const email = normalizeEmail(emailInput);
   if (!isValidEmail(email) || !passwordInput) {
     return { ok: false, error: GENERIC_LOGIN_ERROR };
@@ -231,7 +222,6 @@ export async function loginWithEmailAction(
 export async function requestResetCodeAction(
   emailInput: string,
 ): Promise<EmailAuthActionResult> {
-  ensureEmailAuthEnabled();
   const email = normalizeEmail(emailInput);
   if (!isValidEmail(email)) {
     return { ok: false, error: "올바른 이메일 주소를 입력해 주세요." };
@@ -265,7 +255,6 @@ export async function verifyResetCodeAction(
   emailInput: string,
   codeInput: string,
 ): Promise<EmailAuthActionResult> {
-  ensureEmailAuthEnabled();
   const email = normalizeEmail(emailInput);
   const code = codeInput.trim();
 
@@ -300,7 +289,6 @@ export async function completeResetAction(
   passwordInput: string,
   confirmInput: string,
 ): Promise<EmailAuthActionResult> {
-  ensureEmailAuthEnabled();
   const ticketRaw = await readAuthTicketCookie();
   if (!ticketRaw) {
     return { ok: false, error: "인증이 만료되었습니다. 처음부터 다시 진행해 주세요." };

@@ -3,10 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { MotionReveal } from "@/components/motion-reveal";
 import { PasswordResetForm } from "@/components/password-reset-form";
-import { isEmailAuthEnabled } from "@/lib/auth-features";
 
 export default async function PasswordResetPage() {
-  if (!isEmailAuthEnabled()) redirect("/login");
   const session = await auth();
   if (session?.user) {
     redirect("/");

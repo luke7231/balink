@@ -24,7 +24,7 @@ export async function rememberInviteCodeAction(rawCode: string) {
 
 export async function startInviteKakaoAction(rawCode: string) {
   const remembered = await rememberInviteCodeAction(rawCode);
-  if (!remembered.ok) redirect("/login");
+  if (!remembered.ok) redirect("/signup");
   await signIn("kakao", { redirectTo: "/notifications/settings?new=1" });
 }
 

@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { signInWithKakao } from "@/components/login-actions";
-import { isEmailAuthEnabled } from "@/lib/auth-features";
 import { motionIndexStyle } from "@/lib/motion";
 
 export function LoginScreen({
@@ -13,8 +12,6 @@ export function LoginScreen({
   errorMessage?: string | null;
   deletedMessage?: string | null;
 }) {
-  const showEmailAuth = isEmailAuthEnabled();
-
   return (
     <main className="flex min-h-full flex-1 flex-col page-bg-radial">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-8">
@@ -85,37 +82,33 @@ export function LoginScreen({
               </button>
             </form>
 
-            {showEmailAuth ? (
-              <>
-                <div
-                  className="motion-fade-up relative my-1 flex items-center gap-3"
-                  style={motionIndexStyle(4)}
-                  aria-hidden
-                >
-                  <div className="h-px flex-1 bg-border" />
-                  <span className="text-xs text-muted-foreground">또는</span>
-                  <div className="h-px flex-1 bg-border" />
-                </div>
+            <div
+              className="motion-fade-up relative my-1 flex items-center gap-3"
+              style={motionIndexStyle(4)}
+              aria-hidden
+            >
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">또는</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
 
-                <Link
-                  href="/login/email"
-                  className="motion-fade-up flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted active:scale-[0.985]"
-                  style={motionIndexStyle(5)}
-                >
-                  이메일로 로그인
-                </Link>
+            <Link
+              href="/login/email"
+              className="motion-fade-up flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted active:scale-[0.985]"
+              style={motionIndexStyle(5)}
+            >
+              이메일로 로그인
+            </Link>
 
-                <p
-                  className="motion-fade-in px-1 pt-1 text-center text-sm text-muted-foreground"
-                  style={motionIndexStyle(6)}
-                >
-                  계정이 없다면{" "}
-                  <Link href="/signup" className="font-medium text-foreground underline underline-offset-2">
-                    회원가입
-                  </Link>
-                </p>
-              </>
-            ) : null}
+            <p
+              className="motion-fade-in px-1 pt-1 text-center text-sm text-muted-foreground"
+              style={motionIndexStyle(6)}
+            >
+              계정이 없다면{" "}
+              <Link href="/signup" className="font-medium text-foreground underline underline-offset-2">
+                회원가입
+              </Link>
+            </p>
           </div>
         </div>
 

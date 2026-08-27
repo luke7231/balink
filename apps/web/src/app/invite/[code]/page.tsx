@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { isEmailAuthEnabled } from "@/lib/auth-features";
 import { normalizeReferralCode } from "@balink/domain";
 import { MotionReveal } from "@/components/motion-reveal";
 import { RememberInviteRef } from "@/components/remember-invite-ref";
@@ -72,14 +71,12 @@ export default async function InvitePage({
                 카카오로 시작하기
               </button>
             </form>
-            {isEmailAuthEnabled() ? (
-              <Link
-                href={`/signup?ref=${encodeURIComponent(code)}`}
-                className="flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground hover:bg-surface-muted"
-              >
-                이메일로 가입하기
-              </Link>
-            ) : null}
+            <Link
+              href={`/signup?ref=${encodeURIComponent(code)}`}
+              className="flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground hover:bg-surface-muted"
+            >
+              이메일로 가입하기
+            </Link>
           </MotionReveal>
         )}
       </div>

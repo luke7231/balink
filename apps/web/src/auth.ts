@@ -82,4 +82,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 });
 
-export { isAppleLoginEnabled, isEmailAuthEnabled } from "@/lib/auth-features";
+export { isAppleLoginEnabled } from "@/lib/auth-features";

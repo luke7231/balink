@@ -79,21 +79,3 @@ test("signup gate: User is created only after password step (action contract)", 
     "OTP steps must not create User",
   );
 });
-
-test("email auth public actions stay behind the env gate", async () => {
-  const fs = await import("node:fs/promises");
-  const path = new URL("../components/email-auth-actions.ts", import.meta.url);
-  const source = await fs.readFile(path, "utf8");
-  for (const name of [
-    "requestSignupCodeAction",
-    "completeSignupAction",
-    "loginWithEmailAction",
-    "requestResetCodeAction",
-    "completeResetAction",
-  ]) {
-    const idx = source.indexOf(`export async function ${name}`);
-    assert.ok(idx > 0, name);
-    const slice = source.slice(idx, idx + 180);
-    assert.match(slice, /ensureEmailAuthEnabled\(\)/, `${name} must gate email auth`);
-  }
-});

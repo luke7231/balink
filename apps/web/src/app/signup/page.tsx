@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 import { MotionReveal } from "@/components/motion-reveal";
 import { RememberInviteRef } from "@/components/remember-invite-ref";
 import { SignupForm } from "@/components/signup-form";
-import { isEmailAuthEnabled } from "@/lib/auth-features";
 
 export default async function SignupPage({
   searchParams,
@@ -17,7 +16,6 @@ export default async function SignupPage({
   }
 
   const params = await searchParams;
-  if (!isEmailAuthEnabled()) redirect("/login");
 
   return (
     <main className="flex min-h-full flex-1 flex-col page-bg-radial">
