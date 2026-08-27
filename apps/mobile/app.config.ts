@@ -68,7 +68,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "발링크",
   slug: "balink",
   owner: "luke7299",
-  version: "1.0.0",
+  version: "1.0.1",
   orientation: "portrait",
   scheme: kakaoScheme ? ["balink", kakaoScheme] : "balink",
   userInterfaceStyle: "automatic",
@@ -76,7 +76,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: "com.luke7231.balink",
-    buildNumber: "2",
+    buildNumber: "3",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       LSApplicationQueriesSchemes: [

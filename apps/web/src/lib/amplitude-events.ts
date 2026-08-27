@@ -185,6 +185,7 @@ export function buildCreatedNotificationRuleProps(
 ): CreatedNotificationRuleProps {
   return {
     ...buildNotificationPreferenceContextProps(preference, "notification_settings"),
+    screen: "notification_settings",
     rule_id: rule.id,
     job_type: rule.jobType,
   };
@@ -208,6 +209,7 @@ export function buildDeletedNotificationRuleProps(
 ): DeletedNotificationRuleProps {
   return {
     ...buildNotificationPreferenceContextProps(preference, "notification_rules"),
+    screen: "notification_rules",
     rule_id: rule.id,
     job_type: rule.jobType,
   };

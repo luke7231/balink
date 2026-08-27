@@ -70,7 +70,7 @@ test("notification preference builders distinguish create, update, delete", () =
         sido: "서울",
         sigungu: "강남구",
         days: [],
-        timeSlots: ["morning"],
+        timeSlots: ["morning" as const],
       },
     ],
   };
