@@ -51,6 +51,9 @@ export function PushPermissionCallout({
   }, []);
 
   if (!state.isMobileApp) return null;
+  // Native reports permission asynchronously. Don't paint a warning with the
+  // default "undetermined" state or the banner flashes then vanishes.
+  if (!state.checkedAt) return null;
 
   if (!loggedIn) {
     return (
@@ -79,31 +82,12 @@ export function PushPermissionCallout({
   }
 
   if (!serverEnabled || activeRuleSummaries.length === 0) {
-    return (
-      <PushPanel
-        tone="neutral"
-        title="맞춤 알림 조건이 꺼져 있어요"
-        description="지역·요일 조건을 켜면 해당 공고가 등록될 때 앱으로 알려드려요."
-      >
-        <Link
-          href="/notifications/rules"
-          className="inline-flex rounded-full bg-foreground px-3.5 py-2 text-xs font-semibold text-background"
-        >
-          알림 조건 켜기
-        </Link>
-      </PushPanel>
-    );
+    return null;
   }
 
   const rules = activeRuleSummaries.slice(0, 2).join(" · ");
   if (state.permissionStatus === "granted") {
-    return (
-      <PushPanel
-        tone="success"
-        title="이 디바이스에서 맞춤 알림을 받고 있어요"
-        description={`${rules} 조건이 켜져 있어요.`}
-      />
-    );
+    return null;
   }
   if (state.permissionStatus === "unavailable") {
     if (unavailableDismissed) return null;
