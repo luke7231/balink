@@ -97,6 +97,7 @@ export default async function NotificationSettingsPage({
       <main className="mx-auto max-w-lg px-4 py-8">
         <BackLink
           href="/notifications/rules"
+          preferHref
           className="text-sm text-muted-foreground hover:text-foreground"
         >
           ← 알림 조건

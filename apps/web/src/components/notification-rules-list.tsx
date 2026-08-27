@@ -16,6 +16,7 @@ import {
 } from "@balink/domain";
 import { Modal } from "@balink/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
+import { useSyncedNotificationPreference } from "@/lib/use-synced-notification-preference";
 import {
   trackDeletedNotificationRule,
   trackUpdatedNotificationPreference,
@@ -34,7 +35,7 @@ export function NotificationRulesList({
   regionReferred?: boolean;
 }) {
   const router = useRouter();
-  const [preference, setPreference] = useState(initialPreference);
+  const [preference, setPreference] = useSyncedNotificationPreference(initialPreference);
   const [deleteTarget, setDeleteTarget] = useState<NotificationRule | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();

@@ -38,6 +38,7 @@ export default async function NotificationRulesPage() {
       <main className="mx-auto max-w-lg px-4 py-8">
         <BackLink
           href="/notifications"
+          preferHref
           className="text-sm text-muted-foreground hover:text-foreground"
         >
           ← 알림함

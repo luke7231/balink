@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NotificationHistoryRefresh } from "@/components/notification-history-refresh";
 import { noIndexMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function NotificationsLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <NotificationHistoryRefresh />
+      {children}
+    </>
+  );
 }

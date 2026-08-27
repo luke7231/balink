@@ -170,7 +170,7 @@ export function NotificationPreferenceForm({
         });
       }
       if (options?.redirect !== false && singleMode) {
-        router.push(redirectOnSave);
+        router.replace(redirectOnSave);
         router.refresh();
         return;
       }

@@ -19,6 +19,7 @@ import { FormError } from "@/components/form-error";
 import { ButtonPendingContent } from "@/components/pending-submit-button";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
 import { trackDeletedNotificationRule } from "@/lib/amplitude-notification";
+import { useSyncedNotificationPreference } from "@/lib/use-synced-notification-preference";
 import { emptyCopy, notificationCopy } from "@/lib/ui-copy";
 
 const REGION_SLOT_PREVIEW = 5;
@@ -33,9 +34,8 @@ export function NotificationRulesOverview({
   regionReferred?: boolean;
 }) {
   const router = useRouter();
-  const [preference, setPreference] = useState(initialPreference);
-  const [preferenceSnapshot, setPreferenceSnapshot] =
-    useState(initialPreference);
+  const [preference, setPreference] =
+    useSyncedNotificationPreference(initialPreference);
   const [deleteTarget, setDeleteTarget] = useState<NotificationRule | null>(
     null,
   );
@@ -58,11 +58,6 @@ export function NotificationRulesOverview({
     regionUnlocked || blank
       ? 0
       : Math.max(0, REGION_SLOT_PREVIEW - openChipCount);
-
-  if (initialPreference !== preferenceSnapshot) {
-    setPreferenceSnapshot(initialPreference);
-    setPreference(initialPreference);
-  }
 
   function confirmDelete() {
     if (!deleteTarget) return;
