@@ -31,17 +31,17 @@ export function SupportInquirySheet({
         </p>
 
         <div className="space-y-3">
-          <section className="rounded-3xl bg-[#FFF8C5] p-5">
+          <section className="rounded-3xl bg-[#FFF8C5] p-5 text-[#191600]">
             <div className="flex items-center gap-3">
               <span className="text-xl" aria-hidden>
                 💬
               </span>
               <div>
-                <h3 className="text-base font-bold text-foreground">카카오톡 상담</h3>
-                <p className="mt-0.5 text-sm text-muted-foreground">간단한 문의와 빠른 확인</p>
+                <h3 className="text-base font-bold">카카오톡 상담</h3>
+                <p className="mt-0.5 text-sm text-[#191600]/70">간단한 문의와 빠른 확인</p>
               </div>
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 text-sm leading-6 text-[#191600]/70">
               로그인, 알림 설정, 서비스 이용 방법처럼 대화로 해결하기 좋은 문의를 남겨주세요.
               확인 순서대로 답변드립니다.
             </p>
@@ -52,17 +52,17 @@ export function SupportInquirySheet({
             />
           </section>
 
-          <section className="rounded-3xl bg-violet-100 p-5">
+          <section className="rounded-3xl bg-violet-100 p-5 text-violet-950">
             <div className="flex items-center gap-3">
               <span className="text-xl" aria-hidden>
                 📝
               </span>
               <div>
-                <h3 className="text-base font-bold text-foreground">문의 폼</h3>
-                <p className="mt-0.5 text-sm text-muted-foreground">의견 및 자세한 문의 남기기</p>
+                <h3 className="text-base font-bold">문의 폼</h3>
+                <p className="mt-0.5 text-sm text-violet-950/70">의견 및 자세한 문의 남기기</p>
               </div>
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 text-sm leading-6 text-violet-950/70">
               기능 제안, 오류·공고 정보 제보, 서비스 개선 의견 및 제휴 문의처럼 검토가 필요한
               내용을 남겨주세요.
             </p>

@@ -92,7 +92,7 @@ export function KakaoChannelChat({
         <span aria-hidden>→</span>
       </button>
       {error ? (
-        <p role="alert" className="py-1 text-xs text-accent">
+        <p role="alert" className="py-1 text-xs text-red-800">
           {error}
         </p>
       ) : null}
