@@ -116,14 +116,14 @@ export function NotificationRulesOverview({
             <p className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-1">
                 <span
-                  className="h-1.5 w-1.5 rounded-full bg-accent-subtle0"
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
                   aria-hidden
                 />
                 정규
               </span>
               <span className="inline-flex items-center gap-1">
                 <span
-                  className="h-1.5 w-1.5 rounded-full bg-amber-500"
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"
                   aria-hidden
                 />
                 대강
@@ -174,12 +174,12 @@ export function NotificationRulesOverview({
                   className="inline-flex items-center gap-1.5 py-1"
                 >
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                       on
                         ? rule.jobType === "substitute"
                           ? "bg-amber-500"
-                          : "bg-accent-subtle0"
-                        : "bg-surface-muted"
+                          : "bg-accent"
+                        : "bg-muted-foreground/40"
                     }`}
                     aria-hidden
                   />

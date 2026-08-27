@@ -48,7 +48,7 @@ export function NotificationItem({
               {notificationTypeLabel(type)}
             </span>
             {unread ? (
-              <span className="h-1.5 w-1.5 rounded-full bg-accent-subtle0" aria-label="읽지 않음" />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-label="읽지 않음" />
             ) : null}
           </div>
           <p className="mt-2 text-sm font-semibold text-foreground">{title}</p>
