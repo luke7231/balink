@@ -1,12 +1,15 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/auth";
+import { isAppleLoginEnabled } from "@/lib/auth-features";
 
 export async function signInWithKakao() {
   await signIn("kakao", { redirectTo: "/" });
 }
 
 export async function signInWithApple() {
+  if (!isAppleLoginEnabled()) redirect("/login");
   await signIn("apple", { redirectTo: "/" });
 }
 

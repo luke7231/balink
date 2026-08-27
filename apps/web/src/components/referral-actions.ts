@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
+import { isAppleLoginEnabled } from "@/lib/auth-features";
 import { normalizeReferralCode } from "@balink/domain";
 import {
   afterInviteClaimPath,
@@ -23,13 +24,14 @@ export async function rememberInviteCodeAction(rawCode: string) {
 
 export async function startInviteKakaoAction(rawCode: string) {
   const remembered = await rememberInviteCodeAction(rawCode);
-  if (!remembered.ok) redirect("/signup");
+  if (!remembered.ok) redirect("/login");
   await signIn("kakao", { redirectTo: "/notifications/settings?new=1" });
 }
 
 export async function startInviteAppleAction(rawCode: string) {
   const remembered = await rememberInviteCodeAction(rawCode);
-  if (!remembered.ok) redirect("/signup");
+  if (!remembered.ok) redirect("/login");
+  if (!isAppleLoginEnabled()) redirect("/login");
   await signIn("apple", { redirectTo: "/notifications/settings?new=1" });
 }
 

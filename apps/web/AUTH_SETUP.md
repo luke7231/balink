@@ -48,9 +48,12 @@ Auth.js + Prisma. 소셜 콜백 경로는 `/api/auth/callback/{provider}` 입니
 2. Return URLs: `https://www.balink.co.kr/api/auth/callback/apple`
 3. Keys → Sign in with Apple 키 생성 후 `.p8`로 client secret JWT 발급
 4. 생성된 JWT를 `AUTH_APPLE_SECRET`에 넣습니다 (보통 6개월 유효)
-5. `AUTH_APPLE_ID` + `AUTH_APPLE_SECRET`이 둘 다 있으면 로그인 화면에 Apple 버튼이 노출됩니다
+5. Apple 로그인은 지금은 숨겨 둡니다 (`isAppleLoginEnabled()`). 다시 켤 때 이 플래그와 `AUTH_APPLE_ID` / `AUTH_APPLE_SECRET`이 필요합니다.
 
 ## 이메일 로그인 / 회원가입 (OTP)
+
+프로덕션(`VERCEL_ENV=production`)에서는 숨깁니다. 로컬·프리뷰에서만 로그인 화면에 나옵니다.
+`/signup`, `/login/email`, `/login/reset`도 프로덕션에서는 `/login`으로 보냅니다.
 
 1. Resend가 설정되어 있어야 합니다 (아래 Resend 절).
 2. 흐름
@@ -77,13 +80,14 @@ Auth.js + Prisma. 소셜 콜백 경로는 `/api/auth/callback/{provider}` 입니
 이메일이 같은 카카오·Apple 계정은 `allowDangerousEmailAccountLinking`으로 한 User에 연결됩니다.
 카카오가 이메일을 주지 않으면 연동되지 않고 별도 계정으로 생성될 수 있습니다.
 소셜 계정에 인증된 이메일이 있으면 비밀번호 재설정·계정 관리에서 비밀번호를 붙여 이메일 로그인을 쓸 수 있습니다.
+Auth.js는 이 연동 시에도 `createUser` 이벤트를 보내므로, 이미 비밀번호나 다른 소셜 Account가 있는 User는 닉네임·추천인 세팅을 다시 하지 않습니다.
 
 ## 로컬 검증
 
 ```bash
 pnpm dev:web
-# http://localhost:3100/login → 카카오 로그인
-# http://localhost:3100/signup → 이메일 OTP 가입
+# http://localhost:3100/login → 카카오 로그인 (로컬에서는 이메일 로그인도 표시)
+# http://localhost:3100/signup → 이메일 OTP 가입 (로컬·프리뷰만)
 # http://localhost:3100/login/email → 이메일 로그인
 # DB User / Account·Session 행 생성, 헤더에 이름·로그아웃 표시
 ```

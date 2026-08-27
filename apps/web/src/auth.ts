@@ -4,8 +4,12 @@ import NextAuth from "next-auth";
 import Apple from "next-auth/providers/apple";
 import Kakao from "next-auth/providers/kakao";
 import type { Provider } from "next-auth/providers";
+import { isAppleLoginEnabled } from "@/lib/auth-features";
 import { attachReferralFromCookie, markInviteClaimNeeded } from "@/lib/referral";
-import { finalizeNewUserProfile } from "@/lib/user-profile";
+import {
+  finalizeNewUserProfile,
+  shouldProvisionAuthJsUser,
+} from "@/lib/user-profile";
 
 const providers: Provider[] = [
   Kakao({
@@ -21,7 +25,11 @@ const providers: Provider[] = [
   }),
 ];
 
-if (process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET) {
+if (
+  isAppleLoginEnabled() &&
+  process.env.AUTH_APPLE_ID &&
+  process.env.AUTH_APPLE_SECRET
+) {
   providers.push(
     Apple({
       allowDangerousEmailAccountLinking: true,
@@ -40,6 +48,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   events: {
     async createUser({ user }) {
       if (!user.id) return;
+      const existing = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          passwordHash: true,
+          _count: { select: { accounts: true } },
+        },
+      });
+      if (
+        !existing ||
+        !shouldProvisionAuthJsUser({
+          passwordHash: existing.passwordHash,
+          accountCount: existing._count.accounts,
+        })
+      ) {
+        return;
+      }
       await finalizeNewUserProfile({ id: user.id, image: user.image });
       const attached = await attachReferralFromCookie(user.id);
       if (!attached) await markInviteClaimNeeded(user.id);
@@ -58,6 +82,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 });
 
-export const isAppleLoginEnabled = Boolean(
-  process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET,
-);
+export { isAppleLoginEnabled, isEmailAuthEnabled } from "@/lib/auth-features";

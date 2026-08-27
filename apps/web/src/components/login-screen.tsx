@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { isAppleLoginEnabled } from "@/auth";
-import { signInWithApple, signInWithKakao } from "@/components/login-actions";
+import { signInWithKakao } from "@/components/login-actions";
+import { isEmailAuthEnabled } from "@/lib/auth-features";
 import { motionIndexStyle } from "@/lib/motion";
 
 export function LoginScreen({
@@ -13,6 +13,8 @@ export function LoginScreen({
   errorMessage?: string | null;
   deletedMessage?: string | null;
 }) {
+  const showEmailAuth = isEmailAuthEnabled();
+
   return (
     <main className="flex min-h-full flex-1 flex-col page-bg-radial">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-8">
@@ -83,58 +85,43 @@ export function LoginScreen({
               </button>
             </form>
 
-            {isAppleLoginEnabled ? (
-              <form action={signInWithApple} className="motion-fade-up" style={motionIndexStyle(4)}>
-                <button
-                  type="submit"
-                  className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-foreground text-[15px] font-semibold text-background transition hover:opacity-90 active:scale-[0.985]"
+            {showEmailAuth ? (
+              <>
+                <div
+                  className="motion-fade-up relative my-1 flex items-center gap-3"
+                  style={motionIndexStyle(4)}
+                  aria-hidden
                 >
-                  <AppleIcon />
-                  Apple로 계속하기
-                </button>
-              </form>
-            ) : (
-              <p
-                className="motion-fade-in px-1 text-center text-xs text-muted-foreground"
-                style={motionIndexStyle(4)}
-              >
-                Apple 로그인은 설정 후 활성화됩니다.
-              </p>
-            )}
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs text-muted-foreground">또는</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
 
-            <div
-              className="motion-fade-up relative my-1 flex items-center gap-3"
-              style={motionIndexStyle(5)}
-              aria-hidden
-            >
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground">또는</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
+                <Link
+                  href="/login/email"
+                  className="motion-fade-up flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted active:scale-[0.985]"
+                  style={motionIndexStyle(5)}
+                >
+                  이메일로 로그인
+                </Link>
 
-            <Link
-              href="/login/email"
-              className="motion-fade-up flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted active:scale-[0.985]"
-              style={motionIndexStyle(6)}
-            >
-              이메일로 로그인
-            </Link>
-
-            <p
-              className="motion-fade-in px-1 pt-1 text-center text-sm text-muted-foreground"
-              style={motionIndexStyle(7)}
-            >
-              계정이 없다면{" "}
-              <Link href="/signup" className="font-medium text-foreground underline underline-offset-2">
-                회원가입
-              </Link>
-            </p>
+                <p
+                  className="motion-fade-in px-1 pt-1 text-center text-sm text-muted-foreground"
+                  style={motionIndexStyle(6)}
+                >
+                  계정이 없다면{" "}
+                  <Link href="/signup" className="font-medium text-foreground underline underline-offset-2">
+                    회원가입
+                  </Link>
+                </p>
+              </>
+            ) : null}
           </div>
         </div>
 
         <p
           className="motion-fade-in mt-auto px-4 pb-2 pt-6 text-center text-[11px] leading-4 text-muted-foreground"
-          style={motionIndexStyle(8)}
+          style={motionIndexStyle(7)}
         >
           계속하면 발링크의{" "}
           <Link href="/terms" className="font-medium text-foreground/80 underline underline-offset-2">
@@ -160,17 +147,6 @@ function KakaoIcon() {
       <path
         d="M9 1.5C4.86 1.5 1.5 4.16 1.5 7.45c0 2.12 1.4 3.98 3.52 5.05l-.9 3.3c-.08.3.26.53.5.37l3.95-2.62c.47.05.96.08 1.43.08 4.14 0 7.5-2.66 7.5-5.95S13.14 1.5 9 1.5Z"
         fill="#191600"
-      />
-    </svg>
-  );
-}
-
-function AppleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-      <path
-        d="M12.7 9.3c0-1.8 1.5-2.7 1.5-2.7-.8-1.2-2.1-1.4-2.6-1.4-1.1-.1-2.2.7-2.7.7-.6 0-1.5-.6-2.4-.6-1.2 0-2.4.7-3 1.9-1.3 2.2-.3 5.5.9 7.3.6.9 1.3 1.9 2.2 1.8.9 0 1.2-.6 2.3-.6s1.4.6 2.4.5c1 0 1.6-.9 2.2-1.8.7-1 1-2 1-2.1-.1 0-1.9-.7-1.8-2.9ZM11.1 3.8c.5-.6.8-1.4.7-2.2-.7 0-1.6.5-2.1 1.1-.5.5-.9 1.4-.8 2.2.8.1 1.6-.4 2.2-1.1Z"
-        fill="white"
       />
     </svg>
   );
