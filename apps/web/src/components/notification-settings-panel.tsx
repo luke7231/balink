@@ -12,12 +12,14 @@ export function NotificationSettingsPanel({
   initialPreference,
   districtGroups,
   editRuleId,
+  isNewRule = false,
   regionUnlocked = false,
   regionReferred = false,
 }: {
   initialPreference: NotificationPreference;
   districtGroups: DistrictGroup[];
   editRuleId?: string;
+  isNewRule?: boolean;
   regionUnlocked?: boolean;
   regionReferred?: boolean;
 }) {
@@ -27,6 +29,7 @@ export function NotificationSettingsPanel({
         initialPreference={initialPreference}
         districtGroups={districtGroups}
         editRuleId={editRuleId}
+        isNewRule={isNewRule}
         redirectOnSave="/notifications/rules"
         regionUnlocked={regionUnlocked}
         regionReferred={regionReferred}

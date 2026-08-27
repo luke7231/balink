@@ -6,6 +6,8 @@ import {
   toggleJobBookmarkAction,
   toggleSubstituteBookmarkAction,
 } from "@/components/bookmark-actions";
+import { trackAmplitudeEvent } from "@/lib/amplitude-client";
+import { AmplitudeEventName } from "@/lib/amplitude-events";
 import { FormError } from "@/components/form-error";
 import { notifyWebViewSync } from "@/lib/native-shell";
 
@@ -38,6 +40,7 @@ const barIconClass =
   "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition";
 
 type BookmarkKind = "job" | "substitute";
+type BookmarkAnalyticsScreen = "job_detail" | "substitute_detail" | "saved";
 
 export function BookmarkButton({
   jobPostId,
@@ -45,6 +48,7 @@ export function BookmarkButton({
   initialBookmarked,
   variant = "label",
   loginHref,
+  analyticsScreen,
 }: {
   jobPostId?: string;
   substitutePostId?: string;
@@ -52,6 +56,7 @@ export function BookmarkButton({
   variant?: "label" | "icon" | "bar";
   /** 비로그인 시 이동할 경로 (bar/icon). 타깃 id 없이 로그인 유도만 할 때. */
   loginHref?: string;
+  analyticsScreen?: BookmarkAnalyticsScreen;
 }) {
   const kind: BookmarkKind | null = jobPostId
     ? "job"
@@ -61,6 +66,9 @@ export function BookmarkButton({
   const targetId = jobPostId ?? substitutePostId;
   const saveLabel = kind === "substitute" ? "대강 저장" : "공고 저장";
   const savedLabel = "저장됨";
+  const screen =
+    analyticsScreen ??
+    (kind === "substitute" ? "substitute_detail" : "job_detail");
 
   const [bookmarked, setBookmarked] = useState(initialBookmarked ?? false);
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +115,14 @@ export function BookmarkButton({
         return;
       }
       setBookmarked(result.bookmarked);
+      trackAmplitudeEvent(AmplitudeEventName.ToggledBookmark, {
+        screen,
+        post_kind: kind!,
+        post_id: targetId!,
+        bookmarked: result.bookmarked,
+        has_job_bookmarks: result.hasJobBookmarks,
+        has_substitute_bookmarks: result.hasSubstituteBookmarks,
+      });
       notifyWebViewSync("bookmark");
     });
   }

@@ -17,6 +17,7 @@ import { Modal } from "@balink/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
 import { FormError } from "@/components/form-error";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
+import { trackDeletedNotificationRule } from "@/lib/amplitude-notification";
 import { emptyCopy, notificationCopy } from "@/lib/ui-copy";
 
 const REGION_SLOT_PREVIEW = 5;
@@ -64,6 +65,7 @@ export function NotificationRulesOverview({
 
   function confirmDelete() {
     if (!deleteTarget) return;
+    const deletedRule = deleteTarget;
     const prev = preference;
     const remaining = preference.rules.filter(
       (rule) => rule.id !== deleteTarget.id,
@@ -100,6 +102,7 @@ export function NotificationRulesOverview({
         setError(result.error);
         return;
       }
+      trackDeletedNotificationRule(next, deletedRule);
       router.refresh();
     });
   }

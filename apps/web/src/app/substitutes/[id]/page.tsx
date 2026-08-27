@@ -11,10 +11,12 @@ import {
   formatSubstituteSessionLabel,
   formatSubstituteStatus,
   formatSubstituteUrgency,
+  hasDirectApplyContacts,
   resolveSubstituteUrgency,
 } from "@balink/domain";
 import { Badge } from "@balink/ui/badge";
 import { auth } from "@/auth";
+import { AmplitudePageView } from "@/components/amplitude-page-view";
 import { BackLink } from "@/components/back-link";
 import { DirectApplyControls } from "@/components/direct-apply-controls";
 import { ExternalLinkIcon } from "@/components/external-link-icon";
@@ -27,6 +29,7 @@ import {
   resolveSubstituteSchedule,
   SubstituteScheduleView,
 } from "@/components/substitute-schedule";
+import { AmplitudeEventName } from "@/lib/amplitude-events";
 import { fetchSubstitutePost } from "@/lib/graphql/queries";
 import {
   breadcrumbJsonLd,
@@ -102,12 +105,11 @@ export default async function SubstituteDetailPage({
       )
     : false;
 
-  const urgencyLabel = formatSubstituteUrgency(
-    resolveSubstituteUrgency({
-      sessions: post.sessions,
-      nextLessonAt: post.nextLessonAt,
-    }),
-  );
+  const urgencyValue = resolveSubstituteUrgency({
+    sessions: post.sessions,
+    nextLessonAt: post.nextLessonAt,
+  });
+  const urgencyLabel = formatSubstituteUrgency(urgencyValue);
   const explicitSessions = post.sessions.filter(
     (session) => session.origin !== "recurrence",
   );
@@ -141,9 +143,29 @@ export default async function SubstituteDetailPage({
   const applyLinks = extractApplyLinks({
     texts: [post.body, post.summary].filter(Boolean) as string[],
   });
+  const hasDirectApply = hasDirectApplyContacts({
+    phones: post.contactPhones,
+    emails: post.contactEmails,
+    links: applyLinks,
+  });
+  const detailAnalytics = { postKind: "substitute" as const, postId: id };
 
   return (
     <main className="page-bg-radial flex min-h-full flex-1 flex-col pb-24 sm:pb-0">
+      <AmplitudePageView
+        event={AmplitudeEventName.ViewedSubstituteDetail}
+        props={{
+          screen: "substitute_detail",
+          post_kind: "substitute",
+          post_id: id,
+          status: post.status ?? null,
+          urgency: urgencyValue ?? null,
+          sido: post.sido ?? null,
+          sigungu: post.sigungu ?? null,
+          has_direct_apply: hasDirectApply,
+          is_bookmarked: bookmarked,
+        }}
+      />
       <JsonLd
         data={[
           jobPostingJsonLd({
@@ -310,6 +332,7 @@ export default async function SubstituteDetailPage({
               <OriginalSourceLink
                 href={post.sourceUrl}
                 title="원문"
+                analytics={{ ...detailAnalytics, sourceLabel: "원문" }}
                 className="flex items-center justify-between gap-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm font-semibold text-foreground transition hover:opacity-90"
               >
                 <span>자세히 보기</span>
@@ -325,6 +348,7 @@ export default async function SubstituteDetailPage({
               contactMethods={post.contactMethods}
               applyLinks={applyLinks}
               sourceLinks={sourceLinks}
+              analytics={detailAnalytics}
               bookmark={
                 session?.user
                   ? { substitutePostId: id, initialBookmarked: bookmarked }
