@@ -7,15 +7,12 @@ import { normalizeReferralCode } from "@balink/domain";
 import {
   afterInviteClaimPath,
   attachReferralToUser,
+  dismissInvitePrompt,
   findInviterByCode,
   getOrCreateReferralCode,
   type InviteClaimFrom,
 } from "@/lib/referral";
-import {
-  clearClaimInviteCookie,
-  setClaimInviteDoneCookie,
-  setInviteRefCookie,
-} from "@/lib/referral-cookie";
+import { setInviteRefCookie } from "@/lib/referral-cookie";
 
 export async function rememberInviteCodeAction(rawCode: string) {
   const code = normalizeReferralCode(rawCode);
@@ -46,10 +43,8 @@ export async function loadMyInviteLinkAction() {
   return { code, path: `/invite/${code}` };
 }
 
-/** Skip/claim from a Server Action: stamp done in-place. Avoid /api hop (WebView session). */
-async function finishClaimAndGo(from: InviteClaimFrom) {
-  await clearClaimInviteCookie();
-  await setClaimInviteDoneCookie();
+async function finishClaimAndGo(userId: string, from: InviteClaimFrom) {
+  await dismissInvitePrompt(userId);
   redirect(afterInviteClaimPath(from));
 }
 
@@ -70,11 +65,11 @@ export async function claimInviteCodeAction(
     return { ok: false as const, error: "코드를 다시 확인해 주세요." };
   }
 
-  await finishClaimAndGo(from);
+  await finishClaimAndGo(session.user.id, from);
 }
 
 export async function skipInviteClaimAction(from: InviteClaimFrom = "signup") {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  await finishClaimAndGo(from);
+  await finishClaimAndGo(session.user.id, from);
 }

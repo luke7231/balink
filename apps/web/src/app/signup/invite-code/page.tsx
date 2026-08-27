@@ -15,10 +15,6 @@ function parseClaimFrom(raw: string | undefined): InviteClaimFrom {
   return "signup";
 }
 
-function consumeClaimRedirect(next: string) {
-  redirect(`/api/referral/consume-claim?next=${encodeURIComponent(next)}`);
-}
-
 export default async function InviteCodeClaimPage({
   searchParams,
 }: {
@@ -42,7 +38,7 @@ export default async function InviteCodeClaimPage({
   const from = parseClaimFrom(params.from);
 
   if (user.invitedByUserId) {
-    consumeClaimRedirect(afterInviteClaimPath(from));
+    redirect(afterInviteClaimPath(from));
   }
 
   return (

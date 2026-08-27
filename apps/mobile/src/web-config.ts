@@ -105,8 +105,8 @@ export function isStackPath(pathname: string): boolean {
   if (pathname.startsWith("/saved/") && pathname !== "/saved") return true;
   if (pathname.startsWith("/account/") && pathname !== "/account") return true;
   if (pathname.startsWith("/login/")) return true;
-  // Email signup + post-signup welcome / invite-code.
-  if (pathname === "/signup" || pathname.startsWith("/signup/")) return true;
+  // Signup/welcome stay in the Account Home WebView — stacking them cancels
+  // the tab root load and leaves a blank screen under the stack.
   if (pathname === "/privacy" || pathname === "/terms") return true;
   return false;
 }

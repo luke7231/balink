@@ -18,10 +18,6 @@ import { revokeAppleAccount } from "@/lib/apple-revoke";
 import { unlinkKakaoAccount } from "@/lib/kakao-unlink";
 import { backfillInboxMatchesForUser } from "@/lib/notification-inbox-backfill";
 import { loadRegionLimitState, qualifyReferralIfNeeded } from "@/lib/referral";
-import {
-  clearClaimInviteCookie,
-  clearClaimInviteDoneCookie,
-} from "@/lib/referral-cookie";
 
 export type InterestRegionActionResult =
   | { ok: true; region?: { id: string; sido: string; sigungu: string } }
@@ -249,9 +245,6 @@ export async function deleteAccountAction() {
 
   await prisma.user.delete({ where: { id: userId } });
   revalidateAuthBoundary();
-  // Re-signup should see the invite prompt again.
-  await clearClaimInviteCookie();
-  await clearClaimInviteDoneCookie();
   // Tab root — native popToTop clears manage stack; guest LoginScreen shows deleted banner.
   await signOut({ redirectTo: "/account?deleted=1" });
 }

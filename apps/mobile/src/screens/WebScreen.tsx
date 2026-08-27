@@ -63,22 +63,10 @@ function nativeShellBefore(isDark: boolean) {
       if (!document.getElementById('balink-native-shell-css')) {
         var style = document.createElement('style');
         style.id = 'balink-native-shell-css';
-        style.textContent = 'nav[aria-label="하단 메뉴"]{display:none!important;height:0!important;overflow:hidden!important}body{padding-bottom:0!important}.motion-settled{animation:none!important}';
+        // Do not mutate React-owned classList (e.g. motion-settled) before hydrate —
+        // that causes "attributes ... didn't match" on login/signup remounts.
+        style.textContent = 'nav[aria-label="하단 메뉴"]{display:none!important;height:0!important;overflow:hidden!important}body{padding-bottom:0!important}';
         (root.firstChild ? root.insertBefore(style, root.firstChild) : root.appendChild(style));
-      }
-      if (!window.__BALINK_MOTION_SETTLE__) {
-        window.__BALINK_MOTION_SETTLE__ = true;
-        document.addEventListener('animationend', function (event) {
-          var el = event.target;
-          if (!el || !el.classList) return;
-          if (
-            el.classList.contains('motion-fade-up') ||
-            el.classList.contains('motion-fade-in') ||
-            el.classList.contains('motion-soft-scale')
-          ) {
-            el.classList.add('motion-settled');
-          }
-        }, true);
       }
       window.dispatchEvent(new Event('balink:native-shell'));
     } catch (err) {}
@@ -132,7 +120,6 @@ const NATIVE_NAV_INTERCEPT = `
       if (pathname.indexOf('/saved/') === 0 && pathname !== '/saved') return true;
       if (pathname.indexOf('/account/') === 0 && pathname !== '/account') return true;
       if (pathname.indexOf('/login/') === 0) return true;
-      if (pathname === '/signup' || pathname.indexOf('/signup/') === 0) return true;
       if (pathname === '/privacy' || pathname === '/terms') return true;
       return false;
     }
@@ -410,8 +397,10 @@ export function WebScreen() {
 
         if (pathname === currentPathname) return true;
 
+        // Same tab → tab root: load in this WebView. Cancelling here blanks the
+        // screen (signup/welcome → /account after login).
         if (isTabRootPath(pathname)) {
-          if (tabForPath(pathname) === tabForPath(currentPathname) && isTabRootPath(currentPathname)) {
+          if (tabForPath(pathname) === tabForPath(currentPathname)) {
             return true;
           }
           return !openAppPath(navigation, appPath);

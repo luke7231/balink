@@ -10,6 +10,9 @@ export function PrefetchTabs() {
   const router = useRouter();
 
   useEffect(() => {
+    // Native tabs own navigation — skip warming duplicate web routes.
+    if (window.__BALINK_NATIVE_SHELL__ || window.ReactNativeWebView) return;
+
     let cancelled = false;
 
     const run = () => {

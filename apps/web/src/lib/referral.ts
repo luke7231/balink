@@ -8,10 +8,8 @@ import {
   type NotificationPreference,
 } from "@balink/domain";
 import {
-  clearClaimInviteDoneCookie,
   clearInviteRefCookie,
   readInviteRefCookie,
-  setClaimInviteCookie,
 } from "@/lib/referral-cookie";
 
 const CODE_ATTEMPTS = 8;
@@ -107,9 +105,18 @@ export async function markInviteClaimNeeded(userId: string): Promise<void> {
     select: { invitedByUserId: true },
   });
   if (!user || user.invitedByUserId) return;
-  // Device-scoped done cookie must not block a brand-new account (e.g. after delete).
-  await clearClaimInviteDoneCookie();
-  await setClaimInviteCookie();
+  await prisma.user.update({
+    where: { id: userId },
+    data: { invitePromptPending: true },
+  });
+}
+
+/** Skip / claim / leave gate — user won't see welcome again. */
+export async function dismissInvitePrompt(userId: string): Promise<void> {
+  await prisma.user.updateMany({
+    where: { id: userId, invitePromptPending: true },
+    data: { invitePromptPending: false },
+  });
 }
 
 function preferenceQualifiesInvite(preference: NotificationPreference): boolean {

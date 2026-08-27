@@ -4,9 +4,8 @@ import { useEffect } from "react";
 import { notifyAuthBoundaryChange } from "@/lib/auth-boundary-client";
 
 /**
- * Returning OAuth login: sync frozen tab WebViews, then leave the welcome gate.
- * Stay on /account (not /) so the native shell does not intercept a Jobs-tab
- * navigation and leave the Account WebView stuck on this screen.
+ * Leave the welcome gate. Signup stays in the Account Home WebView, so a
+ * normal replace to /account is safe (native no longer cancels it).
  */
 export function PostAuthHomeRedirect() {
   useEffect(() => {

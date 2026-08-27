@@ -6,18 +6,16 @@ import { BottomTabBar, shouldHideBottomTab } from "@/components/bottom-tab-bar";
 import { MobileBridge } from "@/components/mobile-bridge";
 import { NativeSyncRefresh } from "@/components/native-sync-refresh";
 import { PrefetchTabs } from "@/components/prefetch-tabs";
-import { useNativeShell } from "@/lib/native-shell";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() || "/";
-  const nativeShell = useNativeShell();
   const hideTab = shouldHideBottomTab(pathname);
 
   return (
     <>
       <MobileBridge />
       <NativeSyncRefresh />
-      {nativeShell ? null : <PrefetchTabs />}
+      <PrefetchTabs />
       <div
         className={
           hideTab
@@ -27,7 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         {children}
       </div>
-      {/* Native shell hides this via CSS + flag; keep render path stable for hydration. */}
+      {/* Native shell hides the bar via CSS; keep render path stable for hydration. */}
       {hideTab ? null : <BottomTabBar />}
     </>
   );

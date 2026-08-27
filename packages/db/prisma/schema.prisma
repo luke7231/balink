@@ -254,6 +254,8 @@ model User {
   referralCode     String?              @unique
   invitedByUserId  String?
   regionLimitUnlockedAt DateTime?
+  /// Post-signup invite prompt still open (welcome). Cleared on skip/claim; gone with user on delete.
+  invitePromptPending Boolean           @default(false)
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
   invitedBy                 User?                   @relation("UserInvites", fields: [invitedByUserId], references: [id], onDelete: SetNull)
