@@ -17,7 +17,7 @@ import { MAX_INTEREST_REGIONS, regionLimitError } from "@/lib/interest-regions";
 import { revokeAppleAccount } from "@/lib/apple-revoke";
 import { unlinkKakaoAccount } from "@/lib/kakao-unlink";
 import { backfillInboxMatchesForUser } from "@/lib/notification-inbox-backfill";
-import { loadRegionLimitState, qualifyReferralIfNeeded } from "@/lib/referral";
+import { loadRegionLimitState } from "@/lib/referral";
 
 export type InterestRegionActionResult =
   | { ok: true; region?: { id: string; sido: string; sigungu: string } }
@@ -195,8 +195,6 @@ export async function saveNotificationPreferenceAction(
   } catch (error) {
     console.error("[notification-inbox] backfill failed", error);
   }
-
-  await qualifyReferralIfNeeded(userId, parsed);
 
   revalidatePath("/account");
   revalidatePath("/notifications");

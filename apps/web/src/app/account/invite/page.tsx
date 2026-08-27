@@ -40,8 +40,8 @@ export default async function AccountInvitePage() {
               {regionLimit.unlocked
                 ? "관심지역은 이미 열려 있습니다. 친구에게 발링크를 알려 주세요."
                 : regionLimit.referred
-                  ? "친구가 알림 조건을 저장하면 무제한으로 열립니다."
-                  : "기본은 한 곳입니다. 코드를 넣으면 하나 더, 친구 한 명을 초대하면 무제한입니다."}
+                  ? "친구 한 명이 내 코드를 넣으면 무제한으로 열립니다."
+                  : "기본은 한 곳입니다. 코드를 넣으면 하나 더, 친구 한 명이 내 코드를 넣으면 무제한입니다."}
             </p>
           </header>
         </MotionReveal>
@@ -61,7 +61,6 @@ export default async function AccountInvitePage() {
           <InviteSharePanel
             code={code}
             unlocked={regionLimit.unlocked}
-            referred={regionLimit.referred}
           />
         </MotionReveal>
       </div>

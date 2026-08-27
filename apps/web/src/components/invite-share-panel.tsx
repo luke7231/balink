@@ -1,59 +1,35 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { FormError } from "@/components/form-error";
+import { CTA_PRESS_CLASS } from "@/lib/button-classes";
 import { inviteShareText } from "@/lib/invite-share";
 
 export function InviteSharePanel({
   code,
   unlocked,
-  referred = false,
 }: {
   code: string;
   unlocked: boolean;
-  referred?: boolean;
 }) {
-  const [copied, setCopied] = useState<"link" | "code" | null>(null);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [linkText, setLinkText] = useState(`/invite/${code}`);
   const [pending, startTransition] = useTransition();
-  const path = `/invite/${code}`;
-
-  useEffect(() => {
-    setLinkText(new URL(path, window.location.origin).toString());
-  }, [path]);
-
-  function inviteUrl() {
-    return new URL(path, window.location.origin).toString();
-  }
 
   function sendInvite() {
     setError(null);
     startTransition(async () => {
-      const url = inviteUrl();
+      const text = inviteShareText(code);
       try {
-        const text = inviteShareText(code);
         if (navigator.share) {
-          await navigator.share({ title: "발링크", text, url });
+          await navigator.share({ title: "발링크", text });
           return;
         }
-        await navigator.clipboard.writeText(`${text} ${url}`);
-        setCopied("link");
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
       } catch (shareError) {
         if (shareError instanceof DOMException && shareError.name === "AbortError") return;
-        setError("초대 링크를 보내지 못했어요. 복사로 보내 주세요.");
-      }
-    });
-  }
-
-  function copyInvite() {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await navigator.clipboard.writeText(inviteUrl());
-        setCopied("link");
-      } catch {
-        setError("링크를 복사하지 못했어요. 잠시 후 다시 시도해 주세요.");
+        setError("초대 코드를 보내지 못했어요. 복사로 보내 주세요.");
       }
     });
   }
@@ -63,7 +39,7 @@ export function InviteSharePanel({
     startTransition(async () => {
       try {
         await navigator.clipboard.writeText(code);
-        setCopied("code");
+        setCopied(true);
       } catch {
         setError("코드를 복사하지 못했어요. 잠시 후 다시 시도해 주세요.");
       }
@@ -72,21 +48,12 @@ export function InviteSharePanel({
 
   return (
     <section className="border-t border-border py-7">
-      <h2 className="text-base font-semibold text-foreground">초대 링크</h2>
-      <ol className="mt-2 space-y-1 text-sm leading-relaxed">
-        <li className="text-muted-foreground">
-          <span className="tabular-nums font-semibold text-foreground">1.</span>{" "}
-          친구가 링크를 통해 가입하거나, 직접 가입후 코드를 입력하면 됩니다.
-        </li>
-        <li className={unlocked ? "text-muted-foreground" : "font-bold text-foreground"}>
-          <span className={`tabular-nums ${unlocked ? "font-semibold text-foreground" : ""}`}>
-            2.
-          </span>{" "}
-          {unlocked
-            ? "가입하면 그 친구의 관심지역이 하나 더 열립니다."
-            : "그 친구가 알림 지역을 하나 이상 저장하면 내 관심지역이 무제한이 됩니다."}
-        </li>
-      </ol>
+      <h2 className="text-base font-semibold text-foreground">친구 코드</h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {unlocked
+          ? "친구가 가입한 뒤 이 코드를 넣으면 그 친구의 관심지역이 하나 더 열립니다."
+          : "친구가 가입한 뒤 이 코드를 넣으면 내 관심지역이 무제한이 됩니다."}
+      </p>
       <div className="mt-4 flex items-center justify-center gap-1 rounded-2xl bg-surface-muted px-3 py-2">
         <p className="text-lg font-semibold tracking-[0.2em] text-foreground">{code}</p>
         <button
@@ -96,26 +63,17 @@ export function InviteSharePanel({
           aria-label="친구 코드 복사"
           className="inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-50"
         >
-          {copied === "code" ? <CheckIcon /> : <CopyIcon />}
+          {copied ? <CheckIcon /> : <CopyIcon />}
         </button>
       </div>
-      <p className="mt-2 break-all px-1 text-xs text-muted-foreground">{linkText}</p>
-      <div className="mt-5 space-y-2">
+      <div className="mt-5">
         <button
           type="button"
           disabled={pending}
           onClick={sendInvite}
-          className="flex h-12 w-full items-center justify-center rounded-full bg-accent text-sm font-semibold text-background hover:opacity-90 disabled:opacity-50"
+          className={`flex h-12 w-full items-center justify-center rounded-full bg-accent text-sm font-semibold text-background hover:opacity-90 disabled:opacity-50 ${CTA_PRESS_CLASS}`}
         >
-          초대 링크 보내기
-        </button>
-        <button
-          type="button"
-          disabled={pending}
-          onClick={copyInvite}
-          className="flex h-12 w-full items-center justify-center rounded-full border border-border bg-surface text-sm font-semibold text-foreground hover:bg-surface-muted disabled:opacity-50"
-        >
-          {copied === "link" ? "링크를 복사했어요" : "링크 복사하기"}
+          친구 코드 보내기
         </button>
       </div>
       {error ? <FormError className="mt-3 text-sm text-accent">{error}</FormError> : null}

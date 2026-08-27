@@ -1,15 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth, signIn } from "@/auth";
-import { isAppleLoginEnabled } from "@/lib/auth-features";
+import { auth } from "@/auth";
 import { normalizeReferralCode } from "@balink/domain";
 import {
   afterInviteClaimPath,
   attachReferralToUser,
   dismissInvitePrompt,
   findInviterByCode,
-  getOrCreateReferralCode,
   type InviteClaimFrom,
 } from "@/lib/referral";
 import { setInviteRefCookie } from "@/lib/referral-cookie";
@@ -21,26 +19,6 @@ export async function rememberInviteCodeAction(rawCode: string) {
   if (!inviter) return { ok: false as const };
   await setInviteRefCookie(code);
   return { ok: true as const };
-}
-
-export async function startInviteKakaoAction(rawCode: string) {
-  const remembered = await rememberInviteCodeAction(rawCode);
-  if (!remembered.ok) redirect("/signup");
-  await signIn("kakao", { redirectTo: "/notifications/settings?new=1" });
-}
-
-export async function startInviteAppleAction(rawCode: string) {
-  const remembered = await rememberInviteCodeAction(rawCode);
-  if (!remembered.ok) redirect("/login");
-  if (!isAppleLoginEnabled()) redirect("/login");
-  await signIn("apple", { redirectTo: "/notifications/settings?new=1" });
-}
-
-export async function loadMyInviteLinkAction() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  const code = await getOrCreateReferralCode(session.user.id);
-  return { code, path: `/invite/${code}` };
 }
 
 async function finishClaimAndGo(userId: string, from: InviteClaimFrom) {

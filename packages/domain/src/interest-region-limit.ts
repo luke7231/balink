@@ -36,7 +36,7 @@ export function exceedsHardInterestRegionLimit(nextUniqueCount: number): boolean
 }
 
 /**
- * 기본 1곳. 친구 코드를 넣으면 2곳. 내가 초대한 친구가 인정되면 무제한.
+ * 기본 1곳. 친구 코드를 넣으면 2곳. 내가 초대한 친구가 내 코드를 넣으면 무제한.
  * 이미 한도보다 많은 기존 사용자는 그 개수를 유지·수정할 수 있고, 더 늘릴 때만 막는다.
  */
 export function exceedsFreeInterestRegionLimit(input: {

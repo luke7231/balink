@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { CTA_PRESS_CLASS } from "@/lib/button-classes";
 
 export function RegionLimitSheet({
   open,
@@ -31,7 +32,7 @@ export function RegionLimitSheet({
           ) : (
             <Link
               href="/signup/invite-code?from=limit"
-              className="mt-4 flex h-12 w-full items-center justify-center rounded-full bg-accent text-sm font-semibold text-background hover:opacity-90"
+              className={`mt-4 flex h-12 w-full items-center justify-center rounded-full bg-accent text-sm font-semibold text-background hover:opacity-90 ${CTA_PRESS_CLASS}`}
             >
               친구 코드 입력하기
             </Link>
@@ -40,19 +41,12 @@ export function RegionLimitSheet({
 
         <section className="rounded-2xl bg-surface-muted px-4 py-4">
           <h3 className="text-sm font-semibold text-foreground">무제한 관심지역</h3>
-          <ol className="mt-1.5 space-y-1 text-sm leading-relaxed">
-            <li className="text-muted-foreground">
-              <span className="tabular-nums font-semibold text-foreground">1.</span>{" "}
-              친구가 링크를 통해 가입하거나, 직접 가입후 코드를 입력하면 됩니다.
-            </li>
-            <li className="font-bold text-foreground">
-              <span className="tabular-nums">2.</span>{" "}
-              그 친구가 알림 지역을 하나 이상 저장하면 내 관심지역이 무제한이 됩니다.
-            </li>
-          </ol>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+            친구가 가입한 뒤 내 코드를 넣으면 관심지역이 무제한이 됩니다.
+          </p>
           <Link
             href="/account/invite"
-            className={`mt-4 flex h-12 w-full items-center justify-center rounded-full text-sm font-semibold ${
+            className={`mt-4 flex h-12 w-full items-center justify-center rounded-full text-sm font-semibold ${CTA_PRESS_CLASS} ${
               referred
                 ? "bg-accent text-background hover:opacity-90"
                 : "border border-border bg-surface text-foreground hover:bg-background"
