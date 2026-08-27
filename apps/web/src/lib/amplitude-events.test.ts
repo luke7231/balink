@@ -30,6 +30,7 @@ test("production event names stay stable for dashboards", () => {
     "Deleted Notification Rule",
   );
   assert.equal(AmplitudeEventName.ClickedListFilter, "Clicked List Filter");
+  assert.equal(AmplitudeEventName.ChangedListSort, "Changed List Sort");
 });
 
 test("compactAmplitudeProps drops empty values", () => {

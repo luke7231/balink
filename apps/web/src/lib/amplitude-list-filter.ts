@@ -4,6 +4,7 @@ import { trackAmplitudeEvent } from "@/lib/amplitude-client";
 import {
   AmplitudeEventName,
   type ClickedListFilterProps,
+  type ChangedListSortProps,
   type ListFilterKind,
   type ListFilterSource,
 } from "@/lib/amplitude-events";
@@ -43,4 +44,21 @@ export function trackClickedListFilter(input: TrackListFilterInput) {
       : {}),
   };
   trackAmplitudeEvent(AmplitudeEventName.ClickedListFilter, props);
+}
+
+type TrackListSortInput = {
+  screen: ChangedListSortProps["screen"];
+  postKind: ChangedListSortProps["post_kind"];
+  sort: string;
+  previousSort: string;
+};
+
+export function trackChangedListSort(input: TrackListSortInput) {
+  if (input.sort === input.previousSort) return;
+  trackAmplitudeEvent(AmplitudeEventName.ChangedListSort, {
+    screen: input.screen,
+    post_kind: input.postKind,
+    sort: input.sort,
+    previous_sort: input.previousSort,
+  });
 }

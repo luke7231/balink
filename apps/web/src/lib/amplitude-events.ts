@@ -14,6 +14,7 @@ export const AmplitudeEventName = {
   UpdatedNotificationPreference: "Updated Notification Preference",
   DeletedNotificationRule: "Deleted Notification Rule",
   ClickedListFilter: "Clicked List Filter",
+  ChangedListSort: "Changed List Sort",
 } as const;
 
 export type AmplitudeEventName =
@@ -138,6 +139,13 @@ export type ClickedListFilterProps = {
   sort: string;
 };
 
+export type ChangedListSortProps = {
+  screen: "job_list" | "substitute_list";
+  post_kind: AmplitudePostKind;
+  sort: string;
+  previous_sort: string;
+};
+
 export type AmplitudeEventPropsByName = {
   [AmplitudeEventName.ViewedJobDetail]: ViewedJobDetailProps;
   [AmplitudeEventName.ViewedSubstituteDetail]: ViewedSubstituteDetailProps;
@@ -148,6 +156,7 @@ export type AmplitudeEventPropsByName = {
   [AmplitudeEventName.UpdatedNotificationPreference]: UpdatedNotificationPreferenceProps;
   [AmplitudeEventName.DeletedNotificationRule]: DeletedNotificationRuleProps;
   [AmplitudeEventName.ClickedListFilter]: ClickedListFilterProps;
+  [AmplitudeEventName.ChangedListSort]: ChangedListSortProps;
 };
 
 export function buildNotificationPreferenceContextProps(

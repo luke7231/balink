@@ -26,6 +26,7 @@ import {
   type SubstitutePostsQuery,
 } from "@/generated/graphql";
 import { setFilterUrl } from "@/lib/filter-url";
+import { trackChangedListSort } from "@/lib/amplitude-list-filter";
 import { browserGraphqlRequest } from "@/lib/graphql/browser-client";
 import { readListCache, writeListCache } from "@/lib/list-cache";
 import {
@@ -376,6 +377,12 @@ export function SubstitutesClient({
                 sheetTitle="정렬"
                 ariaLabel="대강 공고 정렬"
                 onChange={(nextSort) => {
+                  trackChangedListSort({
+                    screen: "substitute_list",
+                    postKind: "substitute",
+                    sort: nextSort,
+                    previousSort: sort,
+                  });
                   setFilterUrl(
                     buildSubstituteFilterHref(
                       dateFilters,
