@@ -19,6 +19,7 @@ import {
   type NotificationRule,
 } from "@balink/domain";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
+import { trackSavedNotificationPreference } from "@/lib/amplitude-notification";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
 
@@ -142,6 +143,7 @@ export function NotificationPreferenceForm({
         return;
       }
       setPreference(nextPreference);
+      trackSavedNotificationPreference(nextPreference, "notification_settings");
       if (options?.redirect !== false && singleMode) {
         router.push(redirectOnSave);
         router.refresh();

@@ -119,6 +119,8 @@ export function BookmarkButton({
         post_kind: kind!,
         post_id: targetId!,
         bookmarked: result.bookmarked,
+        has_job_bookmarks: result.hasJobBookmarks,
+        has_substitute_bookmarks: result.hasSubstituteBookmarks,
       });
       notifyWebViewSync("bookmark");
     });

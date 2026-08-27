@@ -8,8 +8,24 @@ import { getBookmarkedJobIdSet } from "@/lib/job-bookmarks";
 import { getBookmarkedSubstituteIdSet } from "@/lib/substitute-bookmarks";
 
 export type BookmarkActionResult =
-  | { ok: true; bookmarked: boolean }
+  | {
+      ok: true;
+      bookmarked: boolean;
+      hasJobBookmarks: boolean;
+      hasSubstituteBookmarks: boolean;
+    }
   | { ok: false; error: string };
+
+async function bookmarkPresence(userId: string) {
+  const [jobCount, substituteCount] = await Promise.all([
+    prisma.jobBookmark.count({ where: { userId } }),
+    prisma.substituteBookmark.count({ where: { userId } }),
+  ]);
+  return {
+    hasJobBookmarks: jobCount > 0,
+    hasSubstituteBookmarks: substituteCount > 0,
+  };
+}
 
 async function requireUserId() {
   const session = await auth();
@@ -47,7 +63,8 @@ export async function toggleJobBookmarkAction(jobPostId: string): Promise<Bookma
     revalidatePath(`/jobs/${jobPostId}`);
     revalidatePath("/saved");
     revalidatePath("/account");
-    return { ok: true, bookmarked: false };
+    const presence = await bookmarkPresence(userId);
+    return { ok: true, bookmarked: false, ...presence };
   }
 
   await prisma.jobBookmark.create({
@@ -57,7 +74,8 @@ export async function toggleJobBookmarkAction(jobPostId: string): Promise<Bookma
   revalidatePath(`/jobs/${jobPostId}`);
   revalidatePath("/saved");
   revalidatePath("/account");
-  return { ok: true, bookmarked: true };
+  const presence = await bookmarkPresence(userId);
+  return { ok: true, bookmarked: true, ...presence };
 }
 
 export async function toggleSubstituteBookmarkAction(
@@ -89,7 +107,8 @@ export async function toggleSubstituteBookmarkAction(
     revalidatePath(`/substitutes/${substitutePostId}`);
     revalidatePath("/saved");
     revalidatePath("/account");
-    return { ok: true, bookmarked: false };
+    const presence = await bookmarkPresence(userId);
+    return { ok: true, bookmarked: false, ...presence };
   }
 
   await prisma.substituteBookmark.create({
@@ -99,7 +118,8 @@ export async function toggleSubstituteBookmarkAction(
   revalidatePath(`/substitutes/${substitutePostId}`);
   revalidatePath("/saved");
   revalidatePath("/account");
-  return { ok: true, bookmarked: true };
+  const presence = await bookmarkPresence(userId);
+  return { ok: true, bookmarked: true, ...presence };
 }
 
 /** Client home feed: resolve which of the visible jobs are bookmarked. */
