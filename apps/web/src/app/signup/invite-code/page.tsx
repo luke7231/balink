@@ -5,7 +5,6 @@ import { BackLink } from "@/components/back-link";
 import { InviteCodeClaimForm } from "@/components/invite-code-claim-form";
 import { MotionReveal } from "@/components/motion-reveal";
 import { afterInviteClaimPath, type InviteClaimFrom } from "@/lib/referral";
-import { clearClaimInviteCookie } from "@/lib/referral-cookie";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +15,10 @@ function parseClaimFrom(raw: string | undefined): InviteClaimFrom {
   return "signup";
 }
 
+function consumeClaimRedirect(next: string) {
+  redirect(`/api/referral/consume-claim?next=${encodeURIComponent(next)}`);
+}
+
 export default async function InviteCodeClaimPage({
   searchParams,
 }: {
@@ -23,7 +26,6 @@ export default async function InviteCodeClaimPage({
 }) {
   const session = await auth();
   if (!session?.user?.id) {
-    await clearClaimInviteCookie();
     redirect("/login");
   }
 
@@ -33,7 +35,6 @@ export default async function InviteCodeClaimPage({
   });
 
   if (!user) {
-    await clearClaimInviteCookie();
     redirect("/login");
   }
 
@@ -41,8 +42,7 @@ export default async function InviteCodeClaimPage({
   const from = parseClaimFrom(params.from);
 
   if (user.invitedByUserId) {
-    await clearClaimInviteCookie();
-    redirect(afterInviteClaimPath(from));
+    consumeClaimRedirect(afterInviteClaimPath(from));
   }
 
   return (
@@ -64,13 +64,18 @@ export default async function InviteCodeClaimPage({
               ← 관심지역 무제한 열기
             </BackLink>
           ) : (
-            <p className="text-sm text-muted-foreground">가입을 마쳤어요</p>
+            <BackLink
+              href="/signup/welcome"
+              className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+            >
+              ← 가입 완료
+            </BackLink>
           )}
         </MotionReveal>
 
         <MotionReveal index={1} variant="fade-up" className="mt-6 pb-6">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            공유받은 친구 코드가 있나요?
+            친구 코드를 입력해 주세요
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {from === "signup"

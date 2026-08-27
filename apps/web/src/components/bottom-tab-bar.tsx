@@ -43,6 +43,7 @@ const tabs = [
 
 export function shouldHideBottomTab(pathname: string) {
   if (pathname === "/login") return true;
+  if (pathname.startsWith("/signup")) return true;
   if (pathname.startsWith("/jobs/")) return true;
   if (pathname.startsWith("/substitutes/") && pathname !== "/substitutes") return true;
   return false;

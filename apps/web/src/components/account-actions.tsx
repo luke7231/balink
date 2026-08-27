@@ -12,6 +12,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import { revalidateAuthBoundary } from "@/lib/auth-boundary";
 import { MAX_INTEREST_REGIONS, regionLimitError } from "@/lib/interest-regions";
 import { revokeAppleAccount } from "@/lib/apple-revoke";
 import { unlinkKakaoAccount } from "@/lib/kakao-unlink";
@@ -243,10 +244,7 @@ export async function deleteAccountAction() {
   }
 
   await prisma.user.delete({ where: { id: userId } });
-  revalidatePath("/account");
-  revalidatePath("/saved");
-  revalidatePath("/notifications");
-  revalidatePath("/login");
+  revalidateAuthBoundary();
   // Tab root — native popToTop clears manage stack; guest LoginScreen shows deleted banner.
   await signOut({ redirectTo: "/account?deleted=1" });
 }

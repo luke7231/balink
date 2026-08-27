@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { signOutAction } from "@/components/login-actions";
-import { notifyWebViewSync } from "@/lib/native-shell";
+import { createAuthBoundaryFormSubmit } from "@/lib/auth-boundary-client";
 
 export function MobileAwareSignOutForm({
   className,
@@ -17,20 +17,10 @@ export function MobileAwareSignOutForm({
     <form
       action={signOutAction}
       className={className}
-      onSubmit={(event) => {
-        if (submittingRef.current) return;
-        notifyWebViewSync("auth");
-        const form = event.currentTarget;
-        const detach = window.balinkPush?.detach;
-        if (!detach) return;
-
-        event.preventDefault();
-        submittingRef.current = true;
-        void Promise.race([
-          detach(),
-          new Promise<void>((resolve) => window.setTimeout(resolve, 1_500)),
-        ]).finally(() => form.requestSubmit());
-      }}
+      onSubmit={createAuthBoundaryFormSubmit({
+        submittingRef,
+        detachPush: true,
+      })}
     >
       <button
         type="submit"

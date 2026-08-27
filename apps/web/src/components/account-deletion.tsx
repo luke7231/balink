@@ -4,7 +4,7 @@ import { Modal } from "@balink/ui/modal";
 import { useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { deleteAccountAction } from "@/components/account-actions";
-import { notifyWebViewSync } from "@/lib/native-shell";
+import { createAuthBoundaryFormSubmit } from "@/lib/auth-boundary-client";
 
 export function AccountDeletion() {
   const [open, setOpen] = useState(false);
@@ -41,20 +41,10 @@ export function AccountDeletion() {
             </button>
             <form
               action={deleteAccountAction}
-              onSubmit={(event) => {
-                if (submittingRef.current) return;
-                notifyWebViewSync("auth");
-                const form = event.currentTarget;
-                const detach = window.balinkPush?.detach;
-                if (!detach) return;
-
-                event.preventDefault();
-                submittingRef.current = true;
-                void Promise.race([
-                  detach(),
-                  new Promise<void>((resolve) => window.setTimeout(resolve, 1_500)),
-                ]).finally(() => form.requestSubmit());
-              }}
+              onSubmit={createAuthBoundaryFormSubmit({
+                submittingRef,
+                detachPush: true,
+              })}
             >
               <DeleteButton />
             </form>

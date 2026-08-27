@@ -105,7 +105,8 @@ export function isStackPath(pathname: string): boolean {
   if (pathname.startsWith("/saved/") && pathname !== "/saved") return true;
   if (pathname.startsWith("/account/") && pathname !== "/account") return true;
   if (pathname.startsWith("/login/")) return true;
-  if (pathname === "/signup") return true;
+  // Email signup + post-signup welcome / invite-code.
+  if (pathname === "/signup" || pathname.startsWith("/signup/")) return true;
   if (pathname === "/privacy" || pathname === "/terms") return true;
   return false;
 }
@@ -119,6 +120,7 @@ export function tabForPath(pathname: string): TabName {
     pathname === "/login" ||
     pathname.startsWith("/login/") ||
     pathname === "/signup" ||
+    pathname.startsWith("/signup/") ||
     pathname === "/privacy" ||
     pathname === "/terms"
   ) {

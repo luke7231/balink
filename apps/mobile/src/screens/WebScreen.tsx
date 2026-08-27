@@ -26,6 +26,10 @@ import {
   getWebViewSyncReason,
 } from "../webview-sync";
 import {
+  AUTH_HARD_RELOAD_PATHS,
+  AUTH_SYNC_SENSITIVE_PATHS,
+} from "../auth-boundary-paths";
+import {
   WEBVIEW_AUTH_HOSTS,
   WEB_ORIGIN,
   isStackPath,
@@ -36,10 +40,6 @@ import {
   withNativeShell,
 } from "../web-config";
 
-/** Tab roots that soft-refresh on focus only when WEB_SYNC bumped the generation. */
-const SYNC_SENSITIVE_PATHS = new Set(["/", "/saved", "/notifications", "/account", "/login"]);
-/** Auth change: hard-reload these roots so stale logged-in RSC/DOM cannot linger. */
-const AUTH_HARD_RELOAD_PATHS = new Set(["/saved", "/notifications", "/account", "/login"]);
 const AUTH_EXIT_PATHS = new Set([
   "/login",
   "/login/email",
@@ -105,6 +105,8 @@ const NATIVE_NAV_INTERCEPT = `
         pathname.indexOf('/account') === 0 ||
         pathname === '/login' ||
         pathname.indexOf('/login/') === 0 ||
+        pathname === '/signup' ||
+        pathname.indexOf('/signup/') === 0 ||
         pathname === '/privacy' ||
         pathname === '/terms'
       ) return 'Account';
@@ -128,6 +130,8 @@ const NATIVE_NAV_INTERCEPT = `
       if (pathname.indexOf('/notifications/') === 0 && pathname !== '/notifications') return true;
       if (pathname.indexOf('/saved/') === 0 && pathname !== '/saved') return true;
       if (pathname.indexOf('/account/') === 0 && pathname !== '/account') return true;
+      if (pathname.indexOf('/login/') === 0) return true;
+      if (pathname === '/signup' || pathname.indexOf('/signup/') === 0) return true;
       if (pathname === '/privacy' || pathname === '/terms') return true;
       return false;
     }
@@ -263,7 +267,7 @@ export function WebScreen() {
       const pathOnly = path.split("?")[0] || "/";
       const generation = getWebViewSyncGeneration();
       if (
-        SYNC_SENSITIVE_PATHS.has(pathOnly) &&
+        AUTH_SYNC_SENSITIVE_PATHS.has(pathOnly) &&
         generation > syncSeenRef.current
       ) {
         syncSeenRef.current = generation;
@@ -447,12 +451,13 @@ export function WebScreen() {
           const prevPath = previousPathRef.current;
           previousPathRef.current = nextPath;
 
-          // Login/signup/reset → account: other tabs need auth UI refresh.
-          if (
-            nextPath === "/account" &&
-            prevPath &&
-            AUTH_EXIT_PATHS.has(prevPath)
-          ) {
+          // Login → account: other tabs need auth UI refresh.
+          if (nextPath === "/account" && prevPath && AUTH_EXIT_PATHS.has(prevPath)) {
+            bumpWebViewSync("auth");
+            syncSeenRef.current = getWebViewSyncGeneration();
+          }
+          // OAuth / email signup lands on welcome (or invite) without a stable prev AUTH_EXIT path.
+          if (nextPath === "/signup/welcome" || nextPath === "/signup/invite-code") {
             bumpWebViewSync("auth");
             syncSeenRef.current = getWebViewSyncGeneration();
           }

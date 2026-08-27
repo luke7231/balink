@@ -10,6 +10,7 @@ import {
   readAuthTicketCookie,
   setAuthTicketCookie,
 } from "@/lib/auth-session";
+import { revalidateAuthBoundary } from "@/lib/auth-boundary";
 import { attachReferralFromCookie, markInviteClaimNeeded } from "@/lib/referral";
 import {
   canResendChallenge,
@@ -175,9 +176,8 @@ export async function completeSignupAction(
   await clearAuthTicketCookie();
   await createDatabaseSession(user.id);
 
-  revalidatePath("/");
-  revalidatePath("/account");
-  redirect(attached ? "/notifications/settings?new=1" : "/signup/invite-code");
+  revalidateAuthBoundary();
+  redirect(attached ? "/notifications/settings?new=1" : "/signup/welcome");
 }
 
 export async function loginWithEmailAction(
@@ -213,8 +213,7 @@ export async function loginWithEmailAction(
   await clearThrottle(throttleKey);
   await createDatabaseSession(user!.id);
 
-  revalidatePath("/");
-  revalidatePath("/account");
+  revalidateAuthBoundary();
   redirect("/account");
 }
 
@@ -321,8 +320,7 @@ export async function completeResetAction(
   await clearAuthTicketCookie();
   await createDatabaseSession(user.id);
 
-  revalidatePath("/");
-  revalidatePath("/account");
+  revalidateAuthBoundary();
   redirect("/account");
 }
 

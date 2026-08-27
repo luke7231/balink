@@ -9,6 +9,7 @@ import {
   verifySignupCodeAction,
 } from "@/components/email-auth-actions";
 import { MotionReveal } from "@/components/motion-reveal";
+import { prepareAuthBoundaryChange } from "@/lib/auth-boundary-client";
 
 type Step = "email" | "code" | "password";
 
@@ -142,6 +143,7 @@ export function SignupForm() {
             onSubmit={(e) => {
               e.preventDefault();
               startTransition(async () => {
+                await prepareAuthBoundaryChange();
                 const result = await completeSignupAction(password, confirm);
                 // redirect throws on success
                 if (result && !result.ok) flash(result);

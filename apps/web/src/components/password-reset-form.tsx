@@ -9,6 +9,7 @@ import {
   verifyResetCodeAction,
 } from "@/components/email-auth-actions";
 import { MotionReveal } from "@/components/motion-reveal";
+import { prepareAuthBoundaryChange } from "@/lib/auth-boundary-client";
 
 type Step = "email" | "code" | "password";
 
@@ -134,6 +135,7 @@ export function PasswordResetForm() {
             onSubmit={(e) => {
               e.preventDefault();
               startTransition(async () => {
+                await prepareAuthBoundaryChange();
                 const result = await completeResetAction(password, confirm);
                 if (result && !result.ok) flash(result);
               });

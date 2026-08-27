@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { loginWithEmailAction } from "@/components/email-auth-actions";
 import { MotionReveal } from "@/components/motion-reveal";
+import { prepareAuthBoundaryChange } from "@/lib/auth-boundary-client";
 
 const inputClass =
   "h-12 w-full rounded-2xl border border-border bg-background px-4 text-base text-foreground outline-none focus:border-accent";
@@ -24,6 +25,7 @@ export function EmailLoginForm() {
           e.preventDefault();
           setError(null);
           startTransition(async () => {
+            await prepareAuthBoundaryChange();
             const result = await loginWithEmailAction(email, password);
             if (result && !result.ok) setError(result.error);
           });
