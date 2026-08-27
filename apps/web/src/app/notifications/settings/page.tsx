@@ -123,6 +123,7 @@ export default async function NotificationSettingsPage({
           initialPreference={notificationPreference}
           districtGroups={districtGroups}
           editRuleId={editRuleId}
+          isNewRule={wantsNew}
           regionUnlocked={regionLimit.unlocked}
           regionReferred={regionLimit.referred}
         />

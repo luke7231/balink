@@ -16,7 +16,10 @@ import {
 } from "@balink/domain";
 import { Modal } from "@balink/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
-import { trackSavedNotificationPreference } from "@/lib/amplitude-notification";
+import {
+  trackDeletedNotificationRule,
+  trackUpdatedNotificationPreference,
+} from "@/lib/amplitude-notification";
 
 export function NotificationRulesList({
   initialPreference,
@@ -39,7 +42,12 @@ export function NotificationRulesList({
     !regionUnlocked &&
     uniqueRegions >= allowedInterestRegionCount({ unlocked: false, referred: regionReferred });
 
-  function savePreference(next: NotificationPreference) {
+  function savePreference(
+    next: NotificationPreference,
+    analytics:
+      | { kind: "update"; updateKind: "master_toggle" | "rule_toggle"; ruleId?: string }
+      | { kind: "delete"; rule: NotificationRule },
+  ) {
     const prev = preference;
     setPreference(next);
     setError(null);
@@ -50,26 +58,37 @@ export function NotificationRulesList({
         setError(result.error);
         return;
       }
-      trackSavedNotificationPreference(next, "notification_rules");
+      if (analytics.kind === "delete") {
+        trackDeletedNotificationRule(next, analytics.rule);
+      } else {
+        trackUpdatedNotificationPreference(next, "notification_rules", {
+          updateKind: analytics.updateKind,
+          ruleId: analytics.ruleId,
+        });
+      }
       router.refresh();
     });
   }
 
   function toggleMaster(enabled: boolean) {
-    savePreference({ ...preference, enabled });
+    savePreference({ ...preference, enabled }, { kind: "update", updateKind: "master_toggle" });
   }
 
   function toggleRule(ruleId: string, enabled: boolean) {
-    savePreference({
-      ...preference,
-      rules: preference.rules.map((rule) =>
-        rule.id === ruleId ? { ...rule, enabled } : rule,
-      ),
-    });
+    savePreference(
+      {
+        ...preference,
+        rules: preference.rules.map((rule) =>
+          rule.id === ruleId ? { ...rule, enabled } : rule,
+        ),
+      },
+      { kind: "update", updateKind: "rule_toggle", ruleId },
+    );
   }
 
   function confirmDelete() {
     if (!deleteTarget) return;
+    const deletedRule = deleteTarget;
     const remaining = preference.rules.filter((rule) => rule.id !== deleteTarget.id);
     const next: NotificationPreference =
       remaining.length === 0
@@ -93,7 +112,7 @@ export function NotificationRulesList({
           };
 
     setDeleteTarget(null);
-    savePreference(next);
+    savePreference(next, { kind: "delete", rule: deletedRule });
   }
 
   return (

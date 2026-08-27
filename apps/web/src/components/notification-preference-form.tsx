@@ -19,7 +19,11 @@ import {
   type NotificationRule,
 } from "@balink/domain";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
-import { trackSavedNotificationPreference } from "@/lib/amplitude-notification";
+import {
+  trackCreatedNotificationRule,
+  trackDeletedNotificationRule,
+  trackUpdatedNotificationPreference,
+} from "@/lib/amplitude-notification";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
 
@@ -38,6 +42,7 @@ export function NotificationPreferenceForm({
   initialPreference,
   districtGroups,
   editRuleId,
+  isNewRule = false,
   redirectOnSave = "/notifications",
   regionUnlocked = false,
   regionReferred = false,
@@ -46,6 +51,8 @@ export function NotificationPreferenceForm({
   districtGroups: DistrictGroup[];
   /** 지정하면 해당 규칙만 수정하는 단건 모드 */
   editRuleId?: string;
+  /** settings?new=1 — 첫 저장을 Created로 보낸다 */
+  isNewRule?: boolean;
   redirectOnSave?: string;
   regionUnlocked?: boolean;
   regionReferred?: boolean;
@@ -132,7 +139,13 @@ export function NotificationPreferenceForm({
     });
   }
 
-  function save(nextPreference: NotificationPreference, options?: { redirect?: boolean }) {
+  function save(
+    nextPreference: NotificationPreference,
+    options?: {
+      redirect?: boolean;
+      deletedRule?: Pick<NotificationRule, "id" | "jobType">;
+    },
+  ) {
     setMessage(null);
     setError(null);
     startTransition(async () => {
@@ -143,7 +156,16 @@ export function NotificationPreferenceForm({
         return;
       }
       setPreference(nextPreference);
-      trackSavedNotificationPreference(nextPreference, "notification_settings");
+      if (options?.deletedRule) {
+        trackDeletedNotificationRule(nextPreference, options.deletedRule);
+      } else if (isNewRule && editingRule) {
+        trackCreatedNotificationRule(nextPreference, editingRule);
+      } else if (editingRule) {
+        trackUpdatedNotificationPreference(nextPreference, "notification_settings", {
+          updateKind: "rule_edit",
+          ruleId: editingRule.id,
+        });
+      }
       if (options?.redirect !== false && singleMode) {
         router.push(redirectOnSave);
         router.refresh();
@@ -191,6 +213,7 @@ export function NotificationPreferenceForm({
             onChange={(next) => updateRule(rule.id, next)}
             onRemove={() => {
               if (singleMode) {
+                const deletedRule = rule;
                 const next =
                   preference.rules.length <= 1
                     ? {
@@ -213,7 +236,7 @@ export function NotificationPreferenceForm({
                         enabled: true,
                         rules: preference.rules.filter((item) => item.id !== rule.id),
                       };
-                save(next);
+                save(next, { deletedRule });
                 return;
               }
               removeRule(rule.id);
