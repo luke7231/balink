@@ -1,12 +1,14 @@
 "use client";
 
 import { Modal } from "@balink/ui/modal";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { deleteAccountAction } from "@/components/account-actions";
+import { notifyWebViewSync } from "@/lib/native-shell";
 
 export function AccountDeletion() {
   const [open, setOpen] = useState(false);
+  const submittingRef = useRef(false);
 
   return (
     <section className="border-t border-border py-7">
@@ -37,7 +39,23 @@ export function AccountDeletion() {
             >
               취소
             </button>
-            <form action={deleteAccountAction}>
+            <form
+              action={deleteAccountAction}
+              onSubmit={(event) => {
+                if (submittingRef.current) return;
+                notifyWebViewSync("auth");
+                const form = event.currentTarget;
+                const detach = window.balinkPush?.detach;
+                if (!detach) return;
+
+                event.preventDefault();
+                submittingRef.current = true;
+                void Promise.race([
+                  detach(),
+                  new Promise<void>((resolve) => window.setTimeout(resolve, 1_500)),
+                ]).finally(() => form.requestSubmit());
+              }}
+            >
               <DeleteButton />
             </form>
           </>

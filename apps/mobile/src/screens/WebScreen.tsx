@@ -23,6 +23,7 @@ import { isKakaoAppUrl, openKakaoAppUrl, WEBVIEW_APP_NAME } from "../kakao-app-u
 import {
   bumpWebViewSync,
   getWebViewSyncGeneration,
+  getWebViewSyncReason,
 } from "../webview-sync";
 import {
   WEBVIEW_AUTH_HOSTS,
@@ -37,6 +38,8 @@ import {
 
 /** Tab roots that soft-refresh on focus only when WEB_SYNC bumped the generation. */
 const SYNC_SENSITIVE_PATHS = new Set(["/", "/saved", "/notifications", "/account", "/login"]);
+/** Auth change: hard-reload these roots so stale logged-in RSC/DOM cannot linger. */
+const AUTH_HARD_RELOAD_PATHS = new Set(["/saved", "/notifications", "/account", "/login"]);
 const AUTH_EXIT_PATHS = new Set([
   "/login",
   "/login/email",
@@ -243,6 +246,17 @@ export function WebScreen() {
     `);
   }, [sendToWeb]);
 
+  const requestHardReload = useCallback((targetPath: string) => {
+    const pathOnly = targetPath.split("?")[0] || "/";
+    const reloadUrl = withNativeShell(pathOnly);
+    webViewRef.current?.injectJavaScript(`
+      (function () {
+        location.replace(${JSON.stringify(reloadUrl)});
+      })();
+      true;
+    `);
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       void syncPermission();
@@ -253,7 +267,15 @@ export function WebScreen() {
         generation > syncSeenRef.current
       ) {
         syncSeenRef.current = generation;
-        requestSoftRefresh();
+        if (
+          getWebViewSyncReason() === "auth" &&
+          AUTH_HARD_RELOAD_PATHS.has(pathOnly)
+        ) {
+          // Drop cached logged-in account UI after logout/delete.
+          requestHardReload(pathOnly);
+        } else {
+          requestSoftRefresh();
+        }
       }
       const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
         if (navigation.canGoBack()) {
@@ -267,7 +289,14 @@ export function WebScreen() {
         return false;
       });
       return () => subscription.remove();
-    }, [navigation, canGoBackInWeb, syncPermission, path, requestSoftRefresh]),
+    }, [
+      navigation,
+      canGoBackInWeb,
+      syncPermission,
+      path,
+      requestSoftRefresh,
+      requestHardReload,
+    ]),
   );
 
   useEffect(() => {
@@ -304,7 +333,7 @@ export function WebScreen() {
       } else if (message.type === "CLEAR_SOURCE_LOGIN") {
         void clearAllSourceLogins();
       } else if (message.type === "WEB_SYNC") {
-        bumpWebViewSync();
+        bumpWebViewSync(message.reason);
         // Sender already has fresh UI — don't soft-refresh this WebView on next focus.
         syncSeenRef.current = getWebViewSyncGeneration();
       } else {
@@ -424,7 +453,7 @@ export function WebScreen() {
             prevPath &&
             AUTH_EXIT_PATHS.has(prevPath)
           ) {
-            bumpWebViewSync();
+            bumpWebViewSync("auth");
             syncSeenRef.current = getWebViewSyncGeneration();
           }
         }}

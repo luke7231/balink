@@ -243,5 +243,10 @@ export async function deleteAccountAction() {
   }
 
   await prisma.user.delete({ where: { id: userId } });
-  await signOut({ redirectTo: "/login?deleted=1" });
+  revalidatePath("/account");
+  revalidatePath("/saved");
+  revalidatePath("/notifications");
+  revalidatePath("/login");
+  // Tab root — native popToTop clears manage stack; guest LoginScreen shows deleted banner.
+  await signOut({ redirectTo: "/account?deleted=1" });
 }

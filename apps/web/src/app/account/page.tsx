@@ -7,12 +7,25 @@ import { SupportInquirySheet } from "@/components/support-inquiry-sheet";
 import { ThemeSelector } from "@/components/theme-selector";
 import { getOrCreateReferralCode, loadRegionLimitState } from "@/lib/referral";
 
-export default async function AccountPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ deleted?: string }>;
+}) {
   const session = await auth();
+  const params = await searchParams;
 
   if (!session?.user?.id) {
     // Same tab root — no stack push. Show the real login UI immediately.
-    return <LoginScreen showBrowseLink={false} />;
+    const deletedMessage = params.deleted ? "계정이 삭제되었어요." : null;
+    return (
+      <LoginScreen
+        showBrowseLink={false}
+        deletedMessage={deletedMessage}
+      />
+    );
   }
 
   const user = session.user;

@@ -75,8 +75,18 @@ export function openAppPath(
   if (isTabRootPath(pathname)) {
     const activeTab = currentTabName(navigation);
     const stackNav = findStackNavigation(navigation);
-    // Same tab stack screen → list: pop to Home so the tab-root WebView keeps scroll.
+    // Same tab stack → tab root: keep scroll on plain returns; remount when query
+    // carries UI state (e.g. /account?deleted=1 after account deletion).
     if (activeTab === tab && stackNav?.canGoBack()) {
+      if (pathWithQuery.includes("?")) {
+        stackNav.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Home", params: { path: pathWithQuery } }],
+          }),
+        );
+        return true;
+      }
       stackNav.dispatch(StackActions.popToTop());
       return true;
     }
