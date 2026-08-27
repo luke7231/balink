@@ -21,6 +21,7 @@ import {
   type JobPostsQuery,
 } from "@/generated/graphql";
 import { setFilterUrl } from "@/lib/filter-url";
+import { trackChangedListSort } from "@/lib/amplitude-list-filter";
 import { browserGraphqlRequest } from "@/lib/graphql/browser-client";
 import { buildJobsFilterHref } from "@/lib/job-filter-params";
 import { readListCache, writeListCache } from "@/lib/list-cache";
@@ -269,6 +270,12 @@ export function HomeJobsClient({
             sheetTitle="정렬"
             ariaLabel="채용 공고 정렬"
             onChange={(nextSort) => {
+              trackChangedListSort({
+                screen: "job_list",
+                postKind: "job",
+                sort: nextSort,
+                previousSort: sort,
+              });
               setFilterUrl(
                 buildJobsFilterHref(selectedSidos, selectedSigungus, nextSort),
               );
