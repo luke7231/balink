@@ -31,6 +31,7 @@ import {
 } from "../auth-boundary-paths";
 import {
   WEBVIEW_AUTH_HOSTS,
+  WEB_BASE_URL,
   WEB_ORIGIN,
   isStackPath,
   isTabRootPath,
@@ -354,6 +355,20 @@ export function WebScreen() {
     ],
   );
 
+  /**
+   * TEMP (local dev): AUTH_URL is often http://localhost:3100 while the phone
+   * WebView uses the LAN IP. Rewrite OAuth callbacks onto WEB_ORIGIN so Kakao
+   * return does not hit unreachable localhost. Remove when AUTH_URL is LAN/prod.
+   */
+  const loadAliasOnWebOrigin = useCallback((pathWithQuery: string) => {
+    const lanUrl = new URL(pathWithQuery, WEB_BASE_URL).toString();
+    queueMicrotask(() => {
+      webViewRef.current?.injectJavaScript(
+        `window.location.replace(${JSON.stringify(lanUrl)}); true;`,
+      );
+    });
+  }, []);
+
   const handleNavigation = useCallback(
     (request: { url: string }) => {
       const { url } = request;
@@ -385,9 +400,12 @@ export function WebScreen() {
         const currentPath = toAppPath(currentUrlRef.current);
         const currentPathname = currentPath?.split("?")[0] || "/";
 
-        // AUTH_URL(localhost) ↔ WebView(LAN) alias: load via native routing on WEB_ORIGIN.
+        // AUTH_URL(localhost) ↔ WebView(LAN): never let the phone hit localhost.
         if (parsed.origin !== WEB_ORIGIN) {
-          return !openAppPath(navigation, appPath);
+          if (openAppPath(navigation, appPath)) return false;
+          // /api/auth/callback 등은 네이티브 라우트가 아님 → 같은 WebView에서 LAN으로 로드.
+          loadAliasOnWebOrigin(appPath);
+          return false;
         }
 
         if (pathname === currentPathname) return true;
@@ -408,7 +426,7 @@ export function WebScreen() {
         return false;
       }
     },
-    [navigation],
+    [loadAliasOnWebOrigin, navigation],
   );
 
   return (
@@ -443,6 +461,22 @@ export function WebScreen() {
           void syncPermission();
           syncTheme();
         }}
+        onLoadStart={({ nativeEvent }) => {
+          const loadingUrl = nativeEvent.url;
+          if (!loadingUrl || loadingUrl === "about:blank") return;
+          try {
+            const parsed = new URL(loadingUrl);
+            if (parsed.origin === WEB_ORIGIN) return;
+            if (WEBVIEW_AUTH_HOSTS.has(parsed.hostname)) return;
+            const appPath = toAppPath(loadingUrl);
+            if (!appPath) return;
+            // Safety net: OAuth redirect already started loading localhost.
+            webViewRef.current?.stopLoading();
+            loadAliasOnWebOrigin(appPath);
+          } catch {
+            /* ignore */
+          }
+        }}
         onMessage={handleWebMessage}
         onNavigationStateChange={(state: WebViewNavigation) => {
           currentUrlRef.current = state.url;
@@ -473,6 +507,11 @@ export function WebScreen() {
             const parsed = new URL(targetUrl);
             const appPath = toAppPath(targetUrl);
             if (appPath) {
+              if (parsed.origin !== WEB_ORIGIN) {
+                if (openAppPath(navigation, appPath)) return;
+                loadAliasOnWebOrigin(appPath);
+                return;
+              }
               openAppPath(navigation, appPath);
               return;
             }
