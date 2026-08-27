@@ -5,6 +5,7 @@ import { SourcePostRepository, SubstitutePostRepository } from "@balink/db";
 import type { ListingEnrichment, LocationSource, SourceName } from "@balink/domain";
 import {
   canonicalizeAdminRegion,
+  isBlockedJobContent,
   sanitizeLocationTextForStorage,
   sanitizeSchedule,
   shouldRouteEmployListingToSubstitute,
@@ -66,6 +67,10 @@ async function importClassifiedItem(
   item: ClassifiedListingInput,
   options: ImportClassifiedOptions = {},
 ): Promise<boolean> {
+  if (await importBlockedListing(source, item)) {
+    return false;
+  }
+
   const jobType = stringValue(item.classification.jobType);
   if (shouldRouteEmployListingToSubstitute(jobType)) {
     await importAsEmploySubstitute(source, item, options);
@@ -116,6 +121,48 @@ async function importClassifiedItem(
     console.error(`[import-classified] fanOutInbox failed jobPostId=${result.jobPostId}: ${message}`);
   }
   return false;
+}
+
+/** 접대·스폰 등 부적절 구인: SourcePost만 남기고 JobPost/알림은 만들지 않는다. */
+async function importBlockedListing(
+  source: SourceName,
+  item: ClassifiedListingInput,
+): Promise<boolean> {
+  const title = stringValue(item.raw.title);
+  const company = stringValue(item.raw.company);
+  const detailText = stringValue(item.raw.detailText);
+  const blocked = isBlockedJobContent({ title, company, detailText });
+  if (!blocked.blocked) return false;
+
+  const safeTitle = title || "Blocked listing";
+  const contentHash = hashContent(
+    [source, safeTitle, detailText ?? "", stringValue(item.raw.postedDate)].join("\n"),
+  );
+  const postedAt = parseDate(stringValue(item.raw.postedDate));
+  const classification = {
+    ...item.classification,
+    dropReason: blocked.reason ?? "blocked",
+    blocked: true,
+    blockedMatched: blocked.matched ?? null,
+  };
+
+  await sourcePostRepository.upsertSourcePostWithoutJob({
+    source,
+    sourcePostId: item.sourcePostId,
+    url: item.url,
+    title: safeTitle,
+    postedAt,
+    collectedAt: item.collectedAt,
+    raw: item.raw,
+    classification,
+    contentHash,
+    sourceConfidence: stringValue(item.classification.balletConfidence),
+  });
+
+  console.info(
+    `[import-classified] blocked sourcePostId=${item.sourcePostId} matched=${blocked.matched ?? "unknown"}`,
+  );
+  return true;
 }
 
 async function importAsEmploySubstitute(
