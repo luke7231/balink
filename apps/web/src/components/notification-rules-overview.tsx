@@ -54,10 +54,9 @@ export function NotificationRulesOverview({
   const openChipCount = blank
     ? 1
     : preference.rules.length + (canAddOpenSlot ? 1 : 0);
-  const lockedCount =
-    regionUnlocked || blank
-      ? 0
-      : Math.max(0, REGION_SLOT_PREVIEW - openChipCount);
+  const lockedCount = regionUnlocked
+    ? 0
+    : Math.max(0, REGION_SLOT_PREVIEW - openChipCount);
 
   function confirmDelete() {
     if (!deleteTarget) return;
