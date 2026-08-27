@@ -1,12 +1,16 @@
+import type { NotificationPreference } from "@balink/domain";
+import { uniqueInterestRegionCount } from "@balink/domain";
+
 /** Amplitude production event taxonomy (Object + past-tense Action). */
 
 export const AmplitudeEventName = {
-  ViewedHomePage: "Viewed Home Page",
+  /** Autocapture page view + post context (post_id, region, bookmark state, …). */
   ViewedJobDetail: "Viewed Job Detail",
   ViewedSubstituteDetail: "Viewed Substitute Detail",
   ClickedDirectApply: "Clicked Direct Apply",
   ClickedSourceLink: "Clicked Source Link",
   ToggledBookmark: "Toggled Bookmark",
+  SavedNotificationPreference: "Saved Notification Preference",
 } as const;
 
 export type AmplitudeEventName =
@@ -15,19 +19,13 @@ export type AmplitudeEventName =
 export type AmplitudePostKind = "job" | "substitute";
 
 export type AmplitudeScreen =
-  | "home"
   | "job_detail"
-  | "substitute_detail";
+  | "substitute_detail"
+  | "notification_settings"
+  | "notification_rules"
+  | "saved";
 
-type BaseProps = {
-  screen: AmplitudeScreen;
-};
-
-export type ViewedHomePageProps = BaseProps & {
-  screen: "home";
-};
-
-export type ViewedJobDetailProps = BaseProps & {
+export type ViewedJobDetailProps = {
   screen: "job_detail";
   post_kind: "job";
   post_id: string;
@@ -39,7 +37,7 @@ export type ViewedJobDetailProps = BaseProps & {
   is_bookmarked: boolean;
 };
 
-export type ViewedSubstituteDetailProps = BaseProps & {
+export type ViewedSubstituteDetailProps = {
   screen: "substitute_detail";
   post_kind: "substitute";
   post_id: string;
@@ -69,16 +67,48 @@ export type ToggledBookmarkProps = {
   post_kind: AmplitudePostKind;
   post_id: string;
   bookmarked: boolean;
+  has_job_bookmarks: boolean;
+  has_substitute_bookmarks: boolean;
+};
+
+export type SavedNotificationPreferenceProps = {
+  screen: "notification_settings" | "notification_rules";
+  notifications_enabled: boolean;
+  notification_rule_count: number;
+  enabled_notification_rule_count: number;
+  has_regular_notification_rules: boolean;
+  has_substitute_notification_rules: boolean;
+  unique_notification_region_count: number;
 };
 
 export type AmplitudeEventPropsByName = {
-  [AmplitudeEventName.ViewedHomePage]: ViewedHomePageProps;
   [AmplitudeEventName.ViewedJobDetail]: ViewedJobDetailProps;
   [AmplitudeEventName.ViewedSubstituteDetail]: ViewedSubstituteDetailProps;
   [AmplitudeEventName.ClickedDirectApply]: ClickedDirectApplyProps;
   [AmplitudeEventName.ClickedSourceLink]: ClickedSourceLinkProps;
   [AmplitudeEventName.ToggledBookmark]: ToggledBookmarkProps;
+  [AmplitudeEventName.SavedNotificationPreference]: SavedNotificationPreferenceProps;
 };
+
+export function buildSavedNotificationPreferenceProps(
+  preference: NotificationPreference,
+  screen: SavedNotificationPreferenceProps["screen"],
+): SavedNotificationPreferenceProps {
+  const enabledRules = preference.rules.filter((rule) => rule.enabled);
+  return {
+    screen,
+    notifications_enabled: preference.enabled,
+    notification_rule_count: preference.rules.length,
+    enabled_notification_rule_count: enabledRules.length,
+    has_regular_notification_rules: preference.rules.some(
+      (rule) => rule.jobType === "regular",
+    ),
+    has_substitute_notification_rules: preference.rules.some(
+      (rule) => rule.jobType === "substitute",
+    ),
+    unique_notification_region_count: uniqueInterestRegionCount(preference.rules),
+  };
+}
 
 /** Drop null/undefined so Amplitude payloads stay dense and schema-stable. */
 export function compactAmplitudeProps<T extends Record<string, unknown>>(

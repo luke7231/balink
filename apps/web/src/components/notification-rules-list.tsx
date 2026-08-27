@@ -16,6 +16,7 @@ import {
 } from "@balink/domain";
 import { Modal } from "@balink/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
+import { trackSavedNotificationPreference } from "@/lib/amplitude-notification";
 
 export function NotificationRulesList({
   initialPreference,
@@ -49,6 +50,7 @@ export function NotificationRulesList({
         setError(result.error);
         return;
       }
+      trackSavedNotificationPreference(next, "notification_rules");
       router.refresh();
     });
   }

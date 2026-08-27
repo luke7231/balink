@@ -12,7 +12,11 @@ type AmplitudePageViewProps<E extends AmplitudeEventName> = {
   props: AmplitudeEventPropsByName[E];
 };
 
-/** Fires a typed page-view event once per mount (SSR pages embed this client island). */
+/**
+ * Fires enriched detail context once per mount.
+ * Generic page views are left to Amplitude autocapture; use this only when
+ * the event carries business properties autocapture cannot infer.
+ */
 export function AmplitudePageView<E extends AmplitudeEventName>({
   event,
   props,

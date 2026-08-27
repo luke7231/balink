@@ -16,6 +16,7 @@ import {
 import { Modal } from "@balink/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
+import { trackSavedNotificationPreference } from "@/lib/amplitude-notification";
 
 const REGION_SLOT_PREVIEW = 5;
 
@@ -98,6 +99,7 @@ export function NotificationRulesOverview({
         setError(result.error);
         return;
       }
+      trackSavedNotificationPreference(next, "notification_rules");
       router.refresh();
     });
   }
