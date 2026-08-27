@@ -618,10 +618,10 @@ export class SubstitutePostRepository {
       sort === "SOON"
         ? [
             { nextLessonAt: { sort: "asc", nulls: "last" } },
-            { postedAt: "desc" },
+            { postedAt: { sort: "desc", nulls: "last" } },
             { createdAt: "desc" },
           ]
-        : [{ postedAt: "desc" }, { createdAt: "desc" }];
+        : [{ postedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }];
 
     const items = await prisma.substitutePost.findMany({
       where,

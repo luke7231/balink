@@ -51,7 +51,10 @@ export function hashSubstituteContentFromRaw(raw: Record<string, unknown>): stri
 }
 
 export async function persistNormalizedSubstitute(input: PersistSubstituteInput) {
-  const postedAt = parseDate(input.raw.postedAtIso || input.raw.postedDate);
+  const postedAt =
+    parseDate(input.raw.postedAtIso || input.raw.postedDate) ??
+    parseDate(input.collectedAt) ??
+    new Date();
   const derived = deriveSubstituteSchedule({
     title: input.raw.title,
     postedAt,
