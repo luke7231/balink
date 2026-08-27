@@ -2,8 +2,8 @@
 
 import { Modal } from "@balink/ui/modal";
 import { useRef, useState } from "react";
-import { useFormStatus } from "react-dom";
 import { deleteAccountAction } from "@/components/account-actions";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { createAuthBoundaryFormSubmit } from "@/lib/auth-boundary-client";
 
 export function AccountDeletion() {
@@ -46,7 +46,12 @@ export function AccountDeletion() {
                 detachPush: true,
               })}
             >
-              <DeleteButton />
+              <PendingSubmitButton
+                pendingLabel="삭제 중..."
+                className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-background hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                삭제하기
+              </PendingSubmitButton>
             </form>
           </>
         }
@@ -54,19 +59,5 @@ export function AccountDeletion() {
         북마크, 알림 조건 등 회원 정보가 모두 삭제되며 되돌릴 수 없습니다.
       </Modal>
     </section>
-  );
-}
-
-function DeleteButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-background hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {pending ? "삭제 중..." : "삭제하기"}
-    </button>
   );
 }

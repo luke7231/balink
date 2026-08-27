@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { normalizeReferralCode } from "@balink/domain";
 import { MotionReveal } from "@/components/motion-reveal";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { RememberInviteRef } from "@/components/remember-invite-ref";
 import { startInviteKakaoAction } from "@/components/referral-actions";
+import { CTA_PRESS_CLASS } from "@/lib/button-classes";
 import { findInviterByCode } from "@/lib/referral";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +58,7 @@ export default async function InvitePage({
           <MotionReveal index={2} variant="fade-up">
             <Link
               href={alreadyMember ? "/notifications/rules" : "/account/invite"}
-              className="flex h-13 w-full items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-background hover:opacity-90"
+              className={`flex h-13 w-full items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-background transition hover:opacity-90 ${CTA_PRESS_CLASS}`}
             >
               {alreadyMember ? "알림 조건 보러가기" : "초대 링크 보내기"}
             </Link>
@@ -64,16 +66,16 @@ export default async function InvitePage({
         ) : (
           <MotionReveal index={2} variant="fade-up" className="space-y-3">
             <form action={startInviteKakaoAction.bind(null, code)}>
-              <button
-                type="submit"
-                className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-[#FEE500] text-[15px] font-semibold text-[#191600] transition hover:brightness-95 active:scale-[0.985]"
+              <PendingSubmitButton
+                pendingLabel="연결 중..."
+                className={`flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-[#FEE500] text-[15px] font-semibold text-[#191600] transition hover:brightness-95 disabled:opacity-50 ${CTA_PRESS_CLASS}`}
               >
                 카카오로 시작하기
-              </button>
+              </PendingSubmitButton>
             </form>
             <Link
               href={`/signup?ref=${encodeURIComponent(code)}`}
-              className="flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground hover:bg-surface-muted"
+              className={`flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted ${CTA_PRESS_CLASS}`}
             >
               이메일로 가입하기
             </Link>

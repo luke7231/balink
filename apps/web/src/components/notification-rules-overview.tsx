@@ -16,6 +16,7 @@ import {
 import { Modal } from "@balink/ui/modal";
 import { saveNotificationPreferenceAction } from "@/components/account-actions";
 import { FormError } from "@/components/form-error";
+import { ButtonPendingContent } from "@/components/pending-submit-button";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
 import { trackDeletedNotificationRule } from "@/lib/amplitude-notification";
 import { emptyCopy, notificationCopy } from "@/lib/ui-copy";
@@ -259,10 +260,13 @@ export function NotificationRulesOverview({
             <button
               type="button"
               disabled={pending}
+              aria-busy={pending || undefined}
               onClick={confirmDelete}
               className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-background hover:opacity-90 disabled:opacity-50"
             >
-              {pending ? "삭제 중..." : "삭제"}
+              <ButtonPendingContent pending={pending} pendingLabel="삭제 중...">
+                삭제
+              </ButtonPendingContent>
             </button>
           </>
         }

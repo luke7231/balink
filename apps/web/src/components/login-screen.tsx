@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { signInWithKakao } from "@/components/login-actions";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { CTA_PRESS_CLASS } from "@/lib/button-classes";
 import { motionIndexStyle } from "@/lib/motion";
 
 export function LoginScreen({
@@ -73,13 +75,13 @@ export function LoginScreen({
 
           <div className="flex w-full flex-col gap-3" style={motionIndexStyle(3)}>
             <form action={signInWithKakao} className="motion-fade-up" style={motionIndexStyle(3)}>
-              <button
-                type="submit"
-                className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-[#FEE500] text-[15px] font-semibold text-[#191600] transition hover:brightness-95 active:scale-[0.985]"
+              <PendingSubmitButton
+                pendingLabel="연결 중..."
+                className={`flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-[#FEE500] text-[15px] font-semibold text-[#191600] transition hover:brightness-95 disabled:opacity-50 ${CTA_PRESS_CLASS}`}
               >
                 <KakaoIcon />
                 카카오로 계속하기
-              </button>
+              </PendingSubmitButton>
             </form>
 
             <div
@@ -94,7 +96,7 @@ export function LoginScreen({
 
             <Link
               href="/login/email"
-              className="motion-fade-up flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted active:scale-[0.985]"
+              className={`motion-fade-up flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted ${CTA_PRESS_CLASS}`}
               style={motionIndexStyle(5)}
             >
               이메일로 로그인

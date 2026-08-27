@@ -9,14 +9,17 @@ import {
   verifySignupCodeAction,
 } from "@/components/email-auth-actions";
 import { MotionReveal } from "@/components/motion-reveal";
+import {
+  ButtonPendingContent,
+} from "@/components/pending-submit-button";
 import { prepareAuthBoundaryChange } from "@/lib/auth-boundary-client";
+import { CTA_PRESS_CLASS } from "@/lib/button-classes";
 
 type Step = "email" | "code" | "password";
 
 const inputClass =
   "h-12 w-full rounded-2xl border border-border bg-background px-4 text-base text-foreground outline-none focus:border-accent";
-const primaryBtnClass =
-  "flex h-13 w-full items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-background transition hover:opacity-90 active:scale-[0.985] disabled:opacity-50";
+const primaryBtnClass = `flex h-13 w-full items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-background transition hover:opacity-90 disabled:opacity-50 ${CTA_PRESS_CLASS}`;
 
 export function SignupForm() {
   const [step, setStep] = useState<Step>("email");
@@ -65,8 +68,10 @@ export function SignupForm() {
                 placeholder="name@example.com"
               />
             </label>
-            <button type="submit" disabled={pending} className={primaryBtnClass}>
-              {pending ? "보내는 중..." : "인증 코드 보내기"}
+            <button type="submit" disabled={pending} aria-busy={pending || undefined} className={primaryBtnClass}>
+              <ButtonPendingContent pending={pending} pendingLabel="보내는 중...">
+                인증 코드 보내기
+              </ButtonPendingContent>
             </button>
           </form>
         </MotionReveal>
@@ -104,8 +109,10 @@ export function SignupForm() {
                 placeholder="000000"
               />
             </label>
-            <button type="submit" disabled={pending} className={primaryBtnClass}>
-              {pending ? "확인 중..." : "인증하기"}
+            <button type="submit" disabled={pending} aria-busy={pending || undefined} className={primaryBtnClass}>
+              <ButtonPendingContent pending={pending} pendingLabel="확인 중...">
+                인증하기
+              </ButtonPendingContent>
             </button>
             <button
               type="button"
@@ -179,8 +186,10 @@ export function SignupForm() {
                 placeholder="비밀번호 다시 입력"
               />
             </label>
-            <button type="submit" disabled={pending} className={primaryBtnClass}>
-              {pending ? "가입 중..." : "가입하기"}
+            <button type="submit" disabled={pending} aria-busy={pending || undefined} className={primaryBtnClass}>
+              <ButtonPendingContent pending={pending} pendingLabel="가입 중...">
+                가입하기
+              </ButtonPendingContent>
             </button>
           </form>
         </MotionReveal>

@@ -26,6 +26,7 @@ import {
 } from "@/lib/amplitude-notification";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { FormError } from "@/components/form-error";
+import { ButtonPendingContent } from "@/components/pending-submit-button";
 import { RegionLimitSheet } from "@/components/region-limit-sheet";
 import { emptyCopy, notificationCopy } from "@/lib/ui-copy";
 
@@ -296,10 +297,13 @@ export function NotificationPreferenceForm({
         <button
           type="button"
           disabled={pending}
+          aria-busy={pending || undefined}
           onClick={() => save({ ...preference, enabled: true })}
           className="rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background hover:opacity-90 disabled:opacity-60"
         >
-          {pending ? "저장 중..." : "저장하기"}
+          <ButtonPendingContent pending={pending} pendingLabel="저장 중...">
+            저장하기
+          </ButtonPendingContent>
         </button>
         {singleMode ? (
           <button

@@ -8,6 +8,7 @@ import { auth } from "@/auth";
 import { markAllNotificationsReadAction } from "@/components/notification-actions";
 import { NotificationItem } from "@/components/notification-item";
 import { NotificationRulesOverview } from "@/components/notification-rules-overview";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { PushPermissionCallout } from "@/components/push-permission-callout";
 import { EmptyStatePanel } from "@/components/empty-state-panel";
 import { SiteHeader } from "@/components/site-header";
@@ -92,12 +93,12 @@ export default async function NotificationsPage() {
             </h3>
             {unreadCount > 0 ? (
               <form action={markAllNotificationsReadAction}>
-                <button
-                  type="submit"
-                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent-border hover:text-accent"
+                <PendingSubmitButton
+                  pendingLabel="읽는 중..."
+                  className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent-border hover:text-accent disabled:opacity-50"
                 >
                   {notificationCopy.markAllRead}
-                </button>
+                </PendingSubmitButton>
               </form>
             ) : null}
           </div>

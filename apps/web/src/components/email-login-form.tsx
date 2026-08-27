@@ -4,12 +4,15 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { loginWithEmailAction } from "@/components/email-auth-actions";
 import { MotionReveal } from "@/components/motion-reveal";
+import {
+  ButtonPendingContent,
+} from "@/components/pending-submit-button";
 import { prepareAuthBoundaryChange } from "@/lib/auth-boundary-client";
+import { CTA_PRESS_CLASS } from "@/lib/button-classes";
 
 const inputClass =
   "h-12 w-full rounded-2xl border border-border bg-background px-4 text-base text-foreground outline-none focus:border-accent";
-const primaryBtnClass =
-  "flex h-13 w-full items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-background transition hover:opacity-90 active:scale-[0.985] disabled:opacity-50";
+const primaryBtnClass = `flex h-13 w-full items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-background transition hover:opacity-90 disabled:opacity-50 ${CTA_PRESS_CLASS}`;
 
 export function EmailLoginForm() {
   const [email, setEmail] = useState("");
@@ -55,8 +58,10 @@ export function EmailLoginForm() {
             placeholder="비밀번호"
           />
         </label>
-        <button type="submit" disabled={pending} className={primaryBtnClass}>
-          {pending ? "로그인 중..." : "로그인하기"}
+        <button type="submit" disabled={pending} aria-busy={pending || undefined} className={primaryBtnClass}>
+          <ButtonPendingContent pending={pending} pendingLabel="로그인 중...">
+            로그인하기
+          </ButtonPendingContent>
         </button>
 
         {error ? (

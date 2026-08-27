@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { skipInviteClaimAction } from "@/components/referral-actions";
 import { MotionReveal } from "@/components/motion-reveal";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { AuthBoundarySync } from "@/lib/auth-boundary-client";
+import { CTA_PRESS_CLASS } from "@/lib/button-classes";
 
 /** Post-signup completion: invite CTA + skip. AuthBoundarySync refreshes other tabs. */
 export function SignupWelcomeActions() {
@@ -14,7 +16,7 @@ export function SignupWelcomeActions() {
         <MotionReveal index={2} variant="fade-up">
           <Link
             href="/signup/invite-code"
-            className="flex h-13 w-full items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-background transition hover:opacity-90 active:scale-[0.985]"
+            className={`flex h-13 w-full items-center justify-center rounded-2xl bg-accent text-[15px] font-semibold text-background transition hover:opacity-90 ${CTA_PRESS_CLASS}`}
           >
             친구 코드 입력하기
           </Link>
@@ -22,12 +24,12 @@ export function SignupWelcomeActions() {
 
         <MotionReveal index={3} variant="fade-up">
           <form action={skipInviteClaimAction.bind(null, "signup")}>
-            <button
-              type="submit"
-              className="flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted"
+            <PendingSubmitButton
+              pendingLabel="건너뛰는 중..."
+              className={`flex h-13 w-full items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-semibold text-foreground transition hover:bg-surface-muted disabled:opacity-50 ${CTA_PRESS_CLASS}`}
             >
               건너뛰기
-            </button>
+            </PendingSubmitButton>
           </form>
         </MotionReveal>
       </div>

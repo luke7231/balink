@@ -393,4 +393,12 @@ html.native-shell *::-webkit-scrollbar {
     opacity: 1;
     transform: none;
   }
+
+  .btn-press:active {
+    transform: none;
+  }
+
+  .btn-spinner {
+    animation: none !important;
+  }
 }

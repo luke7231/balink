@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { signOutAction } from "@/components/login-actions";
+import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { createAuthBoundaryFormSubmit } from "@/lib/auth-boundary-client";
 
 export function MobileAwareSignOutForm({
@@ -22,15 +23,15 @@ export function MobileAwareSignOutForm({
         detachPush: true,
       })}
     >
-      <button
-        type="submit"
+      <PendingSubmitButton
+        pendingLabel="로그아웃 중..."
         className={
           buttonClassName ??
-          "rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground"
+          "rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground disabled:opacity-50"
         }
       >
         로그아웃
-      </button>
+      </PendingSubmitButton>
     </form>
   );
 }

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { MotionReveal } from "@/components/motion-reveal";
+import { ButtonPendingContent } from "@/components/pending-submit-button";
 import { ProfileAvatar, isDefaultAvatar } from "@/components/profile-avatar";
 import {
   requestEmailChangeAction,
@@ -146,9 +147,12 @@ export function ProfileEditForm({
             <button
               type="submit"
               disabled={pending}
+              aria-busy={pending || undefined}
               className="rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background hover:opacity-85 disabled:opacity-50"
             >
-              {pending ? "저장 중..." : "이름 저장하기"}
+              <ButtonPendingContent pending={pending} pendingLabel="저장 중...">
+                이름 저장하기
+              </ButtonPendingContent>
             </button>
           </form>
         </section>
@@ -188,9 +192,12 @@ export function ProfileEditForm({
             <button
               type="submit"
               disabled={pending}
+              aria-busy={pending || undefined}
               className="rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background hover:opacity-85 disabled:opacity-50"
             >
-              {pending ? "보내는 중..." : "인증 메일 보내기"}
+              <ButtonPendingContent pending={pending} pendingLabel="보내는 중...">
+                인증 메일 보내기
+              </ButtonPendingContent>
             </button>
           </form>
         </section>
