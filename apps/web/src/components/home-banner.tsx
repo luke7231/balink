@@ -12,7 +12,7 @@ const RESUME_AUTO_PLAY_MS = 5500;
 const DESKTOP_PAGE_SIZE = 3;
 /** 모바일: 중앙 폭 + 좌우 peek (스케일과 맞춤) */
 const MOBILE_PAGE_RATIO = 0.84;
-const GAP_PX = 6;
+const GAP_PX = 4;
 /** 스크롤이 이 시간 동안 멈춰 있으면 정착으로 판단 */
 const SETTLE_MS = 160;
 /** 가운데 1, 양옆은 이 비율까지 줄어듦 */
@@ -64,7 +64,7 @@ function BannerShellPlaceholder({
 }) {
   if (layout === "desktop") {
     return (
-      <div className="grid grid-cols-3 gap-3 py-1" aria-hidden>
+      <div className="grid grid-cols-3 gap-2 py-1" aria-hidden>
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={index}
@@ -459,7 +459,7 @@ function BannerCarousel({
               className={
                 isMobile
                   ? "shrink-0 origin-center will-change-transform"
-                  : "grid shrink-0 grid-cols-3 gap-3"
+                  : "grid shrink-0 grid-cols-3 gap-2"
               }
               style={{
                 flex: pageWidthPx > 0 ? `0 0 ${pageWidthPx}px` : isMobile ? "0 0 84%" : "0 0 100%",
