@@ -4,6 +4,11 @@ import { useState } from "react";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { KakaoChannelChat } from "@/components/kakao-channel-chat";
 import { OriginalSourceLink } from "@/components/original-source-link";
+import {
+  SUPPORT_INQUIRY_FORM_TITLE,
+  SUPPORT_INQUIRY_FORM_URL,
+} from "@/lib/support";
+
 
 export function SupportInquirySheet({
   javascriptKey,
@@ -67,8 +72,8 @@ export function SupportInquirySheet({
               내용을 남겨주세요.
             </p>
             <OriginalSourceLink
-              href="https://forms.gle/a4souo2Cz6bDb3BA8"
-              title="발링크 문의"
+              href={SUPPORT_INQUIRY_FORM_URL}
+              title={SUPPORT_INQUIRY_FORM_TITLE}
               className="mt-4 flex w-full items-center justify-between rounded-full bg-violet-600 px-4 py-3 text-sm font-semibold text-white hover:bg-violet-700"
             >
               <span className="inline-flex items-center gap-2">

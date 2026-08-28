@@ -3,7 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { OriginalSourceLink } from "@/components/original-source-link";
 import type { HomeBannerItem } from "@/lib/home-banners";
+import { isSafeHttpUrl } from "@/lib/native-shell";
 
 const AUTO_PLAY_MS = 4000;
 const RESUME_AUTO_PLAY_MS = 5500;
@@ -536,14 +538,12 @@ function BannerCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.imageSrc]);
 
-  return (
-    <Link
-      href={item.href}
-      draggable={false}
-      className={`group relative block aspect-square overflow-hidden bg-zinc-100 shadow-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400 ${
-        layout === "mobile" ? "rounded-[1.35rem]" : "rounded-2xl"
-      }`}
-    >
+  const className = `group relative block aspect-square overflow-hidden bg-zinc-100 shadow-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400 ${
+    layout === "mobile" ? "rounded-[1.35rem]" : "rounded-2xl"
+  }`;
+
+  const content = (
+    <>
       <Image
         ref={imageRef}
         src={item.imageSrc}
@@ -571,6 +571,24 @@ function BannerCard({
         </p>
         <p className="mt-1 text-sm text-white/85">{item.subtitle}</p>
       </div>
+    </>
+  );
+
+  if (isSafeHttpUrl(item.href)) {
+    return (
+      <OriginalSourceLink
+        href={item.href}
+        title={item.browserTitle ?? item.title}
+        className={className}
+      >
+        {content}
+      </OriginalSourceLink>
+    );
+  }
+
+  return (
+    <Link href={item.href} draggable={false} className={className}>
+      {content}
     </Link>
   );
 }
