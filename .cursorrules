@@ -1,0 +1,67 @@
+# Commit message generation (Source Control sparkle)
+
+When Cursor auto-generates a Git commit message for this repository, follow these rules exactly.
+
+## Format
+
+Always use subject + body (never subject-only):
+
+```
+<prefix>: <한국어 한 줄 요약>
+
+<변경에 대한 한국어 상세 설명>
+```
+
+Allowed prefixes only:
+- `feat:`
+- `fix:`
+- `refactor:`
+- `chore:`
+
+## Language
+
+- Subject and body MUST be Korean.
+- Never write English-only or mixed Korean/English messages.
+- Keep code identifiers (file names, APIs, product names like Amplitude, Vercel) in their original form when needed.
+
+## Subject
+
+- One concise line under ~50–60 Korean characters.
+- Do not end with a period.
+- Avoid vague text like `수정`, `업데이트`, `개선` alone.
+- Prefer the repo’s usual tone, e.g. `~한다`, `~되게 한다`, `~고친다`.
+
+## Body (required)
+
+- Put a blank line between subject and body.
+- Explain what changed and why — enough that a reader understands the impact without reading the diff.
+- 1–3 short Korean sentences is typical.
+- Do not restate the diff file-by-file.
+- Do not omit the body.
+
+## Examples
+
+```
+feat: Amplitude를 DB user id로 식별하고 세션 리플레이는 20%만 수집한다
+
+로그인 사용자를 차트에서 회원과 같은 키로 찾고, 리플레이 수집량은 줄인다.
+```
+
+```
+fix: 푸시 배너가 권한 확인 전에 깜빡이지 않게 한다
+
+네이티브 권한 값이 오기 전에는 그리지 않고, 조건이 꺼져 있거나 이미 허용된 성공 안내는 빼서 실제 조치가 필요한 경우만 남긴다.
+```
+
+```
+refactor: 알림 조건 표기를 관심지역으로 통일한다
+
+알림함·설정·마이 화면과 새 알림 제목 카피를 관심지역 언어로 맞춰 제품 표현을 일관되게 유지한다.
+```
+
+## Do not
+
+- Subject-only one-liners with no body
+- English subjects like `fix: simplify lockedCount calculation...`
+- Vague English like `feat: Add feature and update styles`
+- Prefixes outside `feat` / `fix` / `refactor` / `chore`
