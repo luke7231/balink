@@ -31,10 +31,12 @@ export function HomeFiltersClient({
   selectedSidos,
   selectedSigungus,
   sort,
+  q,
 }: {
   selectedSidos: string[];
   selectedSigungus: string[];
   sort: import("@/lib/list-sort").JobSort;
+  q: string;
 }) {
   const [regions, setRegions] = useState<RegionOption[] | null>(null);
 
@@ -74,6 +76,7 @@ export function HomeFiltersClient({
         selectedSidos={selectedSidos}
         selectedSigungus={selectedSigungus}
         sort={sort}
+        q={q}
       />
     </MotionReveal>
   );

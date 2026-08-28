@@ -1,3 +1,4 @@
+import { normalizeJobSearchQuery } from "@balink/domain";
 import {
   JOB_SORT_DEFAULT,
   parseJobSort,
@@ -18,13 +19,16 @@ export function parseJobFilterParams(query: {
   sigungu?: string | string[];
   region?: string | string[];
   sort?: string | string[];
+  q?: string | string[];
 }) {
   const selectedSidos = toParamList(query.sido);
   const selectedSigungus = toParamList(query.sigungu);
   const sort = parseJobSort(query.sort);
+  const qRaw = Array.isArray(query.q) ? query.q[0] : query.q;
+  const q = normalizeJobSearchQuery(qRaw ?? "");
 
   if (selectedSidos.length || selectedSigungus.length) {
-    return { selectedSidos, selectedSigungus, sort };
+    return { selectedSidos, selectedSigungus, sort, q };
   }
 
   const regionValue = toParamList(query.region)[0] ?? "";
@@ -33,6 +37,7 @@ export function parseJobFilterParams(query: {
     selectedSidos: regionSido?.trim() ? [regionSido.trim()] : [],
     selectedSigungus: regionSigungu?.trim() ? [regionSigungu.trim()] : [],
     sort,
+    q,
   };
 }
 
@@ -45,6 +50,7 @@ export function parseJobFilterSearchParams(searchParams: {
     sigungu: searchParams.getAll("sigungu"),
     region: searchParams.getAll("region"),
     sort: searchParams.get("sort") ?? undefined,
+    q: searchParams.get("q") ?? undefined,
   });
 }
 
@@ -52,10 +58,13 @@ export function buildJobsFilterHref(
   sidos: string[],
   sigungus: string[],
   sort: JobSort = JOB_SORT_DEFAULT,
+  q = "",
 ): string {
   const params = new URLSearchParams();
+  const keyword = normalizeJobSearchQuery(q);
   for (const sido of sidos) params.append("sido", sido);
   for (const sigungu of sigungus) params.append("sigungu", sigungu);
+  if (keyword) params.set("q", keyword);
   if (sort !== JOB_SORT_DEFAULT) params.set("sort", sort);
   const query = params.toString();
   return query ? `/?${query}` : "/";

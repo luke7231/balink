@@ -21,12 +21,13 @@ interface HomePageProps {
     sigungu?: string | string[];
     region?: string | string[];
     sort?: string | string[];
+    q?: string | string[];
   }>;
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const query = await searchParams;
-  const { selectedSidos, selectedSigungus, sort } = parseJobFilterParams(query);
+  const { selectedSidos, selectedSigungus, sort, q } = parseJobFilterParams(query);
 
   return (
     <div className="home-surface home-motion min-h-full min-w-0 max-w-full overflow-x-clip page-bg">
@@ -40,6 +41,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           selectedSidos={selectedSidos}
           selectedSigungus={selectedSigungus}
           sort={sort}
+          q={q}
         />
         <SubstitutesListWarmup />
       </main>

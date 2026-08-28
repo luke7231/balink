@@ -23,6 +23,7 @@ interface JobsFilterBarProps {
   selectedSidos: string[];
   selectedSigungus: string[];
   sort: JobSort;
+  q: string;
 }
 
 function toggleValue(values: string[], value: string): string[] {
@@ -42,6 +43,7 @@ export function JobsFilterBar({
   selectedSidos,
   selectedSigungus,
   sort,
+  q,
 }: JobsFilterBarProps) {
   const selectionKey = `${selectedSidos.join("\0")}|${selectedSigungus.join("\0")}`;
   const [draftKey, setDraftKey] = useState(selectionKey);
@@ -94,7 +96,7 @@ export function JobsFilterBar({
       activeSidoCount: sidos.length,
       activeSigunguCount: sigungus.length,
     });
-    setFilterUrl(buildJobsFilterHref(sidos, sigungus, sort));
+    setFilterUrl(buildJobsFilterHref(sidos, sigungus, sort, q));
   }
 
   const chips = [

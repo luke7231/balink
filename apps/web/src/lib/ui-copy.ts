@@ -9,6 +9,11 @@ export const emptyCopy = {
     title: "아직 등록된 채용 공고가 없어요",
     description: "새 공고가 올라오면 여기에 바로 보여 드릴게요.",
   },
+  jobsFiltered: {
+    title: "조건에 맞는 공고가 없어요",
+    description: "검색어나 지역을 바꿔 다시 찾아 보세요.",
+    cta: "검색 조건 지우기",
+  },
   substitutes: {
     title: "아직 표시할 대강이 없어요",
     description: "조건에 맞는 대강이 올라오면 여기에 보여 드릴게요.",

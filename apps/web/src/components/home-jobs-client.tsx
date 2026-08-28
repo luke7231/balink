@@ -11,6 +11,7 @@ import {
 import { JobList } from "@balink/ui/job-list";
 import { getBookmarkedJobIdsAction } from "@/components/bookmark-actions";
 import { BookmarkButton } from "@/components/bookmark-button";
+import { EmptyStatePanel } from "@/components/empty-state-panel";
 import { HomeJobsSectionFallback } from "@/components/home-fallbacks";
 import { ListSortControl } from "@/components/list-sort-control";
 import { MotionReveal } from "@/components/motion-reveal";
@@ -20,17 +21,22 @@ import {
   type JobPostFilterInput,
   type JobPostsQuery,
 } from "@/generated/graphql";
+import {
+  trackChangedListSort,
+  trackClearedSearch,
+  trackSubmittedSearch,
+} from "@/lib/amplitude-list-filter";
 import { setFilterUrl } from "@/lib/filter-url";
-import { trackChangedListSort } from "@/lib/amplitude-list-filter";
 import { browserGraphqlRequest } from "@/lib/graphql/browser-client";
 import { buildJobsFilterHref } from "@/lib/job-filter-params";
-import { errorCopy, listEndCopy } from "@/lib/ui-copy";
+import { errorCopy, emptyCopy, listEndCopy } from "@/lib/ui-copy";
 import { readListCache, writeListCache } from "@/lib/list-cache";
 import {
   JOB_SORT_OPTIONS,
   toJobPostSortEnum,
   type JobSort,
 } from "@/lib/list-sort";
+import { CTA_PRESS_CLASS } from "@/lib/button-classes";
 
 const PAGE_SIZE = 20;
 
@@ -49,15 +55,20 @@ type JobsState = {
 };
 
 function cacheKey(filter: JobPostFilterInput | null, sort: JobSort): string {
-  return `job-posts:${filter?.sido ?? ""}:${filter?.sigungu ?? ""}:${sort}:${PAGE_SIZE}`;
+  return `job-posts:${filter?.sido ?? ""}:${filter?.sigungu ?? ""}:${filter?.q ?? ""}:${sort}:${PAGE_SIZE}`;
 }
 
 function buildRequestFilter(
   sido: string,
   sigungu: string,
+  q: string,
 ): JobPostFilterInput | null {
-  return sido || sigungu
-    ? { ...(sido ? { sido } : {}), ...(sigungu ? { sigungu } : {}) }
+  return sido || sigungu || q
+    ? {
+        ...(sido ? { sido } : {}),
+        ...(sigungu ? { sigungu } : {}),
+        ...(q ? { q } : {}),
+      }
     : null;
 }
 
@@ -90,15 +101,19 @@ function toJobsState(
 export function HomeJobsClient({
   filter,
   hasFilter,
+  hasRegionFilter,
   selectedSidos,
   selectedSigungus,
   sort,
+  q,
 }: {
   filter: JobPostFilterInput | null;
   hasFilter: boolean;
+  hasRegionFilter: boolean;
   selectedSidos: string[];
   selectedSigungus: string[];
   sort: JobSort;
+  q: string;
 }) {
   const sido = filter?.sido ?? "";
   const sigungu = filter?.sigungu ?? "";
@@ -114,6 +129,8 @@ export function HomeJobsClient({
   const loadMoreErrorRef = useRef(false);
   const keyRef = useRef(key);
   const dataRef = useRef(data);
+  const trackedSearchRef = useRef<string | null>(null);
+  const previousQRef = useRef(q);
   keyRef.current = key;
   dataRef.current = data;
 
@@ -130,6 +147,15 @@ export function HomeJobsClient({
       // keep previous bookmarks
     }
   }, []);
+
+  useEffect(() => {
+    const previousQ = previousQRef.current;
+    previousQRef.current = q;
+    if (previousQ && !q) {
+      trackClearedSearch({ screen: "job_list" });
+      trackedSearchRef.current = null;
+    }
+  }, [q]);
 
   useEffect(() => {
     const cached = readListCache<CachedJobs>(key);
@@ -154,7 +180,7 @@ export function HomeJobsClient({
     setLoadMoreError(false);
 
     let cancelled = false;
-    const requestFilter = buildRequestFilter(sido, sigungu);
+    const requestFilter = buildRequestFilter(sido, sigungu, q);
     void (async () => {
       try {
         const result = await browserGraphqlRequest<JobPostsQuery>(
@@ -181,6 +207,16 @@ export function HomeJobsClient({
           setLoadMoreError(false);
         });
         void mergeBookmarks(items.map((job) => job.id));
+
+        if (q && trackedSearchRef.current !== q) {
+          trackedSearchRef.current = q;
+          trackSubmittedSearch({
+            screen: "job_list",
+            query: q,
+            resultCount: pageInfo.total,
+            hasRegionFilter,
+          });
+        }
       } catch {
         // keep cached
       }
@@ -188,7 +224,7 @@ export function HomeJobsClient({
     return () => {
       cancelled = true;
     };
-  }, [key, sido, sigungu, sort, mergeBookmarks]);
+  }, [key, sido, sigungu, q, sort, hasRegionFilter, mergeBookmarks]);
 
   const loadNextPage = useCallback(async () => {
     const current = dataRef.current;
@@ -205,7 +241,7 @@ export function HomeJobsClient({
         JobPostsDocument,
         {
           pagination: { page: nextPage, limit: PAGE_SIZE },
-          filter: buildRequestFilter(sido, sigungu),
+          filter: buildRequestFilter(sido, sigungu, q),
           sort: toJobPostSortEnum(sort),
         },
       );
@@ -234,7 +270,7 @@ export function HomeJobsClient({
         setLoadingMore(false);
       }
     }
-  }, [key, mergeBookmarks, sido, sigungu, sort]);
+  }, [key, mergeBookmarks, sido, sigungu, q, sort]);
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -260,6 +296,12 @@ export function HomeJobsClient({
     );
   }
 
+  const countSuffix = q
+    ? " · 검색 결과"
+    : hasFilter
+      ? " · 필터 적용"
+      : "";
+
   return (
     <MotionReveal index={3} variant="soft-scale">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -278,7 +320,7 @@ export function HomeJobsClient({
                 previousSort: sort,
               });
               setFilterUrl(
-                buildJobsFilterHref(selectedSidos, selectedSigungus, nextSort),
+                buildJobsFilterHref(selectedSidos, selectedSigungus, nextSort, q),
               );
             }}
           />
@@ -287,22 +329,40 @@ export function HomeJobsClient({
             style={{ ["--motion-index" as string]: 0 }}
           >
             {data.total}건
-            {hasFilter ? " · 필터 적용" : ""}
+            {countSuffix}
           </p>
         </div>
       </div>
-      <JobList
-        jobs={data.items}
-        getHref={(job) => `/jobs/${job.id}`}
-        linkComponent={Link}
-        renderAction={(job) => (
-          <BookmarkButton
-            jobPostId={job.id}
-            initialBookmarked={bookmarkedIds.has(job.id)}
-            variant="icon"
-          />
-        )}
-      />
+      {data.items.length === 0 && hasFilter ? (
+        <EmptyStatePanel
+          title={emptyCopy.jobsFiltered.title}
+          description={emptyCopy.jobsFiltered.description}
+          variant="dashed"
+        >
+          <button
+            type="button"
+            className={`${CTA_PRESS_CLASS} mt-5 inline-flex h-11 items-center justify-center rounded-full bg-accent px-5 text-sm font-semibold text-background hover:opacity-90`}
+            onClick={() => {
+              setFilterUrl("/");
+            }}
+          >
+            {emptyCopy.jobsFiltered.cta}
+          </button>
+        </EmptyStatePanel>
+      ) : (
+        <JobList
+          jobs={data.items}
+          getHref={(job) => `/jobs/${job.id}`}
+          linkComponent={Link}
+          renderAction={(job) => (
+            <BookmarkButton
+              jobPostId={job.id}
+              initialBookmarked={bookmarkedIds.has(job.id)}
+              variant="icon"
+            />
+          )}
+        />
+      )}
       {data.items.length > 0 ? (
         <div className="mt-4">
           {loadingMore ? (

@@ -15,6 +15,8 @@ export const AmplitudeEventName = {
   DeletedNotificationRule: "Deleted Notification Rule",
   ClickedListFilter: "Clicked List Filter",
   ChangedListSort: "Changed List Sort",
+  SubmittedSearch: "Submitted Search",
+  ClearedSearch: "Cleared Search",
 } as const;
 
 export type AmplitudeEventName =
@@ -146,6 +148,18 @@ export type ChangedListSortProps = {
   previous_sort: string;
 };
 
+export type SubmittedSearchProps = {
+  screen: "job_list";
+  query: string;
+  query_length: number;
+  result_count: number;
+  has_region_filter: boolean;
+};
+
+export type ClearedSearchProps = {
+  screen: "job_list";
+};
+
 export type AmplitudeEventPropsByName = {
   [AmplitudeEventName.ViewedJobDetail]: ViewedJobDetailProps;
   [AmplitudeEventName.ViewedSubstituteDetail]: ViewedSubstituteDetailProps;
@@ -157,6 +171,8 @@ export type AmplitudeEventPropsByName = {
   [AmplitudeEventName.DeletedNotificationRule]: DeletedNotificationRuleProps;
   [AmplitudeEventName.ClickedListFilter]: ClickedListFilterProps;
   [AmplitudeEventName.ChangedListSort]: ChangedListSortProps;
+  [AmplitudeEventName.SubmittedSearch]: SubmittedSearchProps;
+  [AmplitudeEventName.ClearedSearch]: ClearedSearchProps;
 };
 
 export function buildNotificationPreferenceContextProps(

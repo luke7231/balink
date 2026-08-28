@@ -62,3 +62,24 @@ export function trackChangedListSort(input: TrackListSortInput) {
     previous_sort: input.previousSort,
   });
 }
+
+export function trackSubmittedSearch(input: {
+  screen: "job_list";
+  query: string;
+  resultCount: number;
+  hasRegionFilter: boolean;
+}) {
+  trackAmplitudeEvent(AmplitudeEventName.SubmittedSearch, {
+    screen: input.screen,
+    query: input.query,
+    query_length: input.query.length,
+    result_count: input.resultCount,
+    has_region_filter: input.hasRegionFilter,
+  });
+}
+
+export function trackClearedSearch(input: { screen: "job_list" }) {
+  trackAmplitudeEvent(AmplitudeEventName.ClearedSearch, {
+    screen: input.screen,
+  });
+}

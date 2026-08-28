@@ -22,6 +22,14 @@ export const jobPostFilterSchema = z.object({
   sigungu: z.string().trim().min(1).optional().nullable(),
   jobType: z.string().trim().min(1).optional().nullable(),
   source: sourceNameSchema.optional().nullable(),
+  q: z
+    .string()
+    .nullish()
+    .transform((value) => {
+      if (value == null) return null;
+      const normalized = value.trim().replace(/\s+/g, " ").slice(0, 40);
+      return normalized.length > 0 ? normalized : null;
+    }),
 });
 
 export const paginationSchema = z.object({

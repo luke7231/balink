@@ -17,9 +17,11 @@ export function HomeFiltersFallback() {
 export async function HomeFilters({
   selectedSidos,
   selectedSigungus,
+  q = "",
 }: {
   selectedSidos: string[];
   selectedSigungus: string[];
+  q?: string;
 }) {
   const regions = await fetchJobRegions();
   const regionOptions = regions.map((region) => ({
@@ -34,6 +36,7 @@ export async function HomeFilters({
       selectedSidos={selectedSidos}
       selectedSigungus={selectedSigungus}
       sort={JOB_SORT_DEFAULT}
+      q={q}
     />
   );
 }

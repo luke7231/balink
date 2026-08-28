@@ -355,6 +355,7 @@ input JobPostFilterInput {
   sigungu: String
   jobType: String
   source: SourceName
+  q: String
 }
 
 enum JobPostSort {

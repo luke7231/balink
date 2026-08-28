@@ -50,6 +50,23 @@ function regionWhere(sidos: string[], sigungus: string[]): { sido?: string; sigu
   return { OR: clauses };
 }
 
+function keywordWhere(q?: string | null): Prisma.JobPostWhereInput | Record<string, never> {
+  const keyword = q?.trim().replace(/\s+/g, " ").slice(0, 40) ?? "";
+  if (!keyword) return {};
+  const contains = { contains: keyword, mode: "insensitive" as const };
+  return {
+    OR: [
+      { title: contains },
+      { locationText: contains },
+      { sido: contains },
+      { sigungu: contains },
+      { dongOrStation: contains },
+      { organization: { name: contains } },
+      { organization: { normalizedName: contains } },
+    ],
+  };
+}
+
 export class JobPostRepository {
   buildWhere(filter: JobPostFilterInput | null | undefined): Prisma.JobPostWhereInput {
     const sidos = splitFilterValues(filter?.sido);
@@ -59,6 +76,7 @@ export class JobPostRepository {
       isBallet: true,
       jobType: { not: "substitute" },
       ...regionWhere(sidos, sigungus),
+      ...keywordWhere(filter?.q),
       ...(filter?.jobType ? { jobType: filter.jobType } : {}),
       ...(filter?.source ? { sourcePrimary: filter.source } : {}),
     };

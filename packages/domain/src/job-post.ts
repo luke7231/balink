@@ -8,6 +8,14 @@ export interface JobPostFilterInput {
   sigungu?: string | null;
   jobType?: string | null;
   source?: SourceName | null;
+  /** Keyword search (title, location, organization name). */
+  q?: string | null;
+}
+
+/** Trim, collapse spaces, cap length. Empty → "". */
+export function normalizeJobSearchQuery(value: string | null | undefined): string {
+  if (!value) return "";
+  return value.trim().replace(/\s+/g, " ").slice(0, 40);
 }
 
 export interface SourcePostSummary {

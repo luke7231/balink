@@ -95,6 +95,7 @@ export type JobPostConnection = {
 
 export type JobPostFilterInput = {
   jobType?: InputMaybe<Scalars['String']['input']>;
+  q?: InputMaybe<Scalars['String']['input']>;
   sido?: InputMaybe<Scalars['String']['input']>;
   sigungu?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<SourceName>;
