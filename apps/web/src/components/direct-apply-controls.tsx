@@ -176,8 +176,11 @@ export function DirectApplyControls({
         {sourceIconControl}
       </div>
 
-      {/* Mobile sticky bar */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur sm:hidden">
+      {/* Mobile sticky bar — MotionReveal 등 transform 조상 밖에 두어야 fixed가 뷰포트에 붙음 */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 pt-3 backdrop-blur sm:hidden"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
+      >
         <div className="mx-auto flex max-w-lg items-center gap-2">
           {canApply ? (
             <button

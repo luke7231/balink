@@ -135,7 +135,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const detailAnalytics = { postKind: "job" as const, postId: id };
 
   return (
-    <main className="page-bg-radial flex min-h-full flex-1 flex-col pb-24 sm:pb-0">
+    <main className="page-bg-radial flex min-h-full flex-1 flex-col pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:pb-0">
       <AmplitudePageView
         event={AmplitudeEventName.ViewedJobDetail}
         props={{
@@ -332,22 +332,24 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 ))}
               </div>
             ) : null}
-            <DirectApplyControls
-              postTitle={job.title}
-              contactPhones={job.contactPhones}
-              contactEmails={job.contactEmails}
-              contactMethods={job.contactMethods}
-              applyLinks={applyLinks}
-              sourceLinks={sourceLinks}
-              analytics={detailAnalytics}
-              bookmark={
-                session?.user
-                  ? { jobPostId: id, initialBookmarked: bookmarked }
-                  : { loginHref: "/login" }
-              }
-            />
           </section>
         </MotionReveal>
+
+        {/* sticky CTA는 MotionReveal(transform) 밖에 두어 fixed가 뷰포트에 붙게 한다 */}
+        <DirectApplyControls
+          postTitle={job.title}
+          contactPhones={job.contactPhones}
+          contactEmails={job.contactEmails}
+          contactMethods={job.contactMethods}
+          applyLinks={applyLinks}
+          sourceLinks={sourceLinks}
+          analytics={detailAnalytics}
+          bookmark={
+            session?.user
+              ? { jobPostId: id, initialBookmarked: bookmarked }
+              : { loginHref: "/login" }
+          }
+        />
       </div>
     </main>
   );

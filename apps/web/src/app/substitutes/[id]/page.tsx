@@ -151,7 +151,7 @@ export default async function SubstituteDetailPage({
   const detailAnalytics = { postKind: "substitute" as const, postId: id };
 
   return (
-    <main className="page-bg-radial flex min-h-full flex-1 flex-col pb-24 sm:pb-0">
+    <main className="page-bg-radial flex min-h-full flex-1 flex-col pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:pb-0">
       <AmplitudePageView
         event={AmplitudeEventName.ViewedSubstituteDetail}
         props={{
@@ -341,22 +341,24 @@ export default async function SubstituteDetailPage({
                 </span>
               </OriginalSourceLink>
             </div>
-            <DirectApplyControls
-              postTitle={post.title}
-              contactPhones={post.contactPhones}
-              contactEmails={post.contactEmails}
-              contactMethods={post.contactMethods}
-              applyLinks={applyLinks}
-              sourceLinks={sourceLinks}
-              analytics={detailAnalytics}
-              bookmark={
-                session?.user
-                  ? { substitutePostId: id, initialBookmarked: bookmarked }
-                  : { loginHref: "/login" }
-              }
-            />
           </section>
         </MotionReveal>
+
+        {/* sticky CTA는 MotionReveal(transform) 밖에 두어 fixed가 뷰포트에 붙게 한다 */}
+        <DirectApplyControls
+          postTitle={post.title}
+          contactPhones={post.contactPhones}
+          contactEmails={post.contactEmails}
+          contactMethods={post.contactMethods}
+          applyLinks={applyLinks}
+          sourceLinks={sourceLinks}
+          analytics={detailAnalytics}
+          bookmark={
+            session?.user
+              ? { substitutePostId: id, initialBookmarked: bookmarked }
+              : { loginHref: "/login" }
+          }
+        />
       </div>
     </main>
   );
