@@ -109,11 +109,11 @@ export function NotificationRulesOverview({
       aria-label={notificationCopy.rulesHeading}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="text-base font-semibold text-foreground">
-          {notificationCopy.rulesHeading}
-        </h3>
-        {!blank ? (
-          <div className="flex shrink-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <h3 className="text-base font-semibold text-foreground">
+            {notificationCopy.rulesHeading}
+          </h3>
+          {!blank ? (
             <p className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-1">
                 <span
@@ -130,13 +130,15 @@ export function NotificationRulesOverview({
                 대강
               </span>
             </p>
-            <Link
-              href="/notifications/rules"
-              className="text-xs font-semibold text-muted-foreground hover:text-foreground"
-            >
-              전체 보기
-            </Link>
-          </div>
+          ) : null}
+        </div>
+        {!blank ? (
+          <Link
+            href="/notifications/rules"
+            className="shrink-0 text-xs font-semibold text-muted-foreground hover:text-foreground"
+          >
+            전체 보기
+          </Link>
         ) : null}
       </div>
 
