@@ -8,11 +8,14 @@ import type { HomeBannerItem } from "@/lib/home-banners";
 const AUTO_PLAY_MS = 4000;
 const RESUME_AUTO_PLAY_MS = 5500;
 const DESKTOP_PAGE_SIZE = 3;
-/** 모바일: 중앙 82%, 좌우 피크 9% → 시작 시 6 | 1 | 2 */
-const MOBILE_PAGE_RATIO = 0.82;
-const GAP_PX = 12;
+/** 모바일: 중앙 폭 + 좌우 peek (스케일과 맞춤) */
+const MOBILE_PAGE_RATIO = 0.84;
+const GAP_PX = 6;
 /** 스크롤이 이 시간 동안 멈춰 있으면 정착으로 판단 */
 const SETTLE_MS = 160;
+/** 가운데 1, 양옆은 이 비율까지 줄어듦 */
+const SIDE_SCALE = 0.88;
+const SIDE_OPACITY = 0.78;
 
 type TrackPage = {
   key: string;
@@ -63,7 +66,7 @@ function BannerShellPlaceholder({
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={index}
-            className="motion-shimmer aspect-3/4 w-full rounded-2xl bg-zinc-900"
+            className="motion-shimmer aspect-square w-full rounded-2xl bg-zinc-100"
           />
         ))}
       </div>
@@ -71,8 +74,8 @@ function BannerShellPlaceholder({
   }
 
   return (
-    <div className={`${bleed ? "-mx-4 " : ""}px-[9%] py-1`} aria-hidden>
-      <div className="motion-shimmer aspect-4/5 w-full rounded-[1.35rem] bg-zinc-900" />
+    <div className={`${bleed ? "-mx-4 " : ""}px-[8%] py-2`} aria-hidden>
+      <div className="motion-shimmer aspect-square w-full rounded-[1.35rem] bg-zinc-100" />
     </div>
   );
 }
@@ -121,6 +124,7 @@ function BannerCarousel({
 
   const rootRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const pageElsRef = useRef<Array<HTMLDivElement | null>>([]);
   const trackIndexRef = useRef(loop ? 1 : 0);
   const pageWidthRef = useRef(0);
   const didInitRef = useRef(false);
@@ -197,6 +201,33 @@ function BannerCarousel({
     trackIndexRef.current = next;
     const logical = trackRef.current[next]?.logicalIndex ?? 0;
     setPageIndex((prev) => (prev === logical ? prev : logical));
+    updateFocusScales();
+  }
+
+  /** 올리브영식: 가운데 크게, 양옆 peek는 작게 */
+  function updateFocusScales() {
+    if (!isMobile) return;
+    const scroller = scrollerRef.current;
+    const stridePx = stride();
+    if (!scroller || stridePx <= 0) return;
+
+    const centerX = scroller.scrollLeft + scroller.clientWidth / 2;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    for (const el of pageElsRef.current) {
+      if (!el) continue;
+      if (reduceMotion) {
+        el.style.transform = "scale(1)";
+        el.style.opacity = "1";
+        continue;
+      }
+      const elCenter = el.offsetLeft + el.offsetWidth / 2;
+      const progress = Math.min(1, Math.abs(elCenter - centerX) / stridePx);
+      const scale = 1 - progress * (1 - SIDE_SCALE);
+      const opacity = 1 - progress * (1 - SIDE_OPACITY);
+      el.style.transform = `scale(${scale})`;
+      el.style.opacity = String(opacity);
+    }
   }
 
   function scrollToTrackIndex(trackIndex: number, behavior: ScrollBehavior) {
@@ -211,8 +242,10 @@ function BannerCarousel({
     // 초기 점프는 scrollTo 애니메이션/비동기보다 scrollLeft 가 더 확실함
     if (behavior === "auto") {
       scroller.scrollLeft = left;
+      updateFocusScales();
     } else {
       scroller.scrollTo({ left, behavior });
+      // smooth 중에는 scroll 감시가 스케일을 갱신
     }
   }
 
@@ -254,6 +287,8 @@ function BannerCarousel({
         lastLeftRef.current = left;
         stableSinceRef.current = now;
         syncIndicator();
+      } else {
+        updateFocusScales();
       }
 
       const settled = now - stableSinceRef.current > SETTLE_MS;
@@ -311,9 +346,15 @@ function BannerCarousel({
       // 레이아웃이 잡히는 즉시 1번으로 맞춤 — rAF 두 번 기다리면 클론(마지막 장)이 먼저 보임
       if (!didInitRef.current) {
         snapToStart();
-        requestAnimationFrame(snapToStart);
+        requestAnimationFrame(() => {
+          snapToStart();
+          updateFocusScales();
+        });
       } else if (changed) {
         scrollToTrackIndex(trackIndexRef.current, "auto");
+        updateFocusScales();
+      } else {
+        updateFocusScales();
       }
     };
 
@@ -386,7 +427,7 @@ function BannerCarousel({
       >
         <div
           ref={scrollerRef}
-          className="relative flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x scrollbar-none py-1"
+          className="relative flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x scrollbar-none py-2"
           style={{
             gap: GAP_PX,
             ...(pageWidthPx > 0 && isMobile
@@ -407,13 +448,20 @@ function BannerCarousel({
             if (event.pointerType === "mouse") finishInteraction();
           }}
         >
-          {track.map((page) => (
+          {track.map((page, trackIndex) => (
             <div
               key={page.key}
-              className={isMobile ? "shrink-0" : "grid shrink-0 grid-cols-3 gap-3"}
+              ref={(node) => {
+                pageElsRef.current[trackIndex] = node;
+              }}
+              className={
+                isMobile
+                  ? "shrink-0 origin-center will-change-transform"
+                  : "grid shrink-0 grid-cols-3 gap-3"
+              }
               style={{
-                flex: pageWidthPx > 0 ? `0 0 ${pageWidthPx}px` : isMobile ? "0 0 82%" : "0 0 100%",
-                width: pageWidthPx > 0 ? pageWidthPx : isMobile ? "82%" : "100%",
+                flex: pageWidthPx > 0 ? `0 0 ${pageWidthPx}px` : isMobile ? "0 0 84%" : "0 0 100%",
+                width: pageWidthPx > 0 ? pageWidthPx : isMobile ? "84%" : "100%",
                 scrollSnapAlign: "center",
                 scrollSnapStop: "always",
               }}
@@ -441,15 +489,15 @@ function BannerCarousel({
           <div
             className={
               isMobile
-                ? "pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2"
-                : "mt-3 flex justify-center"
+                ? "pointer-events-none absolute bottom-7 right-[calc(8%+28px)] z-10"
+                : "mt-3 flex justify-end"
             }
           >
             <span
               className={
                 isMobile
-                  ? "inline-flex items-center rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur-sm"
-                  : "inline-flex items-center rounded-full bg-zinc-900/80 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white"
+                  ? "inline-flex items-center text-[11px] font-semibold tracking-wide text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]"
+                  : "inline-flex items-center text-[11px] font-semibold tracking-wide text-muted-foreground"
               }
             >
               {String(pageIndex + 1).padStart(2, "0")}
@@ -492,8 +540,8 @@ function BannerCard({
     <Link
       href={item.href}
       draggable={false}
-      className={`group relative block overflow-hidden bg-zinc-900 shadow-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400 ${
-        layout === "mobile" ? "aspect-4/5 rounded-[1.35rem]" : "aspect-3/4 rounded-2xl"
+      className={`group relative block aspect-square overflow-hidden bg-zinc-100 shadow-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400 ${
+        layout === "mobile" ? "rounded-[1.35rem]" : "rounded-2xl"
       }`}
     >
       <Image
@@ -505,7 +553,7 @@ function BannerCard({
         draggable={false}
         sizes={
           layout === "mobile"
-            ? "(max-width: 768px) 82vw, 0px"
+            ? "(max-width: 768px) 84vw, 0px"
             : "(min-width: 768px) 33vw, 0px"
         }
         onLoad={reportReady}
@@ -513,11 +561,7 @@ function BannerCard({
         className="pointer-events-none object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
       />
       <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-black/10" />
-      <div
-        className={`absolute inset-x-0 bottom-0 z-1 ${
-          layout === "mobile" ? "px-5 pb-10 pt-16 text-center" : "px-5 pb-5 pt-16 text-left"
-        }`}
-      >
+      <div className="absolute inset-x-0 bottom-0 z-1 px-5 pb-5 pt-16 text-left">
         <p
           className={`font-semibold tracking-tight text-white ${
             layout === "mobile" ? "text-[1.35rem] leading-snug" : "text-xl leading-snug"
