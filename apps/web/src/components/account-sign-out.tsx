@@ -38,7 +38,7 @@ export function AccountSignOut() {
           </>
         }
       >
-        로그아웃해도 북마크와 알림 조건은 계정에 그대로 보관됩니다.
+        로그아웃해도 북마크와 관심지역은 계정에 그대로 보관됩니다.
       </Modal>
     </section>
   );

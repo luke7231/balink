@@ -106,10 +106,12 @@ export function NotificationRulesOverview({
     <section
       id="alert-rules"
       className="mb-6 scroll-mt-20"
-      aria-label="알림 조건"
+      aria-label={notificationCopy.rulesHeading}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="text-base font-semibold text-foreground">알림 조건</h3>
+        <h3 className="text-base font-semibold text-foreground">
+          {notificationCopy.rulesHeading}
+        </h3>
         {!blank ? (
           <div className="flex shrink-0 items-center gap-3">
             <p className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
@@ -150,7 +152,7 @@ export function NotificationRulesOverview({
             href="/notifications/settings?new=1&from=inbox"
             className="inline-flex h-10 shrink-0 items-center rounded-full border border-dashed border-border bg-surface px-3.5 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
           >
-            + 조건
+            {notificationCopy.addChip}
           </Link>
         ) : (
           preference.rules.map((rule) => {
@@ -209,7 +211,7 @@ export function NotificationRulesOverview({
             href="/notifications/settings?new=1&from=inbox"
             className="inline-flex h-10 shrink-0 items-center rounded-full border border-dashed border-border bg-surface px-3.5 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
           >
-            + 조건
+            {notificationCopy.addChip}
           </Link>
         ) : null}
         {Array.from({ length: lockedCount }, (_, index) => (
@@ -236,7 +238,7 @@ export function NotificationRulesOverview({
 
       <Modal
         open={Boolean(deleteTarget)}
-        title="조건 삭제"
+        title={notificationCopy.deleteTitle}
         onClose={() => {
           if (!pending) setDeleteTarget(null);
         }}

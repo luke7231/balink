@@ -56,7 +56,7 @@ export function AccountDeletion() {
           </>
         }
       >
-        북마크, 알림 조건 등 회원 정보가 모두 삭제되며 되돌릴 수 없습니다.
+        북마크, 관심지역 등 회원 정보가 모두 삭제되며 되돌릴 수 없습니다.
       </Modal>
     </section>
   );

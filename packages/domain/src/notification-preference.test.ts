@@ -215,8 +215,8 @@ test("clock and weekday helpers", () => {
 });
 
 test("inbox notification titles and body formatting", () => {
-  assert.equal(JOB_MATCH_NOTIFICATION_TITLE, "📢 관심 조건에 딱 맞는 공고가 올라왔어요");
-  assert.equal(SUBSTITUTE_MATCH_NOTIFICATION_TITLE, "⚡ 관심 조건에 딱 맞는 대강이 올라왔어요");
+  assert.equal(JOB_MATCH_NOTIFICATION_TITLE, "📢 관심지역에 딱 맞는 공고가 올라왔어요");
+  assert.equal(SUBSTITUTE_MATCH_NOTIFICATION_TITLE, "⚡ 관심지역에 딱 맞는 대강이 올라왔어요");
   assert.equal(formatLessonDateLabel("2026-03-12"), "3/12(목)");
   assert.equal(
     formatJobMatchNotificationBody({

@@ -7,7 +7,7 @@ test("empty and notification copy stay in ~어요 voice", () => {
     assert.match(block.title, /어요$/);
   }
   assert.match(emptyCopy.notificationRules.inline, /없어요$/);
-  assert.equal(notificationCopy.rulesTitle, "알림 조건");
+  assert.equal(notificationCopy.rulesTitle, "관심지역");
   assert.doesNotMatch(notificationCopy.rulesHelp, /규칙/);
 });
 

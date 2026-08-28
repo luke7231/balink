@@ -26,7 +26,7 @@ export function InviteCodeClaimForm({ from = "signup" }: { from?: InviteClaimFro
     from === "account"
       ? "마이페이지로 돌아가기"
       : from === "limit"
-        ? "알림 조건으로 돌아가기"
+        ? "관심지역으로 돌아가기"
         : "건너뛰고 시작하기";
 
   return (

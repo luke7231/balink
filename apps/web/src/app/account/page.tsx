@@ -75,7 +75,7 @@ export default async function AccountPage({
               href="/notifications/rules"
               className="-mx-2 flex items-center justify-between px-2 py-3 text-sm font-semibold text-foreground hover:text-accent"
             >
-              알림 조건 설정
+              관심지역 설정
               <span aria-hidden>→</span>
             </Link>
             {regionLimit.referred ? null : (

@@ -75,7 +75,7 @@ export function PushPermissionCallout({
           href="/login"
           className="text-xs font-semibold text-muted-foreground underline underline-offset-2"
         >
-          맞춤 조건 알림은 로그인 후 설정
+          관심지역 알림은 로그인 후 설정
         </Link>
       </PushPanel>
     );
@@ -95,7 +95,7 @@ export function PushPermissionCallout({
       <PushPanel
         tone="neutral"
         title="이 디바이스에서는 푸시를 사용할 수 없어요"
-        description={`${rules} 조건은 켜져 있으며 알림함에서는 계속 확인할 수 있어요.`}
+        description={`${rules} 알림은 켜져 있으며 알림함에서는 계속 확인할 수 있어요.`}
         onDismiss={dismissUnavailableCallout}
       />
     );
@@ -104,8 +104,8 @@ export function PushPermissionCallout({
   return (
     <PushPanel
       tone="warning"
-      title="조건은 켜져 있지만 디바이스 알림이 꺼져 있어요"
-      description={`${rules} 조건의 새 공고를 놓치지 않도록 앱 알림을 켜 주세요.`}
+      title="관심지역은 켜져 있지만 디바이스 알림이 꺼져 있어요"
+      description={`${rules}의 새 공고를 놓치지 않도록 앱 알림을 켜 주세요.`}
       action={permissionAction(state)}
     />
   );

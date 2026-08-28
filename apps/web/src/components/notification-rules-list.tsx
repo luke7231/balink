@@ -191,7 +191,7 @@ export function NotificationRulesList({
                         checked={rule.enabled}
                         disabled={pending}
                         onChange={(enabled) => toggleRule(rule.id, enabled)}
-                        ariaLabel={`${formatNotificationRuleTitle(rule)} 조건 사용`}
+                        ariaLabel={`${formatNotificationRuleTitle(rule)} 알림 받기`}
                       />
                       <div className="flex items-center gap-1.5">
                         <Link
@@ -223,7 +223,7 @@ export function NotificationRulesList({
           href="/notifications/settings?new=1"
           className="flex w-full items-center justify-center rounded-2xl border border-dashed border-border px-4 py-3 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
         >
-          + 조건 추가
+          {notificationCopy.addButton}
         </Link>
       ) : null}
 
@@ -240,7 +240,7 @@ export function NotificationRulesList({
 
       {!blank && !canAdd ? (
         <p className="text-center text-xs text-muted-foreground">
-          조건은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있어요.
+          관심지역은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있어요.
         </p>
       ) : null}
 
@@ -248,7 +248,7 @@ export function NotificationRulesList({
 
       <Modal
         open={Boolean(deleteTarget)}
-        title="조건 삭제"
+        title={notificationCopy.deleteTitle}
         onClose={() => {
           if (!pending) setDeleteTarget(null);
         }}

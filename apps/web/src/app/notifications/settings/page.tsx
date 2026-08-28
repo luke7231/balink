@@ -16,6 +16,7 @@ import { PushPermissionCallout } from "@/components/push-permission-callout";
 import { SiteHeader } from "@/components/site-header";
 import { fetchHealth } from "@/lib/graphql/queries";
 import { loadRegionLimitState } from "@/lib/referral";
+import { notificationCopy } from "@/lib/ui-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -102,11 +103,11 @@ export default async function NotificationSettingsPage({
           preferHref
           className="text-sm text-muted-foreground hover:text-foreground"
         >
-          {fromInbox ? "← 알림함" : "← 알림 조건"}
+          {fromInbox ? notificationCopy.backToInbox : notificationCopy.backToRules}
         </BackLink>
 
         <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
-          {wantsNew ? "알림 조건 추가" : "알림 조건 수정"}
+          {wantsNew ? notificationCopy.addPageTitle : notificationCopy.editPageTitle}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           지역·유형·요일·시간대를 정해 저장하면 알림함에 반영돼요.

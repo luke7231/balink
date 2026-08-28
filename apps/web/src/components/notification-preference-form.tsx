@@ -258,13 +258,13 @@ export function NotificationPreferenceForm({
             onClick={addRule}
             className="w-full rounded-2xl border border-dashed border-border px-4 py-3 text-sm font-semibold text-muted-foreground hover:border-muted-foreground hover:text-foreground"
           >
-            + 조건 추가
+            {notificationCopy.addButton}
           </button>
         ) : null}
 
         {!singleMode && preference.rules.length >= MAX_NOTIFICATION_RULES ? (
           <p className="text-center text-xs text-muted-foreground">
-            조건은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있어요.
+            관심지역은 최대 {MAX_NOTIFICATION_RULES}개까지 둘 수 있어요.
           </p>
         ) : null}
 
