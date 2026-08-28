@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   canonicalizeAdminRegion,
+  compareSidoOrder,
   listAdminDistrictGroups,
 } from "./admin-districts.js";
 
@@ -9,6 +10,13 @@ test("listAdminDistrictGroups pins Seoul and Gyeonggi first", () => {
   const groups = listAdminDistrictGroups();
   assert.equal(groups[0]?.sido, "서울특별시");
   assert.equal(groups[1]?.sido, "경기도");
+});
+
+test("compareSidoOrder pins Seoul before Gyeonggi and others", () => {
+  assert.ok(compareSidoOrder("서울특별시", "경기도") < 0);
+  assert.ok(compareSidoOrder("서울특별시", "부산광역시") < 0);
+  assert.ok(compareSidoOrder("경기도", "부산광역시") < 0);
+  assert.ok(compareSidoOrder("부산광역시", "인천광역시") < 0);
 });
 
 test("listAdminDistrictGroups sorts districts alphabetically", () => {

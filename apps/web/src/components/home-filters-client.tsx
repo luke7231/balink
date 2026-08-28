@@ -17,7 +17,7 @@ type RegionOption = {
   districts: Array<{ sigungu: string; count: number }>;
 };
 
-const CACHE_KEY = "job-regions";
+const CACHE_KEY = "job-regions:sido-pin-v1";
 
 function toRegionOptions(regions: JobRegionsQuery["jobRegions"]): RegionOption[] {
   return regions.map((region) => ({

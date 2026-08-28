@@ -295,26 +295,27 @@ export interface AdminDistrictGroup {
 
 const PINNED_SIDO_ORDER = ["서울특별시", "경기도"] as const;
 
+const PINNED_SIDO_RANK = new Map<string, number>(
+  PINNED_SIDO_ORDER.map((sido, index) => [sido, index]),
+);
+
+/** 서울·경기 우선, 나머지는 한글 가나다순. */
+export function compareSidoOrder(a: string, b: string): number {
+  const aPin = PINNED_SIDO_RANK.get(a);
+  const bPin = PINNED_SIDO_RANK.get(b);
+  if (aPin != null || bPin != null) {
+    return (aPin ?? Number.POSITIVE_INFINITY) - (bPin ?? Number.POSITIVE_INFINITY);
+  }
+  return a.localeCompare(b, "ko");
+}
+
 export function listAdminDistrictGroups(): AdminDistrictGroup[] {
-  const pinRank = new Map<string, number>(
-    PINNED_SIDO_ORDER.map((sido, index) => [sido, index]),
-  );
   return Object.entries(SIGUNGU_BY_SIDO)
     .map(([sido, districts]) => ({
       sido,
       districts: [...districts].sort((a, b) => a.localeCompare(b, "ko")),
     }))
-    .sort((a, b) => {
-      const aPin = pinRank.get(a.sido);
-      const bPin = pinRank.get(b.sido);
-      if (aPin != null || bPin != null) {
-        return (
-          (aPin ?? Number.POSITIVE_INFINITY) -
-          (bPin ?? Number.POSITIVE_INFINITY)
-        );
-      }
-      return a.sido.localeCompare(b.sido, "ko");
-    });
+    .sort((a, b) => compareSidoOrder(a.sido, b.sido));
 }
 
 export function normalizeSido(value: string | null | undefined): string | null {

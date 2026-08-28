@@ -1,6 +1,7 @@
 import type { SourceName } from "./enums.js";
 import type { AcademyGalleryImage, AcademyGalleryImageType } from "./academy-images.js";
 import type { DisplaySection, LocationSource, RepresentativePay } from "./formatted-post.js";
+import { compareSidoOrder } from "./location/admin-districts.js";
 import type { OrganizationSummary } from "./organization.js";
 
 export interface JobPostFilterInput {
@@ -105,7 +106,7 @@ export function groupJobRegions(
   }
 
   return [...grouped.entries()]
-    .sort(([a], [b]) => a.localeCompare(b, "ko"))
+    .sort(([a], [b]) => compareSidoOrder(a, b))
     .map(([sido, districts]) => ({
       sido,
       districts: districts.sort((a, b) => a.sigungu.localeCompare(b.sigungu, "ko")),
