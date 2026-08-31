@@ -1,12 +1,14 @@
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { signInWithApple, signInWithKakao } from "@/components/login-actions";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { isAppleLoginVisibleOnDevice } from "@/lib/auth-features";
 import { CTA_PRESS_CLASS } from "@/lib/button-classes";
-import { isAppleLoginEnabled } from "@/lib/auth-features";
+import { parseUserAgent } from "@/lib/device";
 import { motionIndexStyle } from "@/lib/motion";
 
-export function LoginScreen({
+export async function LoginScreen({
   showBrowseLink = true,
   errorMessage = null,
   deletedMessage = null,
@@ -15,7 +17,8 @@ export function LoginScreen({
   errorMessage?: string | null;
   deletedMessage?: string | null;
 }) {
-  const showApple = isAppleLoginEnabled();
+  const device = parseUserAgent((await headers()).get("user-agent"));
+  const showApple = isAppleLoginVisibleOnDevice(device);
 
   return (
     <main className="flex min-h-full flex-1 flex-col page-bg-radial">
