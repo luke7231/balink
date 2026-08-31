@@ -28,5 +28,10 @@
     "@graphql-codegen/client-preset": "^4.8.3",
     "@graphql-codegen/typescript": "^4.1.6",
     "@graphql-codegen/typescript-resolvers": "^4.5.1"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@react-native-cookies/cookies@6.2.1": "patches/@react-native-cookies__cookies@6.2.1.patch"
+    }
   }
 }
