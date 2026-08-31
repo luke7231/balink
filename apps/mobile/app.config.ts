@@ -96,7 +96,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: "com.luke7231.balink",
-    // Prefer EAS file env; fallback is git-tracked credentials copy for CI upload.
+    // Prefer EAS file env `GOOGLE_SERVICES_JSON`; local fallback is gitignored.
     googleServicesFile:
       process.env.GOOGLE_SERVICES_JSON ?? "./credentials/google-services.json",
     // 구형 런처용. adaptiveIcon 이 우선이다.
