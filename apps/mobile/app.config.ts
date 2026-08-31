@@ -97,8 +97,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: "com.luke7231.balink",
     googleServicesFile: "./google-services.json",
+    // 구형 런처용. adaptiveIcon 이 우선이다.
+    icon: "./assets/icon-android.png",
     adaptiveIcon: {
-      foregroundImage: "./assets/icon.png",
+      // Android safe zone(지름 ~66%) 안에 들어가게 만든 투명 전경.
+      // 넓게 넣으면 갤럭시 스퀘어클 마스크에 b/k 가 잘린다. iOS 는 상위 icon 을 쓴다.
+      foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#ffffff",
     },
     ...(kakaoScheme
@@ -126,13 +130,35 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "expo-splash-screen",
       {
-        image: "./assets/splash.png",
+        // Android 12+ 는 전체 화면 스플래시를 쓰지 않고 가운데 아이콘만 그린다.
+        // iOS 는 legacy 전체 이미지, Android 는 크롭된 스플래시 아이콘 + imageWidth.
         backgroundColor: "#faf7f6",
-        resizeMode: "cover",
-        enableFullScreenImage_legacy: true,
+        image: "./assets/splash-icon.png",
+        imageWidth: 200,
+        resizeMode: "contain",
         dark: {
-          image: "./assets/splash-dark.png",
+          image: "./assets/splash-icon-dark.png",
           backgroundColor: "#09090b",
+        },
+        ios: {
+          image: "./assets/splash.png",
+          backgroundColor: "#faf7f6",
+          resizeMode: "cover",
+          enableFullScreenImage_legacy: true,
+          dark: {
+            image: "./assets/splash-dark.png",
+            backgroundColor: "#09090b",
+          },
+        },
+        android: {
+          image: "./assets/splash-icon.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#faf7f6",
+          dark: {
+            image: "./assets/splash-icon-dark.png",
+            backgroundColor: "#09090b",
+          },
         },
       },
     ],
