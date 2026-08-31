@@ -151,7 +151,7 @@ export default async function SubstituteDetailPage({
   const detailAnalytics = { postKind: "substitute" as const, postId: id };
 
   return (
-    <main className="page-bg-radial flex min-h-full flex-1 flex-col pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:pb-0">
+    <main className="detail-page-main page-bg-radial flex min-h-full flex-1 flex-col pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:pb-0">
       <AmplitudePageView
         event={AmplitudeEventName.ViewedSubstituteDetail}
         props={{

@@ -176,11 +176,9 @@ export function DirectApplyControls({
         {sourceIconControl}
       </div>
 
-      {/* Mobile sticky bar — MotionReveal 등 transform 조상 밖에 두어야 fixed가 뷰포트에 붙음 */}
-      <div
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 pt-3 backdrop-blur sm:hidden"
-        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
-      >
+      {/* Mobile sticky bar — MotionReveal 등 transform 조상 밖에 두어야 fixed가 뷰포트에 붙음.
+          native-shell에서는 RN 탭바가 inset을 이미 쓰므로 safe-area를 더하지 않는다 (globals.css). */}
+      <div className="detail-sticky-cta fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] backdrop-blur sm:hidden">
         <div className="mx-auto flex max-w-lg items-center gap-2">
           {canApply ? (
             <button

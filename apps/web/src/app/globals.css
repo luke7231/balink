@@ -237,6 +237,15 @@ html.native-shell .app-shell-content {
   padding-bottom: 0 !important;
 }
 
+/* Native tab bar already owns bottom inset — don't double-pad detail CTA (Android WebView). */
+html.native-shell .detail-sticky-cta {
+  padding-bottom: 0.75rem !important;
+}
+
+html.native-shell .detail-page-main {
+  padding-bottom: 6rem !important;
+}
+
 html.native-shell::-webkit-scrollbar,
 html.native-shell body::-webkit-scrollbar,
 html.native-shell *::-webkit-scrollbar {
