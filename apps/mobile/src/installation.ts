@@ -17,13 +17,16 @@ export async function getPushPermission(): Promise<PushPermissionPayload> {
     };
   }
   const response = await Notifications.getPermissionsAsync();
+  // Android often reports "not asked yet" as DENIED with canAskAgain=true.
+  // Only treat as permanently denied when the OS will no longer show the prompt.
+  const permission =
+    response.status === Notifications.PermissionStatus.GRANTED
+      ? "granted"
+      : response.status === Notifications.PermissionStatus.DENIED && !response.canAskAgain
+        ? "denied"
+        : "undetermined";
   return {
-    permission:
-      response.status === Notifications.PermissionStatus.GRANTED
-        ? "granted"
-        : response.status === Notifications.PermissionStatus.DENIED
-          ? "denied"
-          : "undetermined",
+    permission,
     canAskAgain: response.canAskAgain,
     checkedAt: new Date().toISOString(),
   };

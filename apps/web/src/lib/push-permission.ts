@@ -6,5 +6,7 @@ export function getPushPermissionAction(
   canAskAgain: boolean,
 ): PushPermissionAction {
   if (permission === "granted" || permission === "unavailable") return null;
-  return permission === "undetermined" && canAskAgain ? "request" : "settings";
+  // Prefer the OS prompt whenever it can still be shown (Android first-launch
+  // often looks like denied even before the user has answered).
+  return canAskAgain ? "request" : "settings";
 }
