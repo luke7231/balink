@@ -2,13 +2,14 @@ const { withAndroidManifest } = require("expo/config-plugins");
 
 const KAKAO_PACKAGE = "com.kakao.talk";
 const KAKAO_SCHEMES = ["kakaotalk", "kakaokompassauth", "kakaolink", "kakaoplus"];
+const KAKAO_CAPRI_ACTION = "com.kakao.talk.intent.action.CAPRI_LOGGED_IN_ACTIVITY";
 
 function asArray(value) {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
 }
 
-/** Android 11+에서 카카오톡 패키지/스킴을 조회·실행할 수 있게 queries를 넣습니다. */
+/** Android 11+에서 카카오톡 패키지/스킴·CAPRI 로그인 intent를 조회·실행할 수 있게 queries를 넣습니다. */
 function withKakaoAndroid(config) {
   return withAndroidManifest(config, (mod) => {
     const manifest = mod.modResults.manifest;
@@ -32,6 +33,16 @@ function withKakaoAndroid(config) {
         data: [{ $: { "android:scheme": scheme } }],
       });
     }
+
+    const hasCapri = intents.some((intent) =>
+      asArray(intent.action).some((action) => action.$?.["android:name"] === KAKAO_CAPRI_ACTION),
+    );
+    if (!hasCapri) {
+      intents.push({
+        action: [{ $: { "android:name": KAKAO_CAPRI_ACTION } }],
+      });
+    }
+
     queries.intent = intents;
 
     return mod;

@@ -1,3 +1,4 @@
 .expo/
-ios/
-android/
+# prebuild 산출물만 무시. modules/*/android 네이티브 소스는 커밋한다.
+/ios/
+/android/

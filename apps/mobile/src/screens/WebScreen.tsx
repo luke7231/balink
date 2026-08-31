@@ -19,7 +19,12 @@ import type { WebStackParamList } from "../navigation/types";
 import { InAppBrowserSheet } from "./InAppBrowserSheet";
 import { clearAllSourceLogins } from "../source-login-assist";
 import { useNativeTheme } from "../theme-context";
-import { isKakaoAppUrl, openKakaoAppUrl, WEBVIEW_APP_NAME } from "../kakao-app-url";
+import {
+  isKakaoAppUrl,
+  openKakaoAppUrl,
+  WEBVIEW_APP_NAME,
+  WEBVIEW_USER_AGENT,
+} from "../kakao-app-url";
 import {
   bumpWebViewSync,
   getWebViewSyncGeneration,
@@ -356,12 +361,22 @@ export function WebScreen() {
     });
   }, []);
 
+  const openKakaoFromWebView = useCallback((url: string) => {
+    void openKakaoAppUrl(url).then((result) => {
+      if (result.opened || !result.fallbackUrl) return;
+      // Talk 미설치·intent 실패 시 카카오가 준 웹 로그인으로 이어서 연다.
+      webViewRef.current?.injectJavaScript(
+        `window.location.replace(${JSON.stringify(result.fallbackUrl)}); true;`,
+      );
+    });
+  }, []);
+
   const handleNavigation = useCallback(
     (request: { url: string }) => {
       const { url } = request;
       if (url === "about:blank") return true;
       if (isKakaoAppUrl(url)) {
-        openKakaoAppUrl(url);
+        openKakaoFromWebView(url);
         return false;
       }
       if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("sms:")) {
@@ -415,7 +430,7 @@ export function WebScreen() {
         return false;
       }
     },
-    [loadAliasOnWebOrigin, navigation],
+    [loadAliasOnWebOrigin, navigation, openKakaoFromWebView],
   );
 
   return (
@@ -438,6 +453,7 @@ export function WebScreen() {
         cacheMode="LOAD_DEFAULT"
         originWhitelist={["*"]}
         applicationNameForUserAgent={WEBVIEW_APP_NAME}
+        userAgent={WEBVIEW_USER_AGENT}
         style={{ backgroundColor }}
         containerStyle={{ backgroundColor }}
         allowsBackForwardNavigationGestures={false}
@@ -486,11 +502,18 @@ export function WebScreen() {
           }
         }}
         onShouldStartLoadWithRequest={handleNavigation}
+        onError={({ nativeEvent }) => {
+          // Android에서 intent: 가 shouldOverride를 빗기면 ERR_UNKNOWN_URL_SCHEME으로 온다.
+          const failedUrl = nativeEvent.url;
+          if (failedUrl && isKakaoAppUrl(failedUrl)) {
+            openKakaoFromWebView(failedUrl);
+          }
+        }}
         onOpenWindow={({ nativeEvent }) => {
           const targetUrl = nativeEvent.targetUrl;
           try {
             if (isKakaoAppUrl(targetUrl)) {
-              openKakaoAppUrl(targetUrl);
+              openKakaoFromWebView(targetUrl);
               return;
             }
             const parsed = new URL(targetUrl);

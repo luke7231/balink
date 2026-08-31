@@ -13,7 +13,12 @@ import { WebView, type WebViewNavigation } from "react-native-webview";
 import type { WebViewMessageEvent } from "react-native-webview";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { playHaptic } from "../haptics";
-import { isKakaoAppUrl, openKakaoAppUrl, WEBVIEW_APP_NAME } from "../kakao-app-url";
+import {
+  isKakaoAppUrl,
+  openKakaoAppUrl,
+  WEBVIEW_APP_NAME,
+  WEBVIEW_USER_AGENT,
+} from "../kakao-app-url";
 import { SourceLoginAssistOverlay } from "../source-login-assist-overlay";
 import {
   declineSourceLogin,
@@ -296,13 +301,19 @@ export function InAppBrowserSheet({ url, title, isDark, onClose }: InAppBrowserS
                 cacheEnabled
                 originWhitelist={["*"]}
                 applicationNameForUserAgent={WEBVIEW_APP_NAME}
+                userAgent={WEBVIEW_USER_AGENT}
                 setSupportMultipleWindows={false}
                 injectedJavaScriptBeforeContentLoaded={
                   loginSite ? SOURCE_LOGIN_BEFORE_SCRIPT : undefined
                 }
                 onShouldStartLoadWithRequest={({ url: nextUrl }) => {
                   if (isKakaoAppUrl(nextUrl)) {
-                    openKakaoAppUrl(nextUrl);
+                    void openKakaoAppUrl(nextUrl).then((result) => {
+                      if (result.opened || !result.fallbackUrl) return;
+                      webViewRef.current?.injectJavaScript(
+                        `window.location.replace(${JSON.stringify(result.fallbackUrl)}); true;`,
+                      );
+                    });
                     return false;
                   }
                   return true;
