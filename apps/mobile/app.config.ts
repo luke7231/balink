@@ -96,7 +96,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: "com.luke7231.balink",
-    googleServicesFile: "./google-services.json",
+    // Prefer EAS file env; fallback is git-tracked credentials copy for CI upload.
+    googleServicesFile:
+      process.env.GOOGLE_SERVICES_JSON ?? "./credentials/google-services.json",
     // 구형 런처용. adaptiveIcon 이 우선이다.
     icon: "./assets/icon-android.png",
     adaptiveIcon: {
