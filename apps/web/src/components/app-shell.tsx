@@ -6,6 +6,7 @@ import { BottomTabBar, shouldHideBottomTab } from "@/components/bottom-tab-bar";
 import { MobileBridge } from "@/components/mobile-bridge";
 import { NativeSyncRefresh } from "@/components/native-sync-refresh";
 import { PrefetchTabs } from "@/components/prefetch-tabs";
+import { PushPermissionOnboardingSheet } from "@/components/push-permission-onboarding-sheet";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() || "/";
@@ -14,6 +15,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <>
       <MobileBridge />
+      <PushPermissionOnboardingSheet />
       <NativeSyncRefresh />
       <PrefetchTabs />
       <div

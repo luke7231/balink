@@ -12,6 +12,8 @@ interface BottomSheetProps {
   headerAction?: ReactNode;
   /** iframe 등 남은 높이를 채우는 콘텐츠용 */
   fill?: boolean;
+  /** false면 백드롭·닫기·Escape로 닫히지 않음 (기본 true) */
+  dismissible?: boolean;
 }
 
 const EXIT_MS = 280;
@@ -24,6 +26,7 @@ export function BottomSheet({
   closeLabel = "닫기",
   headerAction,
   fill = false,
+  dismissible = true,
 }: BottomSheetProps) {
   const titleId = useId();
   const [mounted, setMounted] = useState(open);
@@ -58,28 +61,34 @@ export function BottomSheet({
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape" && dismissible) onClose();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [mounted, onClose]);
+  }, [mounted, onClose, dismissible]);
 
   if (!mounted) return null;
   if (typeof document === "undefined") return null;
 
+  const backdropClass = `absolute inset-0 bg-foreground/40 transition-opacity duration-280 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+    visible ? "opacity-100" : "opacity-0"
+  }`;
+
   return createPortal(
     <div className="fixed inset-0 z-60">
-      <button
-        type="button"
-        aria-label="닫기"
-        className={`absolute inset-0 bg-foreground/40 transition-opacity duration-280 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
-          visible ? "opacity-100" : "opacity-0"
-        }`}
-        onClick={onClose}
-      />
+      {dismissible ? (
+        <button
+          type="button"
+          aria-label="닫기"
+          className={backdropClass}
+          onClick={onClose}
+        />
+      ) : (
+        <div className={backdropClass} aria-hidden="true" />
+      )}
       <div
         role="dialog"
         aria-modal="true"
@@ -95,16 +104,20 @@ export function BottomSheet({
           <h2 id={titleId} className="min-w-0 truncate text-lg font-semibold text-foreground">
             {title}
           </h2>
-          <div className="flex shrink-0 items-center gap-1">
-            {headerAction}
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted"
-            >
-              {closeLabel}
-            </button>
-          </div>
+          {(headerAction || dismissible) && (
+            <div className="flex shrink-0 items-center gap-1">
+              {headerAction}
+              {dismissible ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted"
+                >
+                  {closeLabel}
+                </button>
+              ) : null}
+            </div>
+          )}
         </div>
         {fill ? (
           <div className="relative min-h-0 flex-1 overflow-hidden pb-[env(safe-area-inset-bottom)]">
