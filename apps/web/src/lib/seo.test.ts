@@ -34,6 +34,18 @@ describe("seo helpers", () => {
     });
     assert.equal(metadata.alternates?.canonical, "/substitutes");
     assert.equal(metadata.openGraph?.url, `${SITE_URL}/substitutes`);
+    assert.equal(metadata.title, "대강");
+  });
+
+  it("uses absolute title with brand on the home path", () => {
+    const metadata = buildPageMetadata({
+      title: "발레 강사 채용",
+      path: "/",
+      description: "홈",
+    });
+    assert.deepEqual(metadata.title, {
+      absolute: `발레 강사 채용 | ${SITE_NAME}`,
+    });
   });
 
   it("emits organization and website json-ld for the brand", () => {

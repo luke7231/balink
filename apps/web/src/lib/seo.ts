@@ -101,9 +101,15 @@ export function buildPageMetadata({
   noIndex = false,
 }: BuildPageMetadataInput): Metadata {
   const url = absoluteUrl(path);
+  // Root `app/page.tsx` shares a segment with the layout that defines
+  // `title.template`, so the template never applies there. Use absolute.
+  const documentTitle =
+    path === "/"
+      ? ({ absolute: `${title} | ${SITE_NAME}` } as const)
+      : title;
 
   return {
-    title,
+    title: documentTitle,
     description,
     alternates: {
       canonical: path,

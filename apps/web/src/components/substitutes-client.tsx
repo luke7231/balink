@@ -370,7 +370,7 @@ export function SubstitutesClient({
             sort={sort}
           />
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-lg font-semibold text-foreground">모집 중</h3>
+            <h1 className="text-lg font-semibold text-foreground">발레 대강</h1>
             <div className="flex shrink-0 items-center gap-2">
               <ListSortControl
                 value={sort}

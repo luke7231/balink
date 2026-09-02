@@ -13,7 +13,7 @@ export function SubstitutesFallback({ hasFilter = false }: { hasFilter?: boolean
         className="mb-4 flex items-center justify-between motion-fade-in"
         style={{ ["--motion-index" as string]: 1 }}
       >
-        <h3 className="text-lg font-semibold text-foreground">모집 중</h3>
+        <h1 className="text-lg font-semibold text-foreground">발레 대강</h1>
         <p className="text-sm text-muted-foreground">
           {hasFilter ? "필터 적용 · " : ""}
           불러오는 중

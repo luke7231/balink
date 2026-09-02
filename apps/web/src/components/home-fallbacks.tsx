@@ -15,7 +15,7 @@ export function HomeJobsSectionFallback({ hasFilter }: { hasFilter: boolean }) {
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">최신 공고</h3>
+        <h1 className="text-lg font-semibold text-foreground">발레 강사 채용</h1>
         <p className="text-sm text-muted-foreground">
           {hasFilter ? "필터 적용 · " : ""}
           불러오는 중

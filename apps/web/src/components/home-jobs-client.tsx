@@ -305,7 +305,7 @@ export function HomeJobsClient({
   return (
     <MotionReveal index={3} variant="soft-scale">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="text-lg font-semibold text-foreground">채용 공고</h3>
+        <h1 className="text-lg font-semibold text-foreground">발레 강사 채용</h1>
         <div className="flex shrink-0 items-center gap-2">
           <ListSortControl
             value={sort}
