@@ -61,6 +61,11 @@ export const defaultMetadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  verification: {
+    other: {
+      "naver-site-verification": "8c5d3ea4c46339a096805d437c009a9ebf558f58",
+    },
+  },
   other: {
     "geo.region": "KR",
     "geo.placename": "대한민국",
