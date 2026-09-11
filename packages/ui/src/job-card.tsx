@@ -11,6 +11,8 @@ import {
 import { Badge } from "./badge";
 import { CalendarIcon, MapPinIcon } from "./icons";
 
+export type JobListViewVariant = "card" | "board";
+
 export interface JobCardData {
   id: string;
   title: string;
@@ -36,9 +38,22 @@ interface JobCardProps {
   href: string;
   linkComponent?: React.ComponentType<{ href: string; className?: string; children: ReactNode }>;
   action?: ReactNode;
+  variant?: JobListViewVariant;
 }
 
-export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }: JobCardProps) {
+function splitPayLabel(payLabel: string): { amount: string; unit: string | null } | null {
+  const match = payLabel.match(/^(.+?)(만원)$/);
+  if (!match) return null;
+  return { amount: match[1], unit: match[2] };
+}
+
+export function JobCard({
+  job,
+  href,
+  linkComponent: Link = DefaultLink,
+  action,
+  variant = "card",
+}: JobCardProps) {
   const payLabel = formatPay(
     job.payText ?? null,
     job.payMinManwon ?? null,
@@ -48,6 +63,75 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
   const locationLabel = formatLocation(job.sido ?? null, job.sigungu ?? null, job.dongOrStation ?? null);
   const dayLabel = formatDayGroups(job.dayGroups, job.days);
   const slotBadges = displayableTimeSlots(job.timeSlots);
+  const postedLabel = formatPostedAt(job.postedAt ?? null);
+
+  if (variant === "board") {
+    const metaParts = [locationLabel, dayLabel].filter(Boolean);
+    const payParts = splitPayLabel(payLabel);
+
+    return (
+      <div className="group relative box-border min-w-0 w-full max-w-full">
+        <Link
+          href={href}
+          className={`flex min-w-0 max-w-full items-start gap-2.5 px-3 py-2.5 transition hover:bg-surface-muted ${
+            action ? "pr-11" : ""
+          }`}
+        >
+          <div
+            className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-accent-subtle via-accent-subtle/70 to-surface-muted ${
+              job.academyThumbnailType === "logo" || !job.academyThumbnailUrl ? "p-1" : ""
+            }`}
+          >
+            {job.academyThumbnailUrl ? (
+              <img
+                src={job.academyThumbnailUrl}
+                alt=""
+                className={
+                  job.academyThumbnailType === "interior"
+                    ? "h-full w-full object-cover"
+                    : "max-h-full max-w-full rounded-md object-contain"
+                }
+              />
+            ) : (
+              <span className="text-sm font-bold text-accent/35" aria-hidden="true">
+                B
+              </span>
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-sm font-semibold leading-snug text-foreground">
+              {job.title}
+            </h2>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {metaParts.join(" · ")}
+            </p>
+            <div className="mt-0.5 flex items-baseline justify-between gap-2">
+              {payParts ? (
+                <span className="inline-flex min-w-0 items-baseline gap-0.5">
+                  <strong className="tabular-nums text-sm font-bold text-foreground">
+                    {payParts.amount}
+                  </strong>
+                  <span className="text-[0.65rem] font-medium text-muted-foreground">
+                    {payParts.unit}
+                  </span>
+                </span>
+              ) : (
+                <strong className="min-w-0 truncate break-keep text-sm font-bold text-foreground">
+                  {payLabel}
+                </strong>
+              )}
+              <p className="shrink-0 text-xs text-muted-foreground">{postedLabel}</p>
+            </div>
+          </div>
+        </Link>
+
+        {action ? (
+          <div className="absolute right-1.5 top-1.5 z-10">{action}</div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="group relative box-border min-w-0 w-full max-w-full rounded-3xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-accent-border hover:shadow-md">
@@ -103,7 +187,7 @@ export function JobCard({ job, href, linkComponent: Link = DefaultLink, action }
 
             <div className="mt-3 flex items-end justify-between gap-3">
               <strong className="break-keep text-sm font-bold text-accent sm:text-base">{payLabel}</strong>
-              <p className="shrink-0 text-right text-xs text-muted-foreground">{formatPostedAt(job.postedAt ?? null)}</p>
+              <p className="shrink-0 text-right text-xs text-muted-foreground">{postedLabel}</p>
             </div>
           </div>
         </div>

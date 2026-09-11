@@ -53,6 +53,23 @@ export function resolveSubstituteSchedule(input: {
   };
 }
 
+/** Compact one-line schedule for board/list density views. */
+export function formatSubstituteScheduleLine(schedule: ScheduleBlock): string {
+  if (schedule.kind === "lines") {
+    return schedule.lines.filter(Boolean).join(" · ") || "일정 협의";
+  }
+
+  return (
+    schedule.groups
+      .map((group) => {
+        const times = group.times.filter(Boolean).join(", ");
+        return times ? `${group.dateLabel} ${times}` : group.dateLabel;
+      })
+      .filter(Boolean)
+      .join(" · ") || "일정 협의"
+  );
+}
+
 export function SubstituteScheduleView({
   schedule,
   className = "",

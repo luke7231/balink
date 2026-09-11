@@ -11,6 +11,7 @@ import {
 } from "react";
 import { resolveSubstituteUrgency } from "@balink/domain";
 import { ListSortControl } from "@/components/list-sort-control";
+import { ListViewToggle } from "@/components/list-view-toggle";
 import { getBookmarkedSubstituteIdsAction } from "@/components/bookmark-actions";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { SkeletonCard } from "@/components/skeleton-block";
@@ -29,6 +30,7 @@ import { setFilterUrl } from "@/lib/filter-url";
 import { trackChangedListSort } from "@/lib/amplitude-list-filter";
 import { browserGraphqlRequest } from "@/lib/graphql/browser-client";
 import { readListCache, writeListCache } from "@/lib/list-cache";
+import { useListViewMode } from "@/lib/list-view-preference";
 import { errorCopy, listEndCopy } from "@/lib/ui-copy";
 import {
   SUBSTITUTE_SORT_OPTIONS,
@@ -165,6 +167,7 @@ export function SubstitutesClient({
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [listView, setListView] = useListViewMode();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadingMoreRef = useRef(false);
   const loadMoreErrorRef = useRef(false);
@@ -355,8 +358,14 @@ export function SubstitutesClient({
   ]);
 
   const skeleton = useMemo(
-    () => <SubstitutesFallback hasFilter={hasFilter} />,
-    [hasFilter],
+    () => (
+      <SubstitutesFallback
+        hasFilter={hasFilter}
+        listView={listView}
+        onListViewChange={setListView}
+      />
+    ),
+    [hasFilter, listView, setListView],
   );
 
   return (
@@ -372,6 +381,7 @@ export function SubstitutesClient({
           <div className="mb-4 flex items-center justify-between gap-3">
             <h1 className="text-lg font-semibold text-foreground">발레 대강</h1>
             <div className="flex shrink-0 items-center gap-2">
+              <ListViewToggle value={listView} onChange={setListView} />
               <ListSortControl
                 value={sort}
                 options={SUBSTITUTE_SORT_OPTIONS}
@@ -411,6 +421,7 @@ export function SubstitutesClient({
             posts={view.items}
             getHref={(post) => `/substitutes/${post.id}`}
             linkComponent={Link}
+            variant={listView}
             renderAction={(post) => (
               <BookmarkButton
                 substitutePostId={post.id}
@@ -423,12 +434,22 @@ export function SubstitutesClient({
             <div className="mt-4">
               {loadingMore ? (
                 <div
-                  className="space-y-3"
+                  className={
+                    listView === "board"
+                      ? "overflow-hidden rounded-3xl border border-border bg-surface shadow-sm divide-y divide-border"
+                      : "space-y-3"
+                  }
                   aria-busy="true"
                   aria-label="대강 더 불러오는 중"
                 >
-                  <SkeletonCard index={0} />
-                  <SkeletonCard index={1} />
+                  <SkeletonCard
+                    index={0}
+                    className={listView === "board" ? "h-14 rounded-none" : undefined}
+                  />
+                  <SkeletonCard
+                    index={1}
+                    className={listView === "board" ? "h-14 rounded-none" : undefined}
+                  />
                 </div>
               ) : null}
               {loadMoreError ? (

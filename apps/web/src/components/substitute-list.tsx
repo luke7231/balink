@@ -10,11 +10,13 @@ import {
 import { Badge } from "@balink/ui/badge";
 import { MapPinIcon } from "@balink/ui";
 import {
+  formatSubstituteScheduleLine,
   resolveSubstituteSchedule,
   SubstituteScheduleView,
 } from "@/components/substitute-schedule";
 import { EmptyStatePanel } from "@/components/empty-state-panel";
 import { motionIndexStyle } from "@/lib/motion";
+import type { ListViewMode } from "@/lib/list-view-preference";
 import { emptyCopy } from "@/lib/ui-copy";
 
 export interface SubstituteCardData {
@@ -64,6 +66,24 @@ interface SubstituteListProps {
   getHref: (post: SubstituteCardData) => string;
   linkComponent?: typeof Link;
   renderAction?: (post: SubstituteCardData) => ReactNode;
+  variant?: ListViewMode;
+}
+
+function resolveLocationLabel(post: SubstituteCardData): string {
+  const hasNormalizedLocation = Boolean(
+    post.sido || post.sigungu || post.dongOrStation,
+  );
+  return hasNormalizedLocation
+    ? formatLocation(
+        post.sido ?? null,
+        post.sigungu ?? null,
+        post.dongOrStation ?? null,
+      )
+    : post.locationText || "지역 미상";
+}
+
+function resolvePayLabel(post: SubstituteCardData): string {
+  return post.representativePayText || post.payText || "급여 협의";
 }
 
 export function SubstituteList({
@@ -71,6 +91,7 @@ export function SubstituteList({
   getHref,
   linkComponent: LinkComponent = Link,
   renderAction,
+  variant = "card",
 }: SubstituteListProps) {
   if (posts.length === 0) {
     return (
@@ -79,6 +100,66 @@ export function SubstituteList({
         title={emptyCopy.substitutes.title}
         description={emptyCopy.substitutes.description}
       />
+    );
+  }
+
+  if (variant === "board") {
+    return (
+      <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm divide-y divide-border">
+        {posts.map((post, index) => {
+          const urgencyLabel = formatSubstituteUrgency(
+            resolveSubstituteUrgency({
+              sessions: post.sessions,
+              nextLessonAt: post.nextLessonAt,
+            }),
+          );
+          const schedule = resolveSubstituteSchedule(post);
+          const scheduleLine = formatSubstituteScheduleLine(schedule);
+          const locationLabel = resolveLocationLabel(post);
+          const payLabel = resolvePayLabel(post);
+          const action = renderAction?.(post);
+          const metaParts = [
+            urgencyLabel,
+            formatSubstituteStatus(post.status),
+            locationLabel,
+            post.academyName,
+            scheduleLine,
+          ].filter(Boolean);
+
+          return (
+            <div
+              key={post.id}
+              className="relative min-w-0 max-w-full"
+              style={motionIndexStyle(index)}
+            >
+              <LinkComponent
+                href={getHref(post)}
+                className={`motion-fade-up group block min-w-0 max-w-full px-3 py-2.5 transition hover:bg-surface-muted ${
+                  action ? "pr-11" : ""
+                }`}
+              >
+                <h2 className="truncate text-sm font-semibold leading-snug text-foreground">
+                  {post.title}
+                </h2>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  {metaParts.join(" · ")}
+                </p>
+                <div className="mt-0.5 flex items-baseline justify-between gap-2">
+                  <strong className="min-w-0 truncate break-keep text-sm font-bold tabular-nums text-foreground">
+                    {payLabel}
+                  </strong>
+                  <p className="shrink-0 text-xs text-muted-foreground">
+                    {formatPostedAt(post.postedAt ?? null)}
+                  </p>
+                </div>
+              </LinkComponent>
+              {action ? (
+                <div className="absolute right-1.5 top-1.5 z-10">{action}</div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
     );
   }
 
@@ -92,18 +173,8 @@ export function SubstituteList({
           }),
         );
         const schedule = resolveSubstituteSchedule(post);
-        const hasNormalizedLocation = Boolean(
-          post.sido || post.sigungu || post.dongOrStation,
-        );
-        const locationLabel = hasNormalizedLocation
-          ? formatLocation(
-              post.sido ?? null,
-              post.sigungu ?? null,
-              post.dongOrStation ?? null,
-            )
-          : post.locationText || "지역 미상";
-        const payLabel =
-          post.representativePayText || post.payText || "급여 협의";
+        const locationLabel = resolveLocationLabel(post);
+        const payLabel = resolvePayLabel(post);
         const action = renderAction?.(post);
 
         return (
