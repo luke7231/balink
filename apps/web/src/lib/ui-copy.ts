@@ -28,6 +28,21 @@ export const emptyCopy = {
     description: "관심 있는 대강을 저장해 두면 여기서 다시 볼 수 있어요.",
     cta: "대강 보러가기",
   },
+  todayJobs: {
+    title: "오늘 올라온 채용 공고가 없어요",
+    description: "새 공고가 올라오면 여기에 바로 보여 드릴게요.",
+    cta: "채용 공고 보러가기",
+  },
+  todaySubstitutes: {
+    title: "오늘 올라온 대강이 없어요",
+    description: "새 대강이 올라오면 여기에 바로 보여 드릴게요.",
+    cta: "대강 보러가기",
+  },
+  todayFiltered: {
+    title: "조건에 맞는 공고가 없어요",
+    description: "다른 지역을 골라 보거나 필터를 지워 보세요.",
+    cta: "필터 초기화",
+  },
   notifications: {
     title: "아직 받은 알림이 없어요",
     description: "관심지역에 맞는 공고가 올라오면 여기에 표시돼요.",

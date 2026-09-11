@@ -128,7 +128,7 @@ export type DeletedNotificationRuleProps = NotificationPreferenceContextProps & 
 };
 
 export type ClickedListFilterProps = {
-  screen: "job_list" | "substitute_list";
+  screen: "job_list" | "substitute_list" | "today_list";
   post_kind: AmplitudePostKind;
   filter_source: ListFilterSource;
   filter_kind: ListFilterKind;

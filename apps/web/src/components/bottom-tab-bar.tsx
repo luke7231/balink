@@ -7,7 +7,8 @@ const tabs = [
   {
     href: "/",
     label: "채용",
-    match: (pathname: string) => pathname === "/",
+    match: (pathname: string) =>
+      pathname === "/" || pathname === "/today" || pathname.startsWith("/today/"),
     icon: BriefcaseIcon,
   },
   {

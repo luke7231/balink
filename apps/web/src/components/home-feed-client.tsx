@@ -2,7 +2,9 @@
 
 import { HomeFiltersClient } from "@/components/home-filters-client";
 import { HomeJobsClient } from "@/components/home-jobs-client";
+import { HomeQuickMenu } from "@/components/home-quick-menu";
 import { ListSearchField } from "@/components/list-search-field";
+import { MotionReveal } from "@/components/motion-reveal";
 import type { JobPostFilterInput } from "@/generated/graphql";
 import { setFilterUrl } from "@/lib/filter-url";
 import {
@@ -41,6 +43,9 @@ export function HomeFeedClient({
 
   return (
     <>
+      <MotionReveal index={0} variant="fade-up">
+        <HomeQuickMenu />
+      </MotionReveal>
       <ListSearchField
         value={q}
         onChange={(next) => {
