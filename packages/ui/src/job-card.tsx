@@ -41,6 +41,14 @@ interface JobCardProps {
   variant?: JobListViewVariant;
 }
 
+function formatBoardJobTitle(title: string): string {
+  return title
+    .split(" · ")
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0 && part !== "정규")
+    .join(" · ");
+}
+
 function splitPayLabel(payLabel: string): { amount: string; unit: string | null } | null {
   const match = payLabel.match(/^(.+?)(만원)$/);
   if (!match) return null;
@@ -101,7 +109,7 @@ export function JobCard({
 
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold leading-snug text-foreground">
-              {job.title}
+              {formatBoardJobTitle(job.title)}
             </h2>
             <p className="mt-0.5 truncate text-xs text-muted-foreground">
               {metaParts.join(" · ")}
