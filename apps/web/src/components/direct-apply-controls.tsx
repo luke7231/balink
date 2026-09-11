@@ -159,8 +159,8 @@ export function DirectApplyControls({
 
   return (
     <>
-      {/* Desktop inline CTA */}
-      <div className="mt-5 hidden items-center gap-2 sm:flex">
+      {/* Desktop inline CTA — hidden inside desktop phone stage via CSS */}
+      <div className="detail-inline-cta mt-5 hidden items-center gap-2 sm:flex">
         {canApply ? (
           <button
             type="button"

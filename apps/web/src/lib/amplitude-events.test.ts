@@ -31,6 +31,7 @@ test("production event names stay stable for dashboards", () => {
   );
   assert.equal(AmplitudeEventName.ClickedListFilter, "Clicked List Filter");
   assert.equal(AmplitudeEventName.ChangedListSort, "Changed List Sort");
+  assert.equal(AmplitudeEventName.ClickedAppStore, "Clicked App Store");
 });
 
 test("compactAmplitudeProps drops empty values", () => {

@@ -15,6 +15,8 @@ const MOBILE_PAGE_RATIO = 0.84;
 const GAP_PX = 4;
 /** 스크롤이 이 시간 동안 멈춰 있으면 정착으로 판단 */
 const SETTLE_MS = 160;
+/** 자동/프로그램 스크롤 한 칸 이동 시간 */
+const SCROLL_ANIM_MS = 480;
 /** 가운데 1, 양옆은 이 비율까지 줄어듦 */
 const SIDE_SCALE = 0.88;
 const SIDE_OPACITY = 0.78;
@@ -30,11 +32,21 @@ export function HomeBanner({ items }: { items: HomeBannerItem[] }) {
   const [variant, setVariant] = useState<"mobile" | "desktop" | null>(null);
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 768px)");
-    const sync = () => setVariant(media.matches ? "desktop" : "mobile");
+    const wide = window.matchMedia("(min-width: 768px)");
+    const stage = window.matchMedia("(min-width: 1024px)");
+    const sync = () => {
+      // Desktop app stage constrains UI to phone width — always use 1-up carousel.
+      const inDesktopStage =
+        stage.matches && !document.documentElement.classList.contains("native-shell");
+      setVariant(inDesktopStage || !wide.matches ? "mobile" : "desktop");
+    };
     sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
+    wide.addEventListener("change", sync);
+    stage.addEventListener("change", sync);
+    return () => {
+      wide.removeEventListener("change", sync);
+      stage.removeEventListener("change", sync);
+    };
   }, []);
 
   if (items.length === 0) return null;
@@ -133,6 +145,7 @@ function BannerCarousel({
   const interactingRef = useRef(false);
 
   const watchRafRef = useRef<number | null>(null);
+  const scrollAnimRafRef = useRef<number | null>(null);
   const lastLeftRef = useRef(Number.NaN);
   const stableSinceRef = useRef(0);
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -232,23 +245,69 @@ function BannerCarousel({
     }
   }
 
+  function cancelScrollAnimation() {
+    if (scrollAnimRafRef.current != null) {
+      cancelAnimationFrame(scrollAnimRafRef.current);
+      scrollAnimRafRef.current = null;
+    }
+    const scroller = scrollerRef.current;
+    if (scroller) scroller.style.scrollSnapType = "";
+  }
+
+  function easeInOutCubic(t: number) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
   function scrollToTrackIndex(trackIndex: number, behavior: ScrollBehavior) {
     const scroller = scrollerRef.current;
     if (!scroller || pageWidthRef.current <= 0) return;
 
+    const targetLeft = trackIndex * stride();
     trackIndexRef.current = trackIndex;
     const logical = trackRef.current[trackIndex]?.logicalIndex ?? 0;
     setPageIndex((prev) => (prev === logical ? prev : logical));
 
-    const left = trackIndex * stride();
-    // 초기 점프는 scrollTo 애니메이션/비동기보다 scrollLeft 가 더 확실함
+    cancelScrollAnimation();
+
+    // 초기 점프 / 루프 정규화는 즉시
     if (behavior === "auto") {
-      scroller.scrollLeft = left;
+      scroller.scrollLeft = targetLeft;
       updateFocusScales();
-    } else {
-      scroller.scrollTo({ left, behavior });
-      // smooth 중에는 scroll 감시가 스케일을 갱신
+      return;
     }
+
+    // native smooth + scroll-snap 은 도착 후 스케일이 따라붙어 "툭" 커짐.
+    // scrollLeft 와 scale 을 같은 rAF 에서 밀어 도착하면서 커지게 한다.
+    const startLeft = scroller.scrollLeft;
+    const distance = targetLeft - startLeft;
+    if (Math.abs(distance) < 0.5) {
+      scroller.scrollLeft = targetLeft;
+      updateFocusScales();
+      return;
+    }
+
+    const startedAt = performance.now();
+    const prevSnap = scroller.style.scrollSnapType;
+    scroller.style.scrollSnapType = "none";
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - startedAt) / SCROLL_ANIM_MS);
+      scroller.scrollLeft = startLeft + distance * easeInOutCubic(t);
+      updateFocusScales();
+
+      if (t < 1) {
+        scrollAnimRafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      scrollAnimRafRef.current = null;
+      scroller.scrollLeft = targetLeft;
+      scroller.style.scrollSnapType = prevSnap;
+      syncIndicator();
+      normalizeLoopPosition();
+    };
+
+    scrollAnimRafRef.current = requestAnimationFrame(tick);
   }
 
   /** 클론 페이지에 멈추면 대응하는 실제 페이지로 순간 이동 */
@@ -285,12 +344,16 @@ function BannerCarousel({
       const left = scroller.scrollLeft;
       const now = performance.now();
 
+      // 매 프레임 스케일 갱신 — scroll 이벤트에만 의존하면 smooth 중 옆 장이 작다가 끝에 툭 커짐
+      updateFocusScales();
+
       if (Number.isNaN(lastLeftRef.current) || Math.abs(left - lastLeftRef.current) > 0.5) {
         lastLeftRef.current = left;
         stableSinceRef.current = now;
-        syncIndicator();
-      } else {
-        updateFocusScales();
+        const next = indexFromScrollLeft();
+        trackIndexRef.current = next;
+        const logical = trackRef.current[next]?.logicalIndex ?? 0;
+        setPageIndex((prev) => (prev === logical ? prev : logical));
       }
 
       const settled = now - stableSinceRef.current > SETTLE_MS;
@@ -311,6 +374,7 @@ function BannerCarousel({
     return () => {
       if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
       if (watchRafRef.current != null) cancelAnimationFrame(watchRafRef.current);
+      if (scrollAnimRafRef.current != null) cancelAnimationFrame(scrollAnimRafRef.current);
     };
   }, []);
 
@@ -387,7 +451,6 @@ function BannerCarousel({
     const timer = window.setInterval(() => {
       if (interactingRef.current) return;
       scrollToTrackIndex(trackIndexRef.current + 1, "smooth");
-      window.setTimeout(startWatch, 450);
     }, AUTO_PLAY_MS);
 
     return () => window.clearInterval(timer);
@@ -401,6 +464,7 @@ function BannerCarousel({
   const beginInteraction = () => {
     if (!reveal) return;
     interactingRef.current = true;
+    cancelScrollAnimation();
     pauseAutoPlay();
     startWatch();
   };
@@ -411,8 +475,14 @@ function BannerCarousel({
   };
 
   return (
-    <div ref={rootRef} className="relative -mx-4 min-w-0 md:mx-0">
-      <div
+    <div
+      ref={rootRef}
+      className={
+        isMobile
+          ? "relative -mx-4 min-w-0"
+          : "relative min-w-0"
+      }
+    >      <div
         className={`pointer-events-none absolute inset-x-0 top-0 z-10 transition-opacity duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
           reveal ? "opacity-0" : "opacity-100"
         }`}

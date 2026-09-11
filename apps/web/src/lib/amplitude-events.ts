@@ -17,6 +17,7 @@ export const AmplitudeEventName = {
   ChangedListSort: "Changed List Sort",
   SubmittedSearch: "Submitted Search",
   ClearedSearch: "Cleared Search",
+  ClickedAppStore: "Clicked App Store",
 } as const;
 
 export type AmplitudeEventName =
@@ -160,6 +161,10 @@ export type ClearedSearchProps = {
   screen: "job_list";
 };
 
+export type ClickedAppStoreProps = {
+  store: "ios" | "android";
+};
+
 export type AmplitudeEventPropsByName = {
   [AmplitudeEventName.ViewedJobDetail]: ViewedJobDetailProps;
   [AmplitudeEventName.ViewedSubstituteDetail]: ViewedSubstituteDetailProps;
@@ -173,6 +178,7 @@ export type AmplitudeEventPropsByName = {
   [AmplitudeEventName.ChangedListSort]: ChangedListSortProps;
   [AmplitudeEventName.SubmittedSearch]: SubmittedSearchProps;
   [AmplitudeEventName.ClearedSearch]: ClearedSearchProps;
+  [AmplitudeEventName.ClickedAppStore]: ClickedAppStoreProps;
 };
 
 export function buildNotificationPreferenceContextProps(

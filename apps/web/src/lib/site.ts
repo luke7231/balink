@@ -27,3 +27,10 @@ export function absoluteUrl(path = "/"): string {
   if (!path || path === "/") return SITE_URL;
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
+
+/** App Store / Play Store listing URLs for desktop web promo. */
+export const APP_STORE_URL =
+  "https://apps.apple.com/kr/app/%EB%B0%9C%EB%A7%81%ED%81%AC-%EB%B0%9C%EB%A0%88%EC%9D%B8%EC%9D%84-%EC%9C%84%ED%95%9C-%EC%BB%A4%EB%A6%AC%EC%96%B4-%ED%94%8C%EB%9E%AB%ED%8F%BC/id6803830145";
+
+export const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.luke7231.balink";
