@@ -2,6 +2,10 @@
 
 import * as amplitude from "@amplitude/unified";
 import {
+  resolveAmplitudeClient,
+  type AmplitudeClient,
+} from "@/lib/amplitude-client-surface";
+import {
   resolveAmplitudeApiKey,
   type AmplitudeAppEnv,
 } from "@/lib/amplitude-destination";
@@ -11,6 +15,7 @@ import {
   type AmplitudeEventName,
   type AmplitudeEventPropsByName,
 } from "@/lib/amplitude-events";
+import { isNativeShell } from "@/lib/native-shell";
 
 export type AmplitudeProbeEvent = {
   name: string;
@@ -25,6 +30,7 @@ export type AmplitudeProbe = {
   sessionReplaySampleRate: number;
   /** Database `User.id` after identify; null while anonymous. */
   userId: string | null;
+  client: AmplitudeClient;
 };
 
 /** Session Replay captures this fraction of sessions (0–1). */
@@ -39,6 +45,8 @@ declare global {
 let didInit = false;
 let initPromise: Promise<void> | null = null;
 let currentEnv: AmplitudeAppEnv = "dev";
+let currentClient: AmplitudeClient = "web";
+let identifiedClient: AmplitudeClient | null = null;
 let identifiedUserId: string | null = null;
 /** Logout/delete in flight — don't re-identify from a still-valid session cookie. */
 let ignoreSessionIdentify = false;
@@ -56,7 +64,31 @@ function installDevProbe(env: AmplitudeAppEnv) {
     events: window.balinkAnalytics?.events ?? [],
     sessionReplaySampleRate: SESSION_REPLAY_SAMPLE_RATE,
     userId: identifiedUserId,
+    client: currentClient,
   };
+}
+
+function readCurrentClient(): AmplitudeClient {
+  return resolveAmplitudeClient(isNativeShell());
+}
+
+function applyAmplitudeClientContext() {
+  const nextClient = readCurrentClient();
+  currentClient = nextClient;
+  if (typeof window !== "undefined" && window.balinkAnalytics) {
+    window.balinkAnalytics.client = nextClient;
+  }
+  if (!didInit) return;
+  if (identifiedClient === nextClient) return;
+  identifiedClient = nextClient;
+  const identify = new amplitude.Identify();
+  identify.set("client", nextClient);
+  amplitude.identify(identify);
+}
+
+/** Re-read native shell after the WebView injects. Safe to call more than once. */
+export function syncAmplitudeClientFromShell() {
+  applyAmplitudeClientContext();
 }
 
 export function getAmplitudeUserId(): string | null {
@@ -74,6 +106,7 @@ export function initAmplitude(input: {
     prdApiKey: input.prdApiKey ?? process.env.NEXT_PUBLIC_AMPLITUDE_PRD_API_KEY,
   });
   currentEnv = resolved.env;
+  currentClient = readCurrentClient();
   installDevProbe(resolved.env);
 
   if (didInit) return resolved;
@@ -87,10 +120,12 @@ export function initAmplitude(input: {
     analytics: { autocapture: true },
     sessionReplay: { sampleRate: SESSION_REPLAY_SAMPLE_RATE },
   }).then(() => {
+    applyAmplitudeClientContext();
     if (typeof window !== "undefined" && window.balinkAnalytics) {
       window.balinkAnalytics.initialized = true;
     }
   });
+  applyAmplitudeClientContext();
   return resolved;
 }
 
@@ -107,23 +142,29 @@ export async function applyAmplitudeUserId(userId: string | undefined) {
     if (identifiedUserId === userId) return;
     amplitude.setUserId(userId);
     identifiedUserId = userId;
+    identifiedClient = null;
     syncProbeUserId();
+    applyAmplitudeClientContext();
     return;
   }
 
   if (identifiedUserId === null) return;
   amplitude.reset();
   identifiedUserId = null;
+  identifiedClient = null;
   syncProbeUserId();
+  applyAmplitudeClientContext();
 }
 
 /** Call before logout / account delete so the next visitor is not this user. */
 export function resetAmplitudeUser() {
   ignoreSessionIdentify = true;
   identifiedUserId = null;
+  identifiedClient = null;
   syncProbeUserId();
   if (!didInit) return;
   amplitude.reset();
+  applyAmplitudeClientContext();
 }
 
 async function fetchAuthUserId(): Promise<string | undefined> {
@@ -156,6 +197,7 @@ export function trackAmplitudeEvent<E extends AmplitudeEventName>(
   const eventProps = {
     ...compactAmplitudeProps(props as Record<string, unknown>),
     app_env: currentEnv,
+    client: currentClient,
   };
   if (typeof window !== "undefined" && window.balinkAnalytics) {
     window.balinkAnalytics.events.push({

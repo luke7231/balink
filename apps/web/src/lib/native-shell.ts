@@ -23,6 +23,11 @@ function readNativeShell(): boolean {
   return false;
 }
 
+/** True when this page is inside the Expo WebView shell. */
+export function isNativeShell(): boolean {
+  return readNativeShell();
+}
+
 /** Call from injected native script after setting the flag. */
 export function notifyNativeShell() {
   if (typeof window === "undefined") return;

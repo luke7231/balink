@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   getAmplitudeUserId,
   initAmplitude,
+  syncAmplitudeClientFromShell,
   syncAmplitudeIdentityFromSession,
 } from "@/lib/amplitude-client";
 
@@ -23,7 +24,12 @@ export function AmplitudeAnalytics({
 
   useEffect(() => {
     initAmplitude({ vercelEnv, devApiKey, prdApiKey });
+    syncAmplitudeClientFromShell();
     void syncAmplitudeIdentityFromSession();
+
+    const syncClient = () => syncAmplitudeClientFromShell();
+    window.addEventListener("balink:native-shell", syncClient);
+    return () => window.removeEventListener("balink:native-shell", syncClient);
   }, [vercelEnv, devApiKey, prdApiKey]);
 
   useEffect(() => {
