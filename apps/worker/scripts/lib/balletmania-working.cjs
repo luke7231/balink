@@ -1,6 +1,7 @@
 const { URL } = require("node:url");
 const cheerio = require("cheerio");
 const iconv = require("iconv-lite");
+const { SCRAPER_BROWSER_HEADERS } = require("./scraper-user-agent.cjs");
 
 const BASE_URL = "https://www.balletmania.com";
 const BOARD_ID = "working";
@@ -21,11 +22,14 @@ function buildWorkingDetailUrl(no) {
 async function fetchEucKrHtml(url, cookie) {
   const response = await fetch(url, {
     headers: {
+      ...SCRAPER_BROWSER_HEADERS,
       ...(cookie ? { cookie } : {}),
-      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
-      accept: "text/html,application/xhtml+xml",
     },
   });
+
+  if (isBalletmaniaBlockPage(response)) {
+    throw new Error(`Balletmania blocked ${url} (redirected to ${response.url}).`);
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
@@ -46,8 +50,8 @@ async function loginBalletmania() {
   const response = await fetch(`${BASE_URL}/rankup_module/rankup_member/login_regist.php`, {
     method: "POST",
     headers: {
+      ...SCRAPER_BROWSER_HEADERS,
       "content-type": "application/x-www-form-urlencoded",
-      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
     body: params,
     redirect: "manual",
@@ -59,8 +63,22 @@ async function loginBalletmania() {
     .filter(Boolean)
     .join("; ");
 
-  if (!cookie) throw new Error("Failed to create Balletmania login session.");
+  if (!cookie) {
+    throw new Error(formatBalletmaniaLoginFailure(response));
+  }
   return cookie;
+}
+
+function isBalletmaniaBlockPage(response) {
+  return /\/error\.html(?:$|\?)/.test(response.url);
+}
+
+function formatBalletmaniaLoginFailure(response) {
+  const location = response.headers.get("location");
+  const detail = location
+    ? `status ${response.status}, location ${location}`
+    : `status ${response.status}`;
+  return `Failed to create Balletmania login session. (${detail})`;
 }
 
 function getTodayKstDate() {

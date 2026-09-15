@@ -12,6 +12,7 @@ const {
   normalizeDayGroups,
   flattenDayGroups,
 } = require("./lib/schedule-sanitize.cjs");
+const { SCRAPER_BROWSER_HEADERS } = require("./lib/scraper-user-agent.cjs");
 
 dotenv.config();
 
@@ -219,8 +220,8 @@ async function login() {
     method: "POST",
     redirect: "manual",
     headers: {
+      ...SCRAPER_BROWSER_HEADERS,
       "content-type": "application/x-www-form-urlencoded",
-      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
     body: params,
   });
@@ -260,8 +261,8 @@ function splitSetCookieHeader(value) {
 async function fetchDetail(url, cookie) {
   const response = await fetchWithRetry(url, {
     headers: {
+      ...SCRAPER_BROWSER_HEADERS,
       cookie,
-      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
   });
 

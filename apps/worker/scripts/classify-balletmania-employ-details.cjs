@@ -13,6 +13,7 @@ const {
   normalizeDayGroups,
   flattenDayGroups,
 } = require("./lib/schedule-sanitize.cjs");
+const { SCRAPER_BROWSER_HEADERS } = require("./lib/scraper-user-agent.cjs");
 
 dotenv.config();
 
@@ -172,8 +173,8 @@ async function login() {
   const response = await fetch(`${BASE_URL}/rankup_module/rankup_member/login_regist.php`, {
     method: "POST",
     headers: {
+      ...SCRAPER_BROWSER_HEADERS,
       "content-type": "application/x-www-form-urlencoded",
-      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
     body: params,
     redirect: "manual",
@@ -185,15 +186,21 @@ async function login() {
     .filter(Boolean)
     .join("; ");
 
-  if (!cookie) throw new Error("Failed to create Balletmania login session.");
+  if (!cookie) {
+    const location = response.headers.get("location");
+    const detail = location
+      ? `status ${response.status}, location ${location}`
+      : `status ${response.status}`;
+    throw new Error(`Failed to create Balletmania login session. (${detail})`);
+  }
   return cookie;
 }
 
 async function fetchDetail(url, cookie) {
   const response = await fetch(url, {
     headers: {
+      ...SCRAPER_BROWSER_HEADERS,
       cookie,
-      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
   });
 

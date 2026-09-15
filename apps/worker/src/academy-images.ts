@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import {
   isAcademyPlaceholderImageUrl,
   type RawAcademyImages,
@@ -12,6 +13,10 @@ import {
   getS3StorageConfig,
   uploadBufferToS3,
 } from "./s3-storage.js";
+
+const { SCRAPER_BROWSER_HEADERS } = createRequire(import.meta.url)(
+  "../scripts/lib/scraper-user-agent.cjs",
+);
 
 export function parseRawAcademyImages(value: unknown): RawAcademyImages | null {
   if (!value || typeof value !== "object") return null;
@@ -99,7 +104,7 @@ async function uploadRemoteImage(
   sourceUrl: string,
 ): Promise<string> {
   const response = await fetch(sourceUrl, {
-    headers: { "user-agent": "Mozilla/5.0 compatible; balink-academy-images/0.1" },
+    headers: SCRAPER_BROWSER_HEADERS,
   });
 
   if (!response.ok) {

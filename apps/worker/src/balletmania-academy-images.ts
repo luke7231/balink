@@ -1,6 +1,11 @@
+import { createRequire } from "node:module";
 import iconv from "iconv-lite";
 import { load } from "cheerio";
 import { isAcademyPlaceholderImageUrl, type RawAcademyImages } from "@balink/domain";
+
+const { SCRAPER_BROWSER_HEADERS } = createRequire(import.meta.url)(
+  "../scripts/lib/scraper-user-agent.cjs",
+);
 
 const BASE_URL = "https://www.balletmania.com";
 
@@ -51,8 +56,8 @@ export async function fetchBalletmaniaAcademyImages(
 ): Promise<RawAcademyImages | null> {
   const response = await fetch(url, {
     headers: {
+      ...SCRAPER_BROWSER_HEADERS,
       cookie,
-      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
   });
 
@@ -76,8 +81,8 @@ export async function loginBalletmania(): Promise<string> {
   const response = await fetch(`${BASE_URL}/rankup_module/rankup_member/login_regist.php`, {
     method: "POST",
     headers: {
+      ...SCRAPER_BROWSER_HEADERS,
       "content-type": "application/x-www-form-urlencoded",
-      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
     },
     body: params,
     redirect: "manual",
@@ -89,6 +94,12 @@ export async function loginBalletmania(): Promise<string> {
     .filter(Boolean)
     .join("; ");
 
-  if (!cookie) throw new Error("Failed to create Balletmania login session.");
+  if (!cookie) {
+    const location = response.headers.get("location");
+    const detail = location
+      ? `status ${response.status}, location ${location}`
+      : `status ${response.status}`;
+    throw new Error(`Failed to create Balletmania login session. (${detail})`);
+  }
   return cookie;
 }

@@ -7,6 +7,8 @@ const { Agent, fetch } = require("undici");
 const cheerio = require("cheerio");
 const dotenv = require("dotenv");
 
+const { SCRAPER_BROWSER_HEADERS } = require("./lib/scraper-user-agent.cjs");
+
 dotenv.config();
 
 const BASE_URL = "https://www.esangdance.net";
@@ -147,8 +149,7 @@ async function fetchUtf8Html(url, options) {
         dispatcher: fetchDispatcher,
         signal: AbortSignal.timeout(options.timeoutMs),
         headers: {
-          "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
-          "accept": "text/html,application/xhtml+xml",
+          ...SCRAPER_BROWSER_HEADERS,
         },
       });
 

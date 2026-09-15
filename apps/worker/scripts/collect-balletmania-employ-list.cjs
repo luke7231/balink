@@ -6,6 +6,7 @@ const { URL } = require("node:url");
 const cheerio = require("cheerio");
 const dotenv = require("dotenv");
 const iconv = require("iconv-lite");
+const { SCRAPER_BROWSER_HEADERS } = require("./lib/scraper-user-agent.cjs");
 
 dotenv.config();
 
@@ -119,10 +120,13 @@ function buildListUrl(page) {
 async function fetchEucKrHtml(url) {
   const response = await fetch(url, {
     headers: {
-      "user-agent": "Mozilla/5.0 compatible; balink-ballet-crawler/0.1",
-      "accept": "text/html,application/xhtml+xml",
+      ...SCRAPER_BROWSER_HEADERS,
     },
   });
+
+  if (/\/error\.html(?:$|\?)/.test(response.url)) {
+    throw new Error(`Balletmania blocked ${url} (redirected to ${response.url}).`);
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
