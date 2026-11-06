@@ -9,6 +9,7 @@ export async function getBookmarkedSubstituteIdSet(
   const rows = await prisma.substituteBookmark.findMany({
     where: {
       userId,
+      substitutePost: { hiddenAt: null },
       substitutePostId: { in: substitutePostIds },
     },
     select: { substitutePostId: true },

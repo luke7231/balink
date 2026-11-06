@@ -1,0 +1,120 @@
+name: Deploy Cloudtype servers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'apps/worker/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - 'Dockerfile'
+      - 'Dockerfile.worker'
+      - '.dockerignore'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.npmrc'
+      - 'patches/**'
+      - 'tsconfig.base.json'
+      - 'codegen.ts'
+      - '.github/workflows/deploy-cloudtype.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Finish an in-progress release before starting the next one.
+concurrency:
+  group: cloudtype-production
+  cancel-in-progress: false
+
+env:
+  CLOUDTYPE_PROJECT: blueblue/ballet
+  CLOUDTYPE_STAGE: main
+
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22.14.0'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @balink/domain test
+      - run: pnpm --filter @balink/validation build
+      - run: pnpm --filter @balink/db test
+      - run: pnpm codegen
+      - run: pnpm --filter @balink/api build
+      - run: pnpm --filter @balink/worker test
+      - run: pnpm --filter @balink/worker verify:deps
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22.14.0'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install PyYAML==6.0.3
+      - run: python -m unittest discover -s scripts/deploy -p 'test_*.py'
+      - run: node --test scripts/deploy/wait-for-release.test.mjs
+      - name: Check deployment credentials
+        env:
+          CLOUDTYPE_TOKEN: ${{ secrets.CLOUDTYPE_TOKEN }}
+          GHP_TOKEN: ${{ secrets.GHP_TOKEN }}
+        run: |
+          test -n "$CLOUDTYPE_TOKEN" || { echo 'Missing CLOUDTYPE_TOKEN'; exit 1; }
+          test -n "$GHP_TOKEN" || { echo 'Missing GHP_TOKEN'; exit 1; }
+      # Validate BOTH configurations before changing either service.
+      - name: Prepare API configuration
+        id: api
+        env:
+          CLOUDTYPE_SERVICE_YAML: ${{ secrets.CLOUDTYPE_API_YAML }}
+        run: python scripts/deploy/prepare_cloudtype.py api
+      - name: Prepare scraper configuration
+        id: scraper
+        env:
+          CLOUDTYPE_SERVICE_YAML: ${{ secrets.CLOUDTYPE_SCRAPER_YAML }}
+        run: python scripts/deploy/prepare_cloudtype.py scraper
+      - name: Connect repository
+        uses: cloudtype-github-actions/connect@v1
+        with:
+          token: ${{ secrets.CLOUDTYPE_TOKEN }}
+          ghtoken: ${{ secrets.GHP_TOKEN }}
+          scope: blueblue
+          readOnly: true
+      - name: Deploy API (startup applies Prisma migrations)
+        uses: cloudtype-github-actions/deploy@v1
+        with:
+          token: ${{ secrets.CLOUDTYPE_TOKEN }}
+          project: ${{ env.CLOUDTYPE_PROJECT }}
+          stage: ${{ env.CLOUDTYPE_STAGE }}
+          file: ${{ steps.api.outputs.file }}
+      - name: Wait for API release and database readiness
+        run: node scripts/deploy/wait-for-release.mjs https://port-0-black-swan-api-ms4do36r5abb5b21.sel3.cloudtype.app/health "$GITHUB_SHA"
+      - name: Deploy scraper
+        uses: cloudtype-github-actions/deploy@v1
+        with:
+          token: ${{ secrets.CLOUDTYPE_TOKEN }}
+          project: ${{ env.CLOUDTYPE_PROJECT }}
+          stage: ${{ env.CLOUDTYPE_STAGE }}
+          file: ${{ steps.scraper.outputs.file }}
+      - name: Wait for scraper release and database readiness
+        run: node scripts/deploy/wait-for-release.mjs https://port-0-black-swan-scraper-ms4do36r5abb5b21.sel3.cloudtype.app/health "$GITHUB_SHA"
+      - name: Remove generated credential files
+        if: always()
+        run: rm -f "$RUNNER_TEMP/cloudtype-api.json" "$RUNNER_TEMP/cloudtype-scraper.json"

@@ -34,8 +34,10 @@ async function route(req: http.IncomingMessage, res: http.ServerResponse): Promi
 
   if (method === "GET" && url.pathname === "/health") {
     await databaseHealthRepository.ping();
+    res.setHeader("Cache-Control", "no-store");
     sendJson(res, 200, {
       ok: true,
+      revision: process.env.DEPLOY_COMMIT_SHA ?? null,
       scheduleEnabled: config.scheduleEnabled,
       scheduleIntervalMinutes: config.scheduleIntervalMinutes,
       scheduleSources: config.scheduleSources,

@@ -9,6 +9,7 @@ export async function getBookmarkedJobIdSet(
   const rows = await prisma.jobBookmark.findMany({
     where: {
       userId,
+      jobPost: { hiddenAt: null },
       jobPostId: { in: jobPostIds },
     },
     select: { jobPostId: true },

@@ -59,6 +59,7 @@ export async function fetchTodayPosts(now: Date = new Date()) {
   const [jobRows, substituteRows] = await Promise.all([
     prisma.jobPost.findMany({
       where: {
+        hiddenAt: null,
         isBallet: true,
         jobType: { not: "substitute" },
         ...dayWhere,
@@ -67,6 +68,7 @@ export async function fetchTodayPosts(now: Date = new Date()) {
     }),
     prisma.substitutePost.findMany({
       where: {
+        hiddenAt: null,
         status: "OPEN",
         ...substituteDayWhere,
       },

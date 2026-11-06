@@ -18,8 +18,8 @@ export type BookmarkActionResult =
 
 async function bookmarkPresence(userId: string) {
   const [jobCount, substituteCount] = await Promise.all([
-    prisma.jobBookmark.count({ where: { userId } }),
-    prisma.substituteBookmark.count({ where: { userId } }),
+    prisma.jobBookmark.count({ where: { userId, jobPost: { hiddenAt: null } } }),
+    prisma.substituteBookmark.count({ where: { userId, substitutePost: { hiddenAt: null } } }),
   ]);
   return {
     hasJobBookmarks: jobCount > 0,
@@ -43,7 +43,7 @@ export async function toggleJobBookmarkAction(jobPostId: string): Promise<Bookma
   }
 
   const job = await prisma.jobPost.findUnique({
-    where: { id: jobPostId },
+    where: { id: jobPostId, hiddenAt: null },
     select: { id: true },
   });
   if (!job) {
@@ -87,7 +87,7 @@ export async function toggleSubstituteBookmarkAction(
   }
 
   const post = await prisma.substitutePost.findUnique({
-    where: { id: substitutePostId },
+    where: { id: substitutePostId, hiddenAt: null },
     select: { id: true },
   });
   if (!post) {

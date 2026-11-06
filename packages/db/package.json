@@ -10,7 +10,8 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
-    "build": "prisma generate && tsc"
+    "build": "prisma generate && tsc",
+    "test": "pnpm run build && node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@balink/domain": "workspace:*",

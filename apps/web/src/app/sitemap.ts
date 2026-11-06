@@ -24,19 +24,19 @@ async function dynamicEntries(): Promise<MetadataRoute.Sitemap> {
   try {
     const [jobs, substitutes, organizations] = await Promise.all([
       prisma.jobPost.findMany({
-        where: { isBallet: true },
+        where: { hiddenAt: null, isBallet: true },
         select: { id: true, updatedAt: true, postedAt: true },
         orderBy: [{ postedAt: "desc" }, { updatedAt: "desc" }],
         take: MAX_DYNAMIC_URLS,
       }),
       prisma.substitutePost.findMany({
-        where: { status: "OPEN" },
+        where: { hiddenAt: null, status: "OPEN" },
         select: { id: true, updatedAt: true, postedAt: true },
         orderBy: [{ postedAt: "desc" }, { updatedAt: "desc" }],
         take: MAX_DYNAMIC_URLS,
       }),
       prisma.organization.findMany({
-        where: { jobPosts: { some: {} } },
+        where: { jobPosts: { some: { hiddenAt: null } } },
         select: { id: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
         take: MAX_DYNAMIC_URLS,

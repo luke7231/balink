@@ -26,7 +26,7 @@ test("job match notification copy and preference input", () => {
       days: ["월", "수", "금"],
       timeSlots: ["evening"],
     }),
-    "성북구 · 월수금 · 저녁",
+    "성북구 · 월수금 · 🌙 저녁",
   );
 
   const input = toJobMatchPreferenceInput({
@@ -48,7 +48,7 @@ test("substitute match notification copy and preference input", () => {
       lessonDates: ["2026-03-12"],
       timeSlots: ["evening"],
     }),
-    "성북구 · 3/12(목) · 저녁",
+    "성북구 · 3/12(목) · 🌙 저녁",
   );
 
   const input = toSubstituteMatchPreferenceInput({

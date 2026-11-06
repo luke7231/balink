@@ -101,6 +101,9 @@ model SourcePost {
 }
 
 model JobPost {
+  /// 운영 미노출 상태. 수집 상태와 독립적으로 유지한다.
+  hiddenAt          DateTime?
+  hiddenReason      String?
   id                String          @id @default(cuid())
   title             String
   description       String?
@@ -173,6 +176,9 @@ model JobPostSource {
 }
 
 model SubstitutePost {
+  /// 운영 미노출 상태. 수집 상태와 독립적으로 유지한다.
+  hiddenAt          DateTime?
+  hiddenReason      String?
   id                       String               @id @default(cuid())
   source                   SourceName
   sourcePostId             String

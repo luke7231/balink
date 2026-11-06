@@ -35,6 +35,7 @@ export async function backfillInboxMatchesForUser(
       ? Promise.resolve([])
       : prisma.jobPost.findMany({
           where: {
+            hiddenAt: null,
             createdAt: { gte: since },
             OR: regularRegions,
           },
@@ -54,6 +55,7 @@ export async function backfillInboxMatchesForUser(
       ? Promise.resolve([])
       : prisma.substitutePost.findMany({
           where: {
+            hiddenAt: null,
             status: "OPEN",
             createdAt: { gte: since },
             OR: substituteRegions,

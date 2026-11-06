@@ -20,7 +20,21 @@ const yoga = createYoga({
   },
 });
 
-const server = createServer(yoga);
+const server = createServer(async (req, res) => {
+  if (req.method === "GET" && req.url?.split("?")[0] === "/health") {
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "no-store");
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      res.end(JSON.stringify({ ok: true, revision: process.env.DEPLOY_COMMIT_SHA ?? null }));
+    } catch {
+      res.statusCode = 503;
+      res.end(JSON.stringify({ ok: false }));
+    }
+    return;
+  }
+  return yoga(req, res);
+});
 
 server.listen(config.port, () => {
   console.log(`balink GraphQL API listening on http://localhost:${config.port}/graphql`);

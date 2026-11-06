@@ -73,6 +73,7 @@ export class JobPostRepository {
     const sigungus = splitFilterValues(filter?.sigungu);
 
     return {
+      hiddenAt: null,
       isBallet: true,
       jobType: { not: "substitute" },
       ...regionWhere(sidos, sigungus),
@@ -98,7 +99,7 @@ export class JobPostRepository {
         : [{ postedAt: "desc" }, { createdAt: "desc" }];
 
     const items = await prisma.jobPost.findMany({
-      where,
+      where: { AND: [where, { hiddenAt: null }] },
       orderBy,
       skip,
       take,
@@ -107,12 +108,12 @@ export class JobPostRepository {
   }
 
   async count(where: Prisma.JobPostWhereInput) {
-    return prisma.jobPost.count({ where });
+    return prisma.jobPost.count({ where: { AND: [where, { hiddenAt: null }] } });
   }
 
   async findById(id: string) {
     const job = await prisma.jobPost.findUnique({
-      where: { id },
+      where: { id, hiddenAt: null },
       include: {
         organization: true,
         jobPostSources: {
@@ -126,7 +127,7 @@ export class JobPostRepository {
 
   async findSources(jobPostId: string) {
     const links = await prisma.jobPostSource.findMany({
-      where: { jobPostId },
+      where: { jobPostId, jobPost: { hiddenAt: null } },
       include: { sourcePost: { select: sourcePostSelect } },
       orderBy: { createdAt: "asc" },
     });
@@ -137,6 +138,7 @@ export class JobPostRepository {
     return prisma.jobPost.groupBy({
       by: ["sido", "sigungu"],
       where: {
+        hiddenAt: null,
         isBallet: true,
         jobType: { not: "substitute" },
         sido: { not: null },
@@ -149,7 +151,7 @@ export class JobPostRepository {
 
   async countBalletPosts() {
     return prisma.jobPost.count({
-      where: { isBallet: true, jobType: { not: "substitute" } },
+      where: { hiddenAt: null, isBallet: true, jobType: { not: "substitute" } },
     });
   }
 }
@@ -310,7 +312,7 @@ export class OrganizationRepository {
       where: { id },
       include: {
         jobPosts: {
-          where: { isBallet: true },
+          where: { hiddenAt: null, isBallet: true },
           orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
           take: jobLimit,
         },
@@ -318,7 +320,7 @@ export class OrganizationRepository {
     });
     if (!org) return null;
     const jobPostCount = await prisma.jobPost.count({
-      where: { organizationId: id, isBallet: true },
+      where: { organizationId: id, hiddenAt: null, isBallet: true },
     });
     return {
       ...toOrganizationDetail(org),
@@ -389,8 +391,9 @@ export class SourcePostRepository {
         existingLink?.jobPost.organizationId ?? null,
       );
 
+      const { hiddenAt: _hiddenAt, hiddenReason: _hiddenReason, ...normalizedJobPostData } = input.normalized.jobPostData;
       const jobPostData = {
-        ...input.normalized.jobPostData,
+        ...normalizedJobPostData,
         ...(organizationId ? { organizationId } : {}),
       };
 
@@ -620,6 +623,7 @@ export class SubstitutePostRepository {
     const sigungus = splitFilterValues(filter?.sigungu);
 
     return {
+      hiddenAt: null,
       ...(filter?.status ? { status: filter.status } : { status: "OPEN" }),
       ...regionWhere(sidos, sigungus),
       ...(filter?.source ? { source: filter.source } : {}),
@@ -642,7 +646,7 @@ export class SubstitutePostRepository {
         : [{ postedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }];
 
     const items = await prisma.substitutePost.findMany({
-      where,
+      where: { AND: [where, { hiddenAt: null }] },
       orderBy,
       skip,
       take,
@@ -651,11 +655,11 @@ export class SubstitutePostRepository {
   }
 
   async count(where: Prisma.SubstitutePostWhereInput) {
-    return prisma.substitutePost.count({ where });
+    return prisma.substitutePost.count({ where: { AND: [where, { hiddenAt: null }] } });
   }
 
   async findById(id: string) {
-    const post = await prisma.substitutePost.findUnique({ where: { id } });
+    const post = await prisma.substitutePost.findUnique({ where: { id, hiddenAt: null } });
     return post ? toSubstitutePostDetail(post) : null;
   }
 
@@ -826,7 +830,7 @@ export class SubstitutePostRepository {
   }
 
   async countOpenPosts() {
-    return prisma.substitutePost.count({ where: { status: "OPEN" } });
+    return prisma.substitutePost.count({ where: { hiddenAt: null, status: "OPEN" } });
   }
 }
 

@@ -21,7 +21,8 @@
     "start:worker": "pnpm --filter @balink/worker start",
     "db:generate": "pnpm --filter @balink/db generate",
     "db:migrate": "pnpm --filter @balink/db migrate",
-    "db:migrate:deploy": "pnpm --filter @balink/db migrate:deploy"
+    "db:migrate:deploy": "pnpm --filter @balink/db migrate:deploy",
+    "posts:visibility": "node scripts/post-visibility.mjs"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.7",

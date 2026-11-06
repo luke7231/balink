@@ -39,6 +39,7 @@ export async function enqueueAnonymousDailyDigest(now = new Date()): Promise<num
   const end = new Date(start.getTime() + 24 * 60 * 60_000);
   const count = await prisma.jobPost.count({
     where: {
+      hiddenAt: null,
       isBallet: true,
       createdAt: { gte: start, lt: end },
     },

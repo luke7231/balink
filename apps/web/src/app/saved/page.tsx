@@ -52,12 +52,12 @@ export default async function SavedJobsPage({
   const [health, jobBookmarks, substituteBookmarks] = await Promise.all([
     fetchHealth(),
     prisma.jobBookmark.findMany({
-      where: { userId: session.user.id },
+      where: { userId: session.user.id, jobPost: { hiddenAt: null } },
       orderBy: { createdAt: "desc" },
       include: { jobPost: true },
     }),
     prisma.substituteBookmark.findMany({
-      where: { userId: session.user.id },
+      where: { userId: session.user.id, substitutePost: { hiddenAt: null } },
       orderBy: { createdAt: "desc" },
       include: { substitutePost: true },
     }),
